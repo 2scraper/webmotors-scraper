@@ -3,27 +3,21 @@ output_writer.py
 -----------------
 Row models + JSON/CSV writers shared by all three engines.
 
-Three modes, three row classes
-------------------------------
-    --mode p2p            P2PAd         one P2P advert
-    --mode copytrading    LeadTrader    one copy-trading lead portfolio
-    --mode announcements  Announcement  one announcement
+Two modes, two row classes
+--------------------------
+    --mode search   Listing   one listing on a search page
+    --mode ad       Ad        one advert, read from its own detail endpoint
 
-These are three different things with nothing in common beyond an id and a
-name, so they are three dataclasses rather than one wide row that is two-
-thirds null on every line (CLAUDE.md §9: a column that is null on every row
-of a mode should not exist in that mode's file).
+An advert holds everything a listing does and more (fuel, optionals, the FIPE
+value, the site's market-price range), so `Ad` carries `Listing`'s vehicle
+columns in the same order, followed by its own. A consumer can therefore
+read the first columns of either file the same way.
 
-What they DO share, byte-identical and in order, is the family prefix:
-`source`, `scraped_at`, `url`, `sku`, `title`. One column name then works
-across the whole family, and a consumer reading several of these repos reads
-the same first five columns in the same order. The run-describing tail —
-`page`, `position`, `mode`, `data_source` — is shared too.
-
-None of the three is a shop row, so there is no `price`/`currency`/`brand`
-triple to keep null. `P2PAd.price` IS a price, but it is the price of an
-asset in a fiat, which the row states in its own `asset` and `fiat` columns
-rather than in the family's `currency`.
+What both share with the whole family, byte-identical and in order, is the
+prefix: `source`, `scraped_at`, `url`, `sku`, `title`, and then `price` and
+`currency`, the shop triple minus `brand` (a vehicle's make is `make`, a
+different thing from a brand of goods). The run-describing tail — `page`,
+`position`, `mode`, `data_source` — is shared too.
 
 Everything below the dataclasses is row-class-agnostic: pass `row_cls` so
 an empty CSV still gets the right header for the mode that produced it.
@@ -36,11 +30,7 @@ from datetime import datetime, timezone
 from typing import Optional, List, Set, Sequence, Any, Type
 
 
-# Every row comes from www.binance.com. P2P has its own host
-# (p2p.binance.com) for its PAGES, but the data is read from the www host's
-# endpoints, and the value is kept constant so it cannot vary with which
-# address the run happened to land on.
-SOURCE_DEFAULT = "binance.com"
+SOURCE_DEFAULT = "webmotors.com.br"
 
 
 def _now() -> str:
@@ -48,155 +38,136 @@ def _now() -> str:
 
 
 @dataclass
-class P2PAd:
+class Listing:
     source: str = SOURCE_DEFAULT
     scraped_at: str = field(default_factory=_now)
-    # The advertiser's public P2P profile. An advert has no page of its own
-    # that the list links to, while the advertiser does.
+    # The advert's own page, built from the record as the site builds it
+    # (product_parser.ad_url; 660 of 660 identical to the site's links).
     url: str = ""
-    # `adv.advNo`, the advert's own id: a 19-20 digit number, kept as a
-    # string because it is past 2**53 and a JSON consumer in JavaScript would
-    # round it.
+    # `UniqueId`, the advert's numeric id. The last segment of `url`.
     sku: Optional[str] = None
-    # The advertiser's public nickname: the name a P2P tile shows.
+    # `Specification.Title`: make, model and version in the site's capitals.
     title: Optional[str] = None
-
-    # ---- the two sides of one trade -------------------------------------
-    # `side` is what the RUN asked for, from the taker's side: "buy" means
-    # "adverts I could buy from". `advertiser_side` is what the advert
-    # itself says, from the maker's side, and it is always the opposite:
-    # 20 of 20 "sell" on a buy query, 20 of 20 "buy" on a sell query
-    # (2026-09-24). Both are kept, because a consumer who reads the API's
-    # `tradeType` alone gets every row backwards.
-    side: Optional[str] = None
-    advertiser_side: Optional[str] = None
-    asset: Optional[str] = None
-    fiat: Optional[str] = None
-    fiat_symbol: Optional[str] = None
-    # Fiat per unit of asset. The endpoint returns a STRING ("0.869"), parsed
-    # here to a float.
+    # The asking price. `Price` and `SearchPrice` agreed on every record.
     price: Optional[float] = None
-    # How much of `asset` the advert still has on offer.
-    available: Optional[float] = None
-    # Per-order limits in FIAT. `max_order_fiat` is the site's DYNAMIC
-    # maximum, capped by what is left on offer. That is the limit a taker
-    # actually meets, not the static one the advertiser set.
-    min_order_fiat: Optional[float] = None
-    max_order_fiat: Optional[float] = None
-    # Payment methods: `identifier` is what --pay-type filters on
-    # ("SEPAinstant"), and the name is what the page shows ("SEPA Instant").
-    # A LIST: one advert often takes several.
-    pay_methods: Optional[List[str]] = None
-    pay_method_names: Optional[List[str]] = None
-    # Minutes the taker has to pay before the order is cancelled.
-    pay_time_limit_min: Optional[int] = None
-    # `adv.classify`: "mass", "profession" and similar. The site's own
-    # category for the advert, written through unchanged.
-    ad_class: Optional[str] = None
-    extra_kyc_required: Optional[bool] = None
-    # `privilegeType`, written through UNINTERPRETED. Exactly one advert per
-    # page carried `1` on every page measured, always at position 1 and
-    # always in price order, so it does not displace anything. What it means
-    # is not stated anywhere in the payload, and this column does not guess.
-    privilege_type: Optional[int] = None
+    # Read once per run from the JSON-LD of a page the site renders, since
+    # no endpoint states it. null if it could not be read, never a default.
+    currency: Optional[str] = None
 
-    # ---- who is behind it -----------------------------------------------
-    # `advertiser.userNo`, the site's public advertiser id.
-    advertiser_id: Optional[str] = None
-    # "user" or "merchant".
-    advertiser_type: Optional[str] = None
-    # Completed orders in the last 30 days, and the share completed. The
-    # share is a FRACTION (1.0 = 100%) because that is how the site
-    # publishes it.
-    month_orders: Optional[int] = None
-    month_finish_rate: Optional[float] = None
-    # The share of positive feedback, also a fraction.
-    positive_rate: Optional[float] = None
+    vehicle: Optional[str] = None           # car | motorcycle
+    condition: Optional[str] = None         # used | new (`ListingType` U/N)
+    make: Optional[str] = None
+    model: Optional[str] = None
+    # Cars only: a motorcycle record has no version.
+    version: Optional[str] = None
+    year_fabrication: Optional[int] = None
+    year_model: Optional[int] = None
+    odometer_km: Optional[int] = None
+    transmission: Optional[str] = None
+    body_type: Optional[str] = None
+    color: Optional[str] = None
+    # Cars only.
+    doors: Optional[int] = None
+    # Cars only, and stated on 44% of them: `EngineSize` in litres.
+    engine_litres: Optional[float] = None
+    # Motorcycles only: `CubicCentimeter`, null where the site says 0.
+    engine_cc: Optional[int] = None
+    # Cars only, stated on 80% of them.
+    horsepower_cv: Optional[int] = None
+    traction: Optional[str] = None
+    # Cars only (`Armored` S/N).
+    armored: Optional[bool] = None
+    # The seller's ticked facts: "Aceita troca", "IPVA pago", "Único dono"...
+    attributes: Optional[List[str]] = None
+    # The asking price against the FIPE table, in percent (105 = 5% above).
+    fipe_pct: Optional[int] = None
+    # The site's "Bom negócio" badge.
+    good_deal: Optional[bool] = None
+    photo_count: Optional[int] = None
+    image_url: Optional[str] = None
+    # A listing sold at auction (`Auction`). 1 of 3,000 records captured.
+    auction: Optional[bool] = None
 
-    # ---- about the RUN --------------------------------------------------
-    page: Optional[int] = None
-    position: Optional[int] = None
-    mode: Optional[str] = None
-    # "bapi": the site's own JSON endpoint. Provenance in a column (§8).
-    data_source: Optional[str] = None
-
-
-@dataclass
-class LeadTrader:
-    source: str = SOURCE_DEFAULT
-    scraped_at: str = field(default_factory=_now)
-    url: str = ""
-    # `leadPortfolioId`: a 19-digit number, a string for the same reason as
-    # P2PAd.sku.
-    sku: Optional[str] = None
-    title: Optional[str] = None
-
-    # The period every figure below covers. The same portfolio has a
-    # different ROI under 7D and 30D, so this is part of what a figure
-    # MEANS, and two runs over different periods are not comparable.
-    time_range: Optional[str] = None
-    # Percentages as the site publishes them: 4557.37 is 4,557.37%, not a
-    # fraction. The `_pct` suffix says so, because `month_finish_rate` in the
-    # P2P row is a fraction and a reader of both would otherwise have to
-    # guess.
-    roi_pct: Optional[float] = None
-    # Profit and assets under management, in the portfolio's margin asset.
-    # The list payload does not name that asset, so no currency column
-    # pretends to.
-    pnl: Optional[float] = None
-    aum: Optional[float] = None
-    # Maximum drawdown over the period.
-    mdd_pct: Optional[float] = None
-    win_rate_pct: Optional[float] = None
-    # What the portfolio's copiers made in total.
-    copier_pnl: Optional[float] = None
-    # Null on most rows, as the site publishes it (`sharpRatio: null`).
-    sharpe_ratio: Optional[float] = None
-    copiers: Optional[int] = None
-    max_copiers: Optional[int] = None
-    # copiers >= max_copiers: no seat left for a new copier.
-    is_full: Optional[bool] = None
-    # The site's tier badge ("CHAMPION", "EXPERT", "MASTER"), null for a
-    # portfolio without one.
-    badge: Optional[str] = None
-    # `apiKeyTag == "API_KEY_TRADE"`: the lead trades through the API rather
-    # than by hand. 16 of 30 on the first page measured.
-    api_trading: Optional[bool] = None
-    # `tradFiTag` present: the portfolio trades the TradFi perpetuals
-    # (tokenised stocks and similar) as well as crypto.
-    tradfi: Optional[bool] = None
-    portfolio_type: Optional[str] = None
-    # When the lead portfolio was opened.
-    started_at: Optional[str] = None
+    seller_id: Optional[str] = None
+    seller_type: Optional[str] = None       # private | dealer (`SellerType`)
+    # The site's own word: "Pessoa Física", "Loja", "Concessionária".
+    seller_kind: Optional[str] = None
+    # A dealer's trading name. ALWAYS null for a private seller: that is a
+    # person, and this repo writes no personal name (product_parser).
+    seller_name: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None             # the UF, "SP"
 
     page: Optional[int] = None
     position: Optional[int] = None
     mode: Optional[str] = None
-    # The ordering that was asked for (`roi-desc`, `pnl-desc`, ...). It is a
-    # column and not only a sidecar field because it decides WHICH
-    # portfolios are in a capped run at all: the first 300 by ROI and the
-    # first 300 by AUM are different samples. `diff_runs.py` refuses to
-    # compare two runs that differ here (§21).
+    # The ordering the search ran under. A column, not only a sidecar
+    # field, because it decides WHICH listings are in the file: the site
+    # serves at most ~10,000 results per search, and "relevance" put 0
+    # private sellers in the first 47 where "price-asc" put 44.
     sort: Optional[str] = None
     data_source: Optional[str] = None
 
 
 @dataclass
-class Announcement:
+class Ad:
     source: str = SOURCE_DEFAULT
     scraped_at: str = field(default_factory=_now)
-    # The address the site's own articles use to link each other.
     url: str = ""
-    # The article's numeric `id`. It is the key rather than the article's
-    # `code` because the code is 32 hex characters, the exact shape of an
-    # API key, and a key column in that shape would teach every credential
-    # scanner to ignore it. The code is still in `url`.
     sku: Optional[str] = None
     title: Optional[str] = None
-    catalog_id: Optional[int] = None
-    catalog_name: Optional[str] = None
-    # `releaseDate`, epoch milliseconds, as ISO-8601 UTC.
-    released_at: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+
+    vehicle: Optional[str] = None
+    condition: Optional[str] = None
+    make: Optional[str] = None
+    model: Optional[str] = None
+    version: Optional[str] = None
+    year_fabrication: Optional[int] = None
+    year_model: Optional[int] = None
+    odometer_km: Optional[int] = None
+    transmission: Optional[str] = None
+    body_type: Optional[str] = None
+    color: Optional[str] = None
+    doors: Optional[int] = None
+    engine_litres: Optional[float] = None
+    engine_cc: Optional[int] = None
+    horsepower_cv: Optional[int] = None
+    traction: Optional[str] = None
+    armored: Optional[bool] = None
+    attributes: Optional[List[str]] = None
+    fipe_pct: Optional[int] = None
+    good_deal: Optional[bool] = None
+    photo_count: Optional[int] = None
+    image_url: Optional[str] = None
+
+    # What only the detail endpoint states.
+    fuel: Optional[str] = None
+    # The last digit of the plate, which decides the month Brazil's annual
+    # licensing falls due. The plate itself is never published.
+    final_plate: Optional[int] = None
+    optionals: Optional[List[str]] = None
+    # A DEALER's description only: a private seller's text is a person's
+    # own writing and is not written (product_parser.parse_ad).
+    description: Optional[str] = None
+    # When the advert was created, as the site states it (no offset).
+    created_at: Optional[str] = None
+    fipe_code: Optional[str] = None
+    fipe_price: Optional[float] = None
+    # The site's own price range for this version and year, and the state
+    # it covers, from its averageprice endpoint.
+    market_price_min: Optional[float] = None
+    market_price_avg: Optional[float] = None
+    market_price_max: Optional[float] = None
+    market_state: Optional[str] = None
+
+    seller_id: Optional[str] = None
+    seller_type: Optional[str] = None
+    seller_kind: Optional[str] = None
+    seller_name: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
 
     page: Optional[int] = None
     position: Optional[int] = None
@@ -205,13 +176,17 @@ class Announcement:
 
 
 # Row classes by --mode, so an engine maps its mode to a schema in one place.
-ROW_CLASS_BY_MODE = {"p2p": P2PAd, "copytrading": LeadTrader,
-                     "announcements": Announcement}
+ROW_CLASS_BY_MODE = {"search": Listing, "ad": Ad}
 
 # Modes whose rows are one-per-sku, and therefore safe to dedupe on `sku`
-# and to hand to diff_runs.py. All three qualify: an advert, a portfolio and
-# an article each appear once per listing.
-UNIQUE_BY_SKU_MODES = ("p2p", "copytrading", "announcements")
+# and to hand to diff_runs.py. Both qualify: a listing and an advert each
+# appear once per run.
+UNIQUE_BY_SKU_MODES = ("search", "ad")
+
+# Kept under the family's name: CI steps across the family import `Product`
+# from output_writer, and a rename that drops it passes every local check
+# and reddens CI on the first push.
+Product = Listing
 
 
 def dedupe_by_key(rows: Sequence[Any], seen: Set[str], key: str = "sku") -> List[Any]:
@@ -220,9 +195,9 @@ def dedupe_by_key(rows: Sequence[Any], seen: Set[str], key: str = "sku") -> List
     `seen` is mutated in place, so callers thread the same set across pages.
 
     On this site the drop count is NOT expected to be zero on a long run,
-    and that is a property of the data rather than a fault. All three
-    listings are LIVE: the P2P `total` went from 186 to 187 between two
-    requests a minute apart. A listing that gains an entry at the top
+    and that is a property of the data rather than a fault. The listings
+    are LIVE: the unfiltered catalogue's `Count` read 348,455, 348,458 and
+    348,317 at three moments of one session on 2026-09-28. A listing that gains an entry at the top
     between page 1 and page 2 pushes one row from page 1 onto page 2, where
     it is fetched a second time. The duplicate is dropped here. The mirror
     case, an entry REMOVED above the cut, pushes one row from page 2 onto
@@ -267,7 +242,7 @@ def write_json(rows: Sequence[Any], path: str) -> None:
         json.dump([asdict(r) for r in rows], f, ensure_ascii=False, indent=2)
 
 
-def write_csv(rows: Sequence[Any], path: str, row_cls: Type = P2PAd) -> None:
+def write_csv(rows: Sequence[Any], path: str, row_cls: Type = Listing) -> None:
     # An empty result still gets the header row. A zero-byte file makes a
     # consumer fail on read (no columns to parse) instead of reading a valid
     # table with zero rows — and "an empty result is still a well-formed
@@ -287,22 +262,16 @@ def write_csv(rows: Sequence[Any], path: str, row_cls: Type = P2PAd) -> None:
 # (crash) so a caller can tell "ran, found nothing" from "blew up".
 EXIT_NO_PRODUCTS = 4
 
-# Exit code for a run blocked before any data arrived: AWS WAF's CAPTCHA or
-# challenge, a 403, or a 451 refusing the exit's country. Distinct from
-# EXIT_NO_PRODUCTS so a caller can tell "the listing genuinely has nothing in
-# it" from "something stood between us and the listing".
+# Exit code for a run blocked before any data arrived: PerimeterX's refusal,
+# or CloudFront refusing the address. Distinct from EXIT_NO_PRODUCTS so a
+# caller can tell "the listing genuinely has nothing in it" from "something
+# stood between us and the listing".
 #
-# An empty listing is NOT this code. A P2P market with no adverts answers
-# HTTP 200, code 000000, `data: []`, and that is EXIT_NO_PRODUCTS: the
+# An empty listing is NOT this code. A search that matches nothing answers
+# HTTP 200 with `SearchResults: []`, and that is EXIT_NO_PRODUCTS: the
 # request was served exactly as asked.
 EXIT_BLOCKED = 3
 
-# Exit code for a run that gathered SOME rows and then stopped early — a
-# page-load timeout, a 503 throttle, or a challenge on page 3 of 10. The
-# output file is still written (throwing away three good pages would be
-# worse), but it is not a complete picture, and a consumer that cannot tell
-# the difference will read the pages that were never fetched as products that
-# disappeared from the catalogue. See write_run_meta.
 # A REMOTE service failed — the Scraping Browser refusing the connection
 # (`profile_locked` is the common one: a profile allows a single live
 # connection), or the Scraper API answering an error. Distinct from 1 (a
@@ -313,6 +282,12 @@ EXIT_BLOCKED = 3
 # drifts.
 EXIT_API_ERROR = 5
 
+# Exit code for a run that gathered SOME rows and then stopped early — a
+# page-load timeout, a refusal on page 3 of 10. The output file is still
+# written (throwing away three good pages would be worse), but it is not a
+# complete picture, and a consumer that cannot tell the difference will read
+# the pages that were never fetched as listings that disappeared from the
+# catalogue. See write_run_meta.
 EXIT_PARTIAL = 6
 
 
@@ -375,17 +350,17 @@ def run_meta(status: str, stop_reason: str, pages_requested: int,
       failed   — nothing was gathered at all
 
     `mode` and `source` are recorded because `mode` is not implied by the
-    repo: one output prefix can hold a P2P run, a copy-trading run or an
-    announcements run, and those have different row classes. diff_runs.py
-    refuses a pair whose modes or sources differ.
+    repo: one output prefix can hold a search run or an advert run, and
+    those have different row classes. diff_runs.py refuses a pair whose
+    modes or sources differ.
 
     `extra` carries facts about the run that are not about any single row:
-    the query that was sent (asset/fiat/side, period and ordering,
-    catalogue) and the site's OWN count of what matched (`total_results`,
-    `pages_available`). The count is the only honest way to say how much of
-    a listing a run holds. A 3-page copy-trading run is complete as a
-    REQUEST and a 90-of-8,920 sample as a LISTING, and only the sidecar
-    can say so.
+    the query that was sent (the listing address, ordering and page size)
+    and the site's OWN count of what matched (`total_results`,
+    `pages_available`, `capped_by_site`). The count is the only honest way to
+    say how much of a listing a run holds. A 3-page run over the whole
+    catalogue is complete as a REQUEST and a 141-of-348,317 sample as a
+    LISTING, and only the sidecar can say so.
 
     `pages_failed` lists the pages that did not yield data, by number.
     `pages_completed` alone was enough only while pages were fetched strictly
@@ -402,8 +377,7 @@ def run_meta(status: str, stop_reason: str, pages_requested: int,
         "pages_requested": pages_requested,
         "pages_completed": pages_completed,
         "pages_failed": pages_failed or [],
-        # Named "products" even though these are adverts, portfolios or
-        # articles, and kept that way deliberately: every repo in this family
+        # Named "products" even though these are vehicle listings, and kept that way deliberately: every repo in this family
         # writes this key, and a consumer reading several of them reads one
         # sidecar shape. The row TYPE is `mode`, right beside it.
         "products": products,
@@ -420,7 +394,7 @@ def run_meta(status: str, stop_reason: str, pages_requested: int,
 
 
 def save(rows: Sequence[Any], out_prefix: str, fmt: str,
-         allow_empty: bool = False, row_cls: Type = P2PAd) -> int:
+         allow_empty: bool = False, row_cls: Type = Listing) -> int:
     """Write JSON/CSV and return a process exit code.
 
     Returns 0 when rows were written, EXIT_NO_PRODUCTS when there were none.
@@ -504,7 +478,7 @@ def finish_run(rows: Sequence[Any], out_prefix: str, fmt: str,
     # unification this file already carries — a rule keyed on a list of
     # names has a hole for every name nobody added to it.
     complete = stop_reason in COMPLETE_STOP_REASONS and not pages_failed
-    row_cls = ROW_CLASS_BY_MODE.get(mode, P2PAd)
+    row_cls = ROW_CLASS_BY_MODE.get(mode, Listing)
     rc = save(rows, out_prefix, fmt, allow_empty=allow_empty, row_cls=row_cls)
     wrote_output = bool(rows) or allow_empty
 

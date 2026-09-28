@@ -1,39 +1,36 @@
 #!/usr/bin/env python3
 """
-binance-scraper — Selenium edition (secondary engine)
-=====================================================
+webmotors-scraper — Selenium edition (secondary engine)
+=======================================================
 
-The same scrape as playwright_scraper.py, driven through Selenium. It must
-agree with its twins on exit codes, run status, and whether a run crashes or
-spends money. The fetch loop that decides all three lives in page_flow.py
-and is shared, so this file is browser plumbing and nothing else.
+The same scrape as playwright_scraper.py, driven through Selenium and
+chromedriver. It must agree with its twins on exit codes, run status, and
+whether a run crashes or spends money. The fetch loop that decides all three
+lives in page_flow.py and is shared, so this file is browser plumbing.
 
-    --mode p2p            (default)  the P2P order book for --asset/--fiat
-    --mode copytrading               Futures copy-trading lead portfolios
-    --mode announcements             one announcement catalogue
+    --mode search   (default)  a search page of cars or motorcycles
+    --mode ad                  adverts, one row each
 
-Three limits of this engine, stated here rather than left to be discovered.
-None is a bug in this code and none can be fixed from here:
+Two limits that matter MORE on this site than on most, both Selenium's:
 
-  * **Selenium cannot use an authenticated remote CDP endpoint.**
+  * **It cannot authenticate a proxy.** Chrome's --proxy-server takes an
+    address only, so a `user:pass@` proxy has its credentials stripped
+    (with a warning). CloudFront refuses datacentre addresses, so from a
+    server this engine works only through a proxy that authorises by source
+    IP, or from a residential connection of your own.
+  * **It cannot use an authenticated remote CDP endpoint.**
     chromedriver's `debuggerAddress` takes a bare `host:port` and has nowhere
-    to put a password, so a credentialled --cdp-endpoint (the Scraping
-    Browser API) is refused with exit 2 rather than connected to and
-    silently failing.
-  * **Selenium cannot authenticate a proxy at all.** `--proxy-server=`
-    accepts no credentials. They are stripped and a warning says so.
-  * **Selenium reports no HTTP status for a navigation.** The landing is
-    therefore judged on what the document holds: the endpoint's own JSON
-    envelope, or the WAF's markers. A fetch() does report its status, so
-    every page after the landing is judged exactly as in the twins.
+    to put a password, so the Scraping Browser API is out of reach too.
 
-On this site the first two bite less than elsewhere: the data endpoints
-answered a datacentre address normally, so no credentialled exit is needed
-for any mode.
+Use playwright_scraper.py or puppeteer_scraper.py for either.
+
+A navigation in Selenium reports no HTTP status. The landing is judged by
+its markers (CloudFront's and PerimeterX's pages are unambiguous), and every
+data request is a fetch(), which does report one.
 
 Usage
 -----
-    python selenium_scraper.py --asset USDT --fiat EUR --pages 3
+    python selenium_scraper.py --make volkswagen --model gol --pages 3
 
 Requires: pip install -r requirements.txt -r requirements-selenium.txt
           Selenium 4 fetches a matching chromedriver itself; a local Chrome
@@ -47,16 +44,14 @@ import re
 import sys
 import threading
 import time
-from typing import Optional
-from urllib.parse import urlparse, urlsplit
+from urllib.parse import urlsplit
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 
-from captcha_solver import detect_aws_waf, solve_recaptcha, AWS_WAF_COOKIE
-from product_parser import (ANN_CATALOGS, COPY_SORTS, COPY_TIME_RANGES,
-                            DEFAULT_ANN_CATALOG, DEFAULT_COPY_SORT, P2P_SIDES)
+from product_parser import (CONDITION_SUFFIX, DEFAULT_PER_PAGE, DEFAULT_SORT,
+                            MAX_PER_PAGE, MODES, SORTS, UFS, VEHICLES)
 from output_writer import EXIT_API_ERROR
 import page_flow
 from proxy_pool import (from_args as proxy_pool_from_args, mask, ROTATE_MODES,
@@ -83,22 +78,22 @@ _PROXY_ERROR_MARKERS = (
 # Selenium's dialect of the fetch() in playwright_scraper.FETCH_JS: a
 # function BODY run by execute_async_script, with the arguments in
 # `arguments` and the result handed to the callback Selenium appends last.
-# Same request, same return shape, same AbortController timeout (§8).
+# Same request, same return shape, same AbortController timeout (§8), and
+# no headers, for the reason given there.
 FETCH_JS = """
 var done = arguments[arguments.length - 1];
 var url = arguments[0], method = arguments[1], body = arguments[2];
 var ctl = new AbortController();
 var timer = setTimeout(function () { ctl.abort(); }, arguments[3]);
-var init = {method: method, credentials: "include", signal: ctl.signal,
-            headers: {"accept": "application/json, text/plain, */*"}};
+var init = {method: method, credentials: "include", signal: ctl.signal};
 if (body !== null) {
-  init.headers["content-type"] = "application/json";
+  init.headers = {"content-type": "application/json"};
   init.body = body;
 }
 fetch(url, init).then(function (r) {
   return r.text().then(function (t) {
     clearTimeout(timer);
-    done({status: r.status, text: t, waf: r.headers.get("x-amzn-waf-action")});
+    done({status: r.status, text: t, waf: null});
   });
 }).catch(function (e) {
   clearTimeout(timer);
@@ -119,26 +114,12 @@ def _mask_credentials(text: str) -> str:
     return _CREDENTIALS_IN_URL_RE.sub(r"\1***:***@", text or "")
 
 
-def _chrome_ua(version: str) -> str:
-    """A desktop-Chrome UA naming the installed Chrome's own version (§8)."""
-    return (f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-            f"(KHTML, like Gecko) Chrome/{version} Safari/537.36")
-
-
 def _proxy_failure(text) -> str:
     text = str(text)
     for marker in _PROXY_ERROR_MARKERS:
         if marker in text:
             return marker
     return ""
-
-
-def _proxy_for_task(args, pool) -> Optional[str]:
-    """The exit an AmazonTask should solve from. Never a credentialled one
-    here, because Selenium could not have used its credentials either."""
-    if args.cdp_endpoint or not pool:
-        return None
-    return pool.current
 
 
 def _cdp_host_port(endpoint: str) -> str:
@@ -210,7 +191,7 @@ class _Ops:
             try:
                 self.driver.execute_cdp_cmd(
                     "Network.setUserAgentOverride",
-                    {"userAgent": _chrome_ua(version)})
+                    page_flow.ua_override(version, self.args.locale))
             except WebDriverException as e:
                 logger.debug("Could not override the user agent: %s", e)
         if self.args.fingerprint:
@@ -268,10 +249,6 @@ class _Ops:
     def wait_ms(self, ms: int) -> None:
         time.sleep(ms / 1000.0)
 
-    def solve_captcha(self) -> bool:
-        return handle_captcha_if_present(self, self.args,
-                                         _proxy_for_task(self.args, self.pool))
-
     def fetch(self, req, timeout_ms: int = page_flow.FETCH_TIMEOUT_MS):
         try:
             got = self.driver.execute_async_script(
@@ -282,7 +259,7 @@ class _Ops:
             return None, "", None, "fetch() returned nothing"
         if got.get("error"):
             return None, "", None, str(got["error"])
-        return got.get("status"), got.get("text") or "", got.get("waf"), None
+        return got.get("status"), got.get("text") or "", None, None
 
     def proxy_failure(self, text: str) -> str:
         return _proxy_failure(text)
@@ -302,52 +279,6 @@ class _Ops:
                 self.driver.quit()
         except Exception as e:  # noqa: BLE001
             logger.debug("Ignoring error during driver teardown: %s", e)
-
-
-def handle_captcha_if_present(ops, args, proxy: Optional[str] = None) -> bool:
-    """Solve an AWS WAF CAPTCHA on the current document. Mirrors
-    playwright_scraper.handle_captcha_if_present."""
-    try:
-        html = ops.driver.page_source
-        url = ops.driver.current_url
-    except WebDriverException:
-        return False
-    challenge = detect_aws_waf(html, url)
-    if challenge is None:
-        return False
-    if not challenge.has_captcha_widget:
-        logger.info("AWS WAF %s action and no CAPTCHA widget on the page — "
-                    "not sending it to the solver; there is no puzzle to buy "
-                    "an answer to.", challenge.aws_waf_action)
-        return False
-    logger.warning("AWS WAF CAPTCHA on %s — attempting to solve (AmazonTask%s).",
-                   url, "" if proxy else "Proxyless")
-    if not args.twocaptcha_key:
-        logger.warning("No 2captcha API key — cannot solve it. Set "
-                       "TWOCAPTCHA_KEY in .env, or use a residential exit "
-                       "(--proxy), which the WAF may not challenge at all.")
-        return False
-    try:
-        token = solve_recaptcha(challenge, args.twocaptcha_key,
-                                api_version=args.captcha_api,
-                                min_score=args.min_score, proxy=proxy)
-    except Exception as e:  # noqa: BLE001 — a solver error is a warning (§8)
-        logger.error("Solving the AWS WAF CAPTCHA failed (%s) — continuing.",
-                     _mask_credentials(str(e)))
-        return False
-    domain = page_flow.cookie_domain(urlparse(url).hostname, html)
-    try:
-        ops.driver.add_cookie({"name": AWS_WAF_COOKIE, "value": token,
-                               "domain": domain, "path": "/"})
-        logger.info("Set %s for %s — reloading to let the WAF re-check.",
-                    AWS_WAF_COOKIE, domain)
-        time.sleep(1.5)
-        ops.driver.refresh()
-    except WebDriverException as e:
-        logger.error("Could not apply the solved token (%s).",
-                     _mask_credentials(str(e)))
-        return False
-    return True
 
 
 def _fetch_pages_concurrently(args, pool, query, page_nums, concurrency: int):
@@ -395,6 +326,10 @@ def scrape(args) -> int:
                        "remote browser has its own exit, and layering a second "
                        "proxy on top would contradict it.")
         pool = None
+    if not pool and not args.cdp_endpoint:
+        logger.warning("No --proxy and no --cdp-endpoint. CloudFront refused "
+                       "every datacentre address measured; from a residential "
+                       "connection of your own this can still work.")
     concurrency = page_flow.concurrency_for(args, pool)
     return page_flow.run_pages(
         lambda: _Ops(args, pool).open(),
@@ -406,65 +341,54 @@ def scrape(args) -> int:
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
-        description="binance.com scraper — P2P adverts, copy-trading lead "
-                    "portfolios and announcements (Selenium edition)")
-    p.add_argument("--mode", choices=["p2p", "copytrading", "announcements"],
-                   default=None,
-                   help="p2p (default): the P2P order book for --asset/--fiat. "
-                        "copytrading: Futures copy-trading lead portfolios. "
-                        "announcements: one announcement catalogue, newest "
-                        "first. Inferred from --url when that is given.")
+        description="webmotors.com.br scraper — car and motorcycle listings "
+                    "and adverts (Selenium edition)")
+    p.add_argument("--mode", choices=list(MODES), default=None,
+                   help="search (default): a search page of listings. ad: "
+                        "adverts, one row each, with fuel, optionals, the FIPE "
+                        "value and the site's market-price range. Inferred "
+                        "from --url when that is given.")
     p.add_argument("--url", default=None,
-                   help="A binance.com page to read the query from instead of "
-                        "the flags: a P2P trade page "
-                        "(p2p.binance.com/en/trade/all-payments/USDT?fiat=EUR, "
-                        "…/trade/sell/BTC?fiat=TRY), /en/copy-trading, or "
-                        "/en/support/announcement/list/{id}. The page itself "
-                        "is never fetched — it is behind AWS WAF — only the "
-                        "query in it is read. Also read from BINANCE_URL.")
-    g = p.add_argument_group("p2p")
-    g.add_argument("--asset", default=None,
-                   help="The crypto asset (default USDT).")
-    g.add_argument("--fiat", default=None,
-                   help="The fiat currency, ISO 4217 (default USD).")
-    g.add_argument("--side", choices=P2P_SIDES, default=None,
-                   help="buy (default): adverts you could BUY the asset from. "
-                        "Those adverts are marked SELL by the site, because "
-                        "an advert carries the maker's side; the row keeps "
-                        "both as `side` and `advertiser_side`.")
-    g.add_argument("--pay-type", action="append", default=None, metavar="ID",
-                   help="Only adverts taking this payment method, by the "
-                        "site's identifier (SEPAinstant, Wise, BANK, …). "
-                        "Repeatable. Checked against the site's own list for "
-                        "the fiat before the search runs: the search answers "
-                        "an unknown one with an EMPTY result, not an error.")
-    g.add_argument("--amount", type=float, default=None,
-                   help="Only adverts whose limits admit an order of this much "
-                        "fiat.")
-    g = p.add_argument_group("copytrading")
-    g.add_argument("--time-range", choices=COPY_TIME_RANGES, default=None,
-                   help="The period ROI, PnL and drawdown cover (default 30D).")
-    g.add_argument("--sort-by", choices=sorted(COPY_SORTS), default=None,
-                   help="Ordering (default %s). Not cosmetic: a capped run "
-                        "holds the first N portfolios by this key, so it "
-                        "decides WHICH portfolios are in the file. `sharpe` "
-                        "also filters: portfolios without a Sharpe ratio are "
-                        "left out. Win rate is not offered: the API gave a "
-                        "nonsense key the same answer." % DEFAULT_COPY_SORT)
-    g.add_argument("--order", choices=["desc", "asc"], default=None,
-                   help="desc (default) or asc.")
-    g.add_argument("--hide-full", action="store_true",
-                   help="Leave out portfolios with no copier seat free.")
-    g = p.add_argument_group("announcements")
-    g.add_argument("--category", default=None,
-                   help="The announcement catalogue: %s, or a numeric "
-                        "catalogue id (default %s)."
-                        % (", ".join(ANN_CATALOGS), DEFAULT_ANN_CATALOG))
+                   help="A webmotors.com.br search page "
+                        "(/carros/estoque/volkswagen/gol, "
+                        "/carros/sp/toyota?anode=2020, /motos/estoque/honda) "
+                        "or an advert (/comprar/...). The site's own API "
+                        "reads the filters out of the address, so any search "
+                        "the site builds works. Also read from WEBMOTORS_URL.")
+    g = p.add_argument_group("search, without --url")
+    g.add_argument("--category", choices=list(VEHICLES), default=None,
+                   help="carros (default) or motos.")
+    g.add_argument("--condition", choices=list(CONDITION_SUFFIX), default=None,
+                   help="all (default), used or new. Cars only.")
+    g.add_argument("--state", default=None, metavar="UF",
+                   help="A Brazilian state by its two letters (%s). Default: "
+                        "all of Brazil." % ", ".join(u.upper() for u in UFS))
+    g.add_argument("--make", default=None,
+                   help="The make as the site's addresses spell it "
+                        "(volkswagen, mercedes-benz, land-rover).")
+    g.add_argument("--model", default=None,
+                   help="The model as the site's addresses spell it (gol, "
+                        "onix-plus). Needs --make. A misspelt model is caught: "
+                        "the site answers it with every model of the make, and "
+                        "the run is refused with what the site applied.")
+    g = p.add_argument_group("search")
+    g.add_argument("--sort", choices=list(SORTS), default=None,
+                   help="The site's own orderings (default %s). Not cosmetic: "
+                        "the site serves at most ~10,000 results per search, "
+                        "so the ordering decides WHICH listings a large search "
+                        "yields — 'relevance' put no private seller in the "
+                        "first 47 where 'price-asc' put 44." % DEFAULT_SORT)
+    g.add_argument("--per-page", type=int, default=None, metavar="N",
+                   help="Listings per page, 1-%d (default %d, the site's own)."
+                        % (MAX_PER_PAGE, DEFAULT_PER_PAGE))
+    g = p.add_argument_group("ad")
+    g.add_argument("--ads-file", default=None, metavar="PATH",
+                   help="Adverts to fetch: a search run's JSON output (its "
+                        "`url` column) or one advert address per line.")
     p.add_argument("--pages", type=int, default=1,
-                   help="Pages to fetch (20 adverts, 30 portfolios or 50 "
-                        "announcements each). Planned against the total the "
-                        "site states on page 1, so asking for more than exist "
-                        "fetches all of them.")
+                   help="Search pages to fetch. Planned against the page count "
+                        "the site states on page 1, so asking for more than "
+                        "exist fetches all of them. Ignored in ad mode.")
     p.add_argument("--delay", type=float, default=1.0,
                    help="Delay between pages, seconds (default %(default)s)")
     p.add_argument("--concurrency", type=int, default=1, metavar="N",
@@ -473,20 +397,18 @@ def parse_args(argv=None):
                         "proxy exit. Ignored with --cdp-endpoint.")
     p.add_argument("--retries", type=int, default=3,
                    help="Attempts per page on a transport failure (default 3). "
-                        "The pause doubles each time. A request the endpoint "
-                        "REFUSED is not retried: its parameters would be "
-                        "refused again.")
+                        "The pause doubles each time.")
     p.add_argument("--retry-delay", type=float, default=2.0,
                    help="Seconds before the first retry, doubling thereafter.")
     p.add_argument("--format", choices=["json", "csv", "both"], default="both")
-    p.add_argument("--out", default="binance_rows", help="Output file prefix")
-    p.add_argument("--locale", default="en-US",
-                   help="Browser locale (default en-US). It changes nothing in "
-                        "the data: the endpoints answer in English whatever "
-                        "the browser claims.")
+    p.add_argument("--out", default="webmotors_rows", help="Output file prefix")
+    p.add_argument("--locale", default="pt-BR",
+                   help="Browser locale (default pt-BR). The endpoints answer "
+                        "in Portuguese whatever the browser claims.")
     p.add_argument("--proxy", default=None,
                    help="Proxy URL, e.g. http://ACCOUNT:PASSWORD@HOST:9999 "
-                        "(2captcha.com/proxy)")
+                        "(2captcha.com/proxy). A RESIDENTIAL exit: CloudFront "
+                        "refuses datacentre addresses.")
     p.add_argument("--proxy-file", default=None,
                    help="File with one proxy URL per line to rotate across. "
                         "Wins over --proxy.")
@@ -496,10 +418,12 @@ def parse_args(argv=None):
     p.add_argument("--proxy-shuffle", action="store_true",
                    help="Shuffle the pool at startup.")
     p.add_argument("--proxy-block-retries", type=int, default=2,
-                   help="When a page is refused (403, 451, AWS WAF), retry it "
-                        "from this many OTHER exits (default 2). Needs a pool "
-                        "of more than one.")
-    p.add_argument("--twocaptcha-key", default=None, help="2captcha.com API key")
+                   help="When a page is refused (CloudFront, PerimeterX), "
+                        "retry it from this many OTHER exits (default 2). "
+                        "Needs a pool of more than one.")
+    p.add_argument("--twocaptcha-key", default=None,
+                   help="2captcha.com API key. Used by --fingerprint here: "
+                        "no captcha on this site is solved (see --solve-captcha).")
     p.add_argument("--allow-empty", action="store_true",
                    help="Write output files even when 0 rows were found.")
     p.add_argument("--fingerprint", action="store_true",
@@ -515,17 +439,16 @@ def parse_args(argv=None):
                    help="Fingerprint country, ISO 3166-1 alpha-2. Match it to "
                         "your proxy's exit country.")
     p.add_argument("--captcha-api", choices=["v2", "v1"], default="v2",
-                   help="Which 2captcha solver API to use (v2: createTask, "
-                        "which AmazonTask needs).")
+                   help="Kept for parity with the family. Inert here: see "
+                        "--solve-captcha.")
     p.add_argument("--solve-captcha", choices=["when-blocked", "always"],
                    default="when-blocked",
-                   help="when-blocked (default): solve an AWS WAF CAPTCHA only "
-                        "when it stands between the run and the data. No data "
-                        "path here renders one to an unchallenged session, so "
-                        "'always' behaves the same.")
+                   help="Kept for parity with the family. Inert here: the "
+                        "only challenge this site showed is PerimeterX's Press "
+                        "& Hold, which this repo does not implement, and no "
+                        "client this repo drives was shown it once served.")
     p.add_argument("--min-score", type=float, default=0.7,
-                   help="reCAPTCHA v3 minimum score (0.3, 0.7 or 0.9). Kept "
-                        "for parity with the family; AWS WAF has no score.")
+                   help="Kept for parity with the family. Inert here.")
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "

@@ -1,164 +1,182 @@
 """
 product_parser.py
 -----------------
-Everything this repo knows about binance.com lives here (CLAUDE.md §1).
+Everything this repo knows about webmotors.com.br lives here (CLAUDE.md §1).
 
-Three modes, three of the site's own JSON endpoints
----------------------------------------------------
-    --mode p2p            POST /bapi/c2c/v2/friendly/c2c/adv/search
-                          the P2P order book: one row per advert
-    --mode copytrading    POST /bapi/futures/v1/friendly/future/copy-trade/home-page/query-list
-                          Futures copy-trading lead portfolios: ROI, PnL,
-                          drawdown, AUM, copier counts
-    --mode announcements  GET  /bapi/composite/v1/public/cms/article/list/query
-                          one announcement catalogue (new listings,
-                          delistings, ...), newest first
+Two modes, four of the site's own JSON endpoints
+------------------------------------------------
+    --mode search   GET /api/search/car   (cars)
+                    GET /api/search/bike  (motorcycles)
+                    one row per listing on a search page: price, year,
+                    mileage, version, FIPE percentage, seller kind and city
+    --mode ad       GET /api/detail/{car|bike}/{slug path}/{id}
+                    GET /api/detail/averageprice/{car|bike}/{id}
+                    one row per advert: everything above plus fuel,
+                    optionals, the FIPE code and value, and the site's own
+                    market-price range for that version
+
+The site's front end calls exactly these, with exactly these parameters. The
+search endpoint takes the listing page's OWN address as its `url` parameter
+and parses the filters out of it itself, which is why `--url` accepts any
+listing address the site produces: the path (/carros/sp/volkswagen/gol) and
+the query (?precoate=30000&anode=2015) both reach the API as the site wrote
+them.
 
 Why JSON endpoints and not pages
 --------------------------------
-Measured 2026-09-24 from a datacentre address (netcup, AS197540):
+Measured 2026-09-28. The whole site sits behind CloudFront and PerimeterX:
 
-    every HTML page on www.binance.com and p2p.binance.com
-        -> HTTP 202, empty body, `x-amzn-waf-action: challenge`
-    the same pages in real Chromium, headless AND headful
-        -> "Human Verification", HTTP 405: an AWS WAF CAPTCHA
-    each of the three endpoints above, plain curl, no cookies
-        -> HTTP 200, the full JSON the site's own front end renders
+    any client, datacentre address           CloudFront 403, 986 bytes,
+                                             "The request could not be
+                                             satisfied" — before PerimeterX
+                                             is even consulted
+    curl, residential address (BR or US)     PerimeterX 403, "Access to this
+                                             page has been denied", its Press
+                                             & Hold challenge
+    headless Chromium, default UA            PerimeterX 403, 0 of 3
+    headless Chromium, UA without the
+      `HeadlessChrome` token                 served, 3 of 3, same address
+    headful Chromium, residential            served, 2 of 2 BR and 2 of 2 US
+    the Scraping Browser API (country-us)    served
 
-So the gate is per ROUTE, not per site (CLAUDE.md §21): the pages are
-behind AWS WAF and the front end's own data calls are not. There is no HTML
-parser in this file because no HTML page is needed for any mode. The
-engines drive a real browser anyway, and the browser earns its keep in two
-places. It lands on an endpoint that answers GET, which gives it a
-www.binance.com origin, and then issues each request as a same-origin
-`fetch()` with the real TLS stack and cookies. And if the WAF ever does gate
-the endpoints, the landing shows the WAF's own CAPTCHA page, which
-`captcha_solver` answers with 2Captcha's AmazonTask.
+The same answers hold for the JSON endpoints: the refusal is about the
+CLIENT and the ADDRESS, never about the route, so the endpoints are not an
+ungated side door (§21). They are simply the cheapest thing a served browser
+can ask for. A browser lands on a small endpoint (ORIGIN_URL), which gives it
+a www.webmotors.com.br origin, and issues every page as a same-origin
+`fetch()`. Nothing is rendered, so a 3 MB listing page and its third-party
+scripts are never loaded.
 
-Every parameter is allowlisted, because the API does not validate them
-----------------------------------------------------------------------
-The worst thing this site does is accept a wrong value and answer with
-something plausible. All of the following were measured on 2026-09-24:
+The API does not validate what it is given
+------------------------------------------
+Measured 2026-09-28, each on the live endpoint. The worst thing this site
+does is accept a wrong value and answer with something plausible:
 
-    copy-trading  dataType=BOGUS        -> HTTP 200, a full list under SOME
-                                           ordering (the same one WIN_RATE
-                                           gives, so WIN_RATE is not
-                                           provably a real key either)
-    copy-trading  pageSize=50 or 100    -> HTTP 200 with 30 rows: silently capped
-    p2p           payTypes=["Revolut"]  -> HTTP 200, total 0, for a method
-                                           with no EUR adverts, and for a typo
-    p2p           rows=50               -> code 000002 "illegal parameter"
-    announcements pageSize=12/25/30/100 -> HTTP 400, EMPTY body
-    copy-trading  timeRange=1Y          -> code 11012004 "Invalid input"
+    order=0, 7, 8 or abc                  HTTP 200, the default ordering
+    /carros/estoque/volkswagen/gool       HTTP 200, EVERY Volkswagen (48,983)
+    /carros/estoque/zzzz                  HTTP 200, the WHOLE catalogue
+    /carros/xx                            HTTP 200, the whole country
+    actualPage=500 of 77                  HTTP 200, ten rows of PAGE 1, with
+                                          `PageCurrent: 500` echoed back
+    actualPage=78 of 77                   HTTP 200, zero rows
 
-The first three turn a user's mistake into a run that looks healthy, so the
-values go through the allowlists below and anything else is refused before a
-request is sent. The last three are loud already, and `detect_page_state`
-calls them `rejected` rather than blocked, so nobody goes looking for a
-proxy problem that is not there.
+The ordering is allowlisted (SORTS). A make, model or state the site did not
+recognise is caught after page 1 by reading what the site says it applied
+(`FilterCustom`), and the run is refused with the reason rather than written
+as a healthy-looking sample of something nobody asked for. Pages are planned
+from the site's own `PageTotal`, never walked off the end, because walking
+off it is served as page 1 again.
 """
 
+import html as html_lib
 import json
 import math
 import re
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence, Tuple
-from urllib.parse import parse_qs, urlencode, urlparse
+import unicodedata
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import parse_qsl, urlencode, urlparse
 
-from output_writer import Announcement, LeadTrader, P2PAd, SOURCE_DEFAULT
+from output_writer import Ad, Listing
 
-BASE = "https://www.binance.com"
+BASE = "https://www.webmotors.com.br"
+HOSTS = ("www.webmotors.com.br", "webmotors.com.br")
 
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 
-P2P_PATH = "/bapi/c2c/v2/friendly/c2c/adv/search"
-# The list of payment methods P2P actually offers for a fiat. Used to check
-# `--pay-type` BEFORE the search, because the search answers an unknown
-# identifier with an empty result instead of an error (module docstring).
-P2P_FILTER_PATH = "/bapi/c2c/v2/public/c2c/adv/filter-conditions"
-COPY_PATH = "/bapi/futures/v1/friendly/future/copy-trade/home-page/query-list"
-ANN_PATH = "/bapi/composite/v1/public/cms/article/list/query"
+# The API's word for each vehicle type, by the word the site's own listing
+# paths use. Measured: /api/search/car and /api/search/bike, and the detail
+# page of a motorcycle calls /api/detail/bike/... (2026-09-28).
+API_KIND = {"carros": "car", "motos": "bike"}
+
+SEARCH_PATH = "/api/search/%s"
+DETAIL_PATH = "/api/detail/%s"
+AVERAGE_PRICE_PATH = "/api/detail/averageprice/%s/%s"
 
 # Where a browser engine lands before its first request. It needs to be:
-#   * on www.binance.com, so that every later fetch() is same-origin;
-#   * a GET, since a browser cannot navigate to a POST;
-#   * small and ungated, since it happens once per browser.
-# The announcements list with one row satisfies all three: 1.3 KB of JSON,
-# HTTP 200 to plain curl and to headless Chromium (2026-09-24). If AWS WAF
-# ever does gate the endpoints, this is also where its CAPTCHA page appears,
-# which is where the solver can see it.
-ORIGIN_URL = BASE + ANN_PATH + "?type=1&pageNo=1&pageSize=1&catalogId=48"
+#   * on www.webmotors.com.br, so every later fetch() is same-origin;
+#   * small, since it happens once per browser;
+#   * behind the same gate as the data, so a refused client is refused HERE,
+#     on a document the classifier can read, rather than inside a fetch().
+# /api/location answers 3 KB of JSON (the edge's own geolocation of the
+# exit) and was served or refused exactly as the endpoints were, in every
+# row of the table in the module docstring.
+ORIGIN_URL = BASE + "/api/location"
+
+# The parameters the site's own front end sends beside `url`, copied from
+# its requests (2026-09-28). `mediaZeroKm=false` leaves out the sponsored
+# new-car tiles the front end would otherwise splice into the results; they
+# are skipped by the parser anyway (`is_sponsored`), and asking for none
+# keeps the payload the size of the page.
+SEARCH_FIXED_PARAMS = (("showMenu", "true"), ("showCount", "true"),
+                       ("showBreadCrumb", "true"), ("testAB", "false"),
+                       ("returnUrl", "false"), ("mediaZeroKm", "false"))
 
 # ---------------------------------------------------------------------------
-# Page sizes, measured per endpoint
+# Page size and the site's cap
 # ---------------------------------------------------------------------------
 
-# The largest `rows` the P2P search accepts. 50 and 100 both return code
-# 000002 "illegal parameter".
-P2P_ROWS = 20
-# The copy-trading list CAPS rather than refusing: 18 gives 18 rows, while
-# 50 and 100 each give 30. So 30 is what a page holds. Asking for more would
-# make page N start where the server thinks page N starts (N x 30), and
-# planning pages from an asked-for 50 would skip 20 portfolios on every page
-# in silence.
-COPY_ROWS = 30
-# The announcements list takes a page size from a FIXED set. Measured:
-# 1, 2, 5, 10, 15, 20 and 50 answer 200, while 12, 25, 30, 40, 51, 60 and 100
-# answer HTTP 400 with an empty body.
-ANN_ROWS = 50
+# The front end asks for 47 per page, so page N here is page N on the site.
+# `displayPerPage` is honoured exactly: 24, 47, 100 and even 1,000 came back
+# with that many rows (2026-09-28). --per-page stops at 100 anyway: every
+# response is held in memory and dumped whole by --dump-html, and a 1,000-row
+# page is 4 MB of JSON for no gain, since the cap below is on RESULTS, not on
+# pages.
+DEFAULT_PER_PAGE = 47
+MAX_PER_PAGE = 100
 
-ROWS_PER_PAGE = {"p2p": P2P_ROWS, "copytrading": COPY_ROWS,
-                 "announcements": ANN_ROWS}
+# The site serves at most about 10,000 results per search, whatever matched.
+# Measured on the unfiltered catalogue, `Count: 348317`: `PageTotal` was 417
+# at 24 per page and 213 at 47 per page, i.e. 10,008 and 10,011. The page
+# count the site states already includes the cap, so the engines plan against
+# `PageTotal` and the sidecar records whether the cap bit (`capped_by_site`).
+SITE_RESULT_CAP = 10_000
 
-# A ceiling on --pages. The largest listing measured was copy-trading's
-# 8,920 portfolios, which is 298 pages of 30. The cap sits well above that
-# and exists so a typo in --pages cannot start a ten-thousand-request run.
-MAX_PAGES = 1000
+# A ceiling on --pages, so a typo cannot start a run of thousands of
+# requests beyond anything the site serves: at one row per page, the cap is
+# 10,000 pages.
+MAX_PAGES = 10_000
 
 # ---------------------------------------------------------------------------
 # Allowlists
 # ---------------------------------------------------------------------------
 
-P2P_SIDES = ("buy", "sell")
-
-# The periods the copy-trading list accepts. Each returned code 000000 with
-# its own figures. "1Y" is refused with code 11012004.
-COPY_TIME_RANGES = ("7D", "30D", "90D", "180D", "365D")
-
-# --sort-by -> the API's `dataType`. Only the keys PROVEN to change the
-# ordering are listed. Each gave a different top three on 2026-09-24.
-# WIN_RATE is deliberately absent: it returned the same list as a nonsense
-# key, which means the API ignored it, not that it sorted by win rate.
-COPY_SORTS = {
-    "roi": "ROI",
-    "pnl": "PNL",
-    "mdd": "MDD",
-    "aum": "AUM",
-    "copier-pnl": "COPIER_PNL",
-    "copiers": "COPY_COUNT",
-    # This one also FILTERS: it returned 5,568 portfolios against 8,920
-    # under every other key, because a portfolio without a Sharpe ratio is
-    # left out. `total_results` in the sidecar records that.
-    "sharpe": "SHARP_RATIO",
+# --sort -> the API's `order`. These are the five the site's own "Ordenar
+# Por" menu offers, by the value its menu items carry (2026-09-28). Values
+# 2, 9, 10 and 11 also change the ordering, but the site names none of them,
+# so what they sort BY is unknown and they are not offered. 0, 7, 8 and any
+# non-number give the default ordering silently. An `o=` in a listing
+# address is IGNORED by the API (measured: `?o=5` with order=1 came back in
+# the default ordering), so the ordering is only ever this flag.
+SORTS = {
+    "relevance": 1,      # "Mais relevantes", the site's default
+    "price-desc": 6,     # "Maior preço"
+    "price-asc": 5,      # "Menor preço"
+    "year-desc": 3,      # "Ano mais novo"
+    "km-asc": 4,         # "Menor Km"
 }
-DEFAULT_COPY_SORT = "roi"
+DEFAULT_SORT = "relevance"
 
-# Announcement catalogues, by the ids and names the list endpoint itself
-# returns when asked with no catalogId (2026-09-24). The alias is what a
-# user types; the id is what the API filters on.
-ANN_CATALOGS = {
-    "new-listings": 48,
-    "news": 49,
-    "activities": 93,
-    "delisting": 161,
-    "maintenance": 157,
-    "api-updates": 51,
-    "airdrop": 128,
-}
-DEFAULT_ANN_CATALOG = "new-listings"
+VEHICLES = ("carros", "motos")
+MODES = ("search", "ad")
+
+# --condition -> the path suffix the site uses for it. Measured on cars
+# only: /carros-usados/estoque (307,946) and /carros-novos/estoque (39,755)
+# against /carros/estoque (348,317). The motorcycle equivalents were not
+# measured, so --condition is refused with --vehicle motos rather than
+# guessed.
+CONDITION_SUFFIX = {"all": "", "used": "-usados", "new": "-novos"}
+
+# Brazil's 27 federative units, as the site's own paths spell them
+# (/carros/sp, /carros/rj/volkswagen). The site answers any other two
+# letters with the whole country; the list lets a typo be refused before
+# anything is sent.
+UFS = ("ac", "al", "am", "ap", "ba", "ce", "df", "es", "go", "ma", "mg", "ms",
+       "mt", "pa", "pb", "pe", "pi", "pr", "rj", "rn", "ro", "rr", "rs", "sc",
+       "se", "sp", "to")
 
 # ---------------------------------------------------------------------------
 # Request model
@@ -169,14 +187,14 @@ DEFAULT_ANN_CATALOG = "new-listings"
 class ApiRequest:
     """One call to one of the site's endpoints: what an engine sends.
 
-    `body` is None for a GET. `label` is what a log line and a --dump-html
-    file name use, because a POST has no address that tells two pages apart.
+    Every endpoint here is a GET, so `body_json` is always None. The field
+    is kept because the three engines' fetch() takes it, and an endpoint
+    added later should not need three engine edits.
     """
     method: str
     path: str
     page: int
-    params: Dict[str, Any] = field(default_factory=dict)
-    body: Optional[Dict[str, Any]] = None
+    params: Tuple[Tuple[str, Any], ...] = ()
 
     @property
     def url(self) -> str:
@@ -185,274 +203,376 @@ class ApiRequest:
 
     @property
     def body_json(self) -> Optional[str]:
-        return None if self.body is None else json.dumps(self.body)
+        return None
 
     @property
     def label(self) -> str:
-        return "%s %s page=%d" % (self.method, self.path.rsplit("/", 1)[-1],
-                                  self.page)
+        if self.path.startswith("/api/search/"):
+            return "%s page=%d" % (self.path, self.page)
+        return self.path
 
 
 @dataclass
 class Query:
     """What a run asks for, independent of the page number.
 
-    Built once from the CLI (or from --url) and validated before anything is
-    sent. See `validate()` for why an unknown value is refused rather than
-    passed through.
+    Search mode is one listing address plus an ordering and a page size.
+    The address is kept whole because the API parses the filters out of it
+    itself (module docstring); `make`, `model` and `state` are what this
+    repo read out of the same address, and are there only to check the
+    site's own echo against after page 1 (`filter_mismatch`).
+
+    Ad mode is a list of advert addresses. A "page" is one advert, so the
+    family's page machinery (retries, rotation, concurrency, the sidecar's
+    `pages_failed`) applies to adverts unchanged.
     """
     mode: str
-    # p2p
-    asset: str = "USDT"
-    fiat: str = "USD"
-    side: str = "buy"
-    pay_types: Tuple[str, ...] = ()
-    amount: Optional[float] = None
-    # copytrading
-    time_range: str = "30D"
-    sort_by: str = DEFAULT_COPY_SORT
-    order: str = "desc"
-    hide_full: bool = False
-    # announcements
-    catalog: str = DEFAULT_ANN_CATALOG
+    listing_url: str = ""
+    vehicle: str = "carros"
+    sort: str = DEFAULT_SORT
+    per_page: int = DEFAULT_PER_PAGE
+    make: Optional[str] = None
+    model: Optional[str] = None
+    state: Optional[str] = None
+    ads: Tuple[str, ...] = ()
+    # The currency the site states, read ONCE per run (page_flow) from the
+    # JSON-LD of a page the site renders. No endpoint states one, and a
+    # constant compiled in here would be a guess wearing a fact's clothes
+    # (§4). None until read, and None for good if it could not be.
+    currency: Optional[str] = None
 
     def validate(self) -> Optional[str]:
         """None when the query can be sent, else the reason it cannot."""
-        if self.mode == "p2p":
-            if self.side not in P2P_SIDES:
-                return "--side must be one of %s" % ", ".join(P2P_SIDES)
-            if not re.fullmatch(r"[A-Z0-9]{2,10}", self.asset or ""):
-                return "--asset %r is not an asset symbol (USDT, BTC, ...)" % self.asset
-            if not re.fullmatch(r"[A-Z]{3}", self.fiat or ""):
-                return "--fiat %r is not a 3-letter currency code" % self.fiat
-            if self.amount is not None and self.amount <= 0:
-                return "--amount must be positive"
-        elif self.mode == "copytrading":
-            if self.time_range not in COPY_TIME_RANGES:
-                return "--time-range must be one of %s" % ", ".join(COPY_TIME_RANGES)
-            if self.sort_by not in COPY_SORTS:
-                return "--sort-by must be one of %s" % ", ".join(sorted(COPY_SORTS))
-            if self.order not in ("asc", "desc"):
-                return "--order must be asc or desc"
-        elif self.mode == "announcements":
-            if catalog_id(self.catalog) is None:
-                return ("--catalog must be one of %s, or a numeric catalogue id"
-                        % ", ".join(ANN_CATALOGS))
+        if self.mode == "search":
+            if self.vehicle not in VEHICLES:
+                return "--vehicle must be one of %s" % ", ".join(VEHICLES)
+            if self.sort not in SORTS:
+                return "--sort must be one of %s" % ", ".join(SORTS)
+            if not 1 <= int(self.per_page) <= MAX_PER_PAGE:
+                return "--per-page must be between 1 and %d" % MAX_PER_PAGE
+            if not self.listing_url:
+                return "no listing address to search"
+        elif self.mode == "ad":
+            if not self.ads:
+                return ("--mode ad needs at least one advert address: --url "
+                        "https://www.webmotors.com.br/comprar/..., or "
+                        "--ads-file")
+            bad = [u for u in self.ads if parse_ad_url(u) is None]
+            if bad:
+                return "not an advert address: %s" % bad[0]
         else:
             return "unknown mode %r" % self.mode
         return None
 
     @property
-    def sort_label(self) -> Optional[str]:
-        """The ordering, as a value for the rows' `sort` column."""
-        if self.mode == "copytrading":
-            return "%s-%s" % (self.sort_by, self.order)
-        return None
-
-
-def catalog_id(catalog: Any) -> Optional[int]:
-    """An announcement catalogue alias or id -> the numeric id, else None."""
-    if catalog is None:
-        return None
-    text = str(catalog).strip().lower()
-    if text in ANN_CATALOGS:
-        return ANN_CATALOGS[text]
-    if text.isdigit() and int(text) > 0:
-        return int(text)
-    return None
-
-
-def catalog_alias(cid: Optional[int]) -> Optional[str]:
-    for alias, value in ANN_CATALOGS.items():
-        if value == cid:
-            return alias
-    return None
+    def api_kind(self) -> str:
+        return API_KIND[self.vehicle]
 
 
 def request_for(query: Query, page: int) -> ApiRequest:
-    """The API call that fetches page `page` (1-based) of `query`."""
-    if query.mode == "p2p":
-        body = {
-            "asset": query.asset,
-            "fiat": query.fiat,
-            # The request carries the TAKER's side: what the user wants to
-            # do. Every advert that comes back carries the MAKER's side,
-            # which is the opposite one. BUY returned 20 of 20 adverts
-            # marked SELL on 2026-09-24, and BTC/TRY SELL returned 20 of 20
-            # marked BUY. The row keeps both (see output_writer.P2PAd).
-            "tradeType": query.side.upper(),
-            "page": page,
-            "rows": P2P_ROWS,
-            "payTypes": list(query.pay_types),
-            "publisherType": None,
-        }
-        if query.amount is not None:
-            body["transAmount"] = query.amount
-        return ApiRequest("POST", P2P_PATH, page, body=body)
-    if query.mode == "copytrading":
-        body = {
-            "pageNumber": page,
-            "pageSize": COPY_ROWS,
-            "timeRange": query.time_range,
-            "dataType": COPY_SORTS[query.sort_by],
-            "favoriteOnly": False,
-            "hideFull": bool(query.hide_full),
-            "nickname": "",
-            "order": query.order.upper(),
-            "userAsset": 0,
-            "portfolioType": "PUBLIC",
-        }
-        return ApiRequest("POST", COPY_PATH, page, body=body)
-    if query.mode == "announcements":
-        params = {"type": 1, "pageNo": page, "pageSize": ANN_ROWS,
-                  "catalogId": catalog_id(query.catalog)}
-        return ApiRequest("GET", ANN_PATH, page, params=params)
+    """The API call that fetches page `page` (1-based) of `query`.
+
+    In ad mode, page N is the N-th advert of the list.
+    """
+    if query.mode == "search":
+        params = (("url", query.listing_url), ("actualPage", page),
+                  ("displayPerPage", int(query.per_page)),
+                  ("order", SORTS[query.sort])) + SEARCH_FIXED_PARAMS
+        return ApiRequest("GET", SEARCH_PATH % query.api_kind, page,
+                          params=params)
+    if query.mode == "ad":
+        ad = parse_ad_url(query.ads[page - 1])
+        if ad is None:
+            raise ValueError("not an advert address: %r" % query.ads[page - 1])
+        return ApiRequest("GET", DETAIL_PATH % ad.kind + ad.path, page,
+                          params=(("pandora", "false"),))
     raise ValueError("unknown mode %r" % query.mode)
 
 
-def pay_type_request(fiat: str) -> ApiRequest:
-    return ApiRequest("POST", P2P_FILTER_PATH, 0, body={"fiat": fiat})
+def average_price_request(kind: str, sku: str, page: int) -> ApiRequest:
+    """The site's own market-price figures for one advert's version."""
+    return ApiRequest("GET", AVERAGE_PRICE_PATH % (kind, sku), page,
+                      params=(("pandora", "false"),))
 
 
-def pay_type_identifiers(payload: Any) -> Optional[List[str]]:
-    """The `identifier`s P2P offers for a fiat, or None if unreadable.
+def currency_page(query: Query) -> str:
+    """The page whose JSON-LD the run reads its currency from.
 
-    None rather than [] on a response that does not have the shape: a caller
-    that got [] would conclude EVERY --pay-type is invalid and refuse a
-    correct run because of a response it could not read.
+    In search mode, the listing itself. In ad mode, the all-of-Brazil
+    listing of the first advert's vehicle type: an advert page's
+    server-rendered HTML is an 18 KB shell with NO JSON-LD at all (its
+    structured data is drawn by the browser afterwards, 2026-09-28), while a
+    listing page's carries `priceCurrency` on every item. It is the same
+    site stating the currency of the same kind of price.
     """
-    data = _as_dict(payload).get("data")
-    if not isinstance(data, dict) or not isinstance(data.get("tradeMethods"), list):
-        return None
-    out = []
-    for m in data["tradeMethods"]:
-        ident = m.get("identifier") if isinstance(m, dict) else None
-        if isinstance(ident, str) and ident:
-            out.append(ident)
-    return out
-
-
-def check_pay_types(wanted: Sequence[str], offered: Optional[Sequence[str]]
-                    ) -> Optional[str]:
-    """None when every --pay-type is one P2P offers, else a refusal naming
-    the bad ones and the closest real identifiers.
-
-    Matching is exact because the API's matching is: `SEPAinstant` works and
-    `SEPA Instant` would return nothing at all.
-    """
-    if not wanted or offered is None:
-        return None
-    bad = [w for w in wanted if w not in offered]
-    if not bad:
-        return None
-    def norm(x: str) -> str:
-        # "SEPA Instant" (the name the page shows) against "SEPAinstant"
-        # (the identifier the API filters on): only spacing and case differ.
-        return re.sub(r"[^a-z0-9]", "", x.lower())
-
-    hints = []
-    for b in bad:
-        exact = [o for o in offered if norm(o) == norm(b)]
-        near = exact or [o for o in offered
-                         if norm(b) in norm(o) or norm(o) in norm(b)]
-        if near:
-            hints.append("%s -> %s" % (b, ", ".join(near[:4])))
-    msg = ("--pay-type %s is not a payment method P2P offers for this fiat. "
-           "The search would answer with an empty result rather than an "
-           "error, so the run is refused before it starts."
-           % ", ".join(bad))
-    if hints:
-        msg += " Did you mean: " + "; ".join(hints) + "?"
-    return msg
+    if query.mode == "search":
+        return query.listing_url
+    first = parse_ad_url(query.ads[0]) if query.ads else None
+    return BASE + ("/motos/estoque" if first and first.kind == "bike"
+                   else "/carros/estoque")
 
 
 # ---------------------------------------------------------------------------
-# --url
+# Addresses: listings
 # ---------------------------------------------------------------------------
 
-SUPPORTED_HOSTS = ("www.binance.com", "binance.com", "p2p.binance.com",
-                   "c2c.binance.com")
-
-_LANG = r"(?:/[a-z]{2}(?:-[A-Za-z]{2,4})?)?"
+_LISTING_PATH_RE = re.compile(r"^/(carros|motos)(-[a-z]+)?(?:/(.*))?$")
 
 
-def query_from_url(url: str) -> Tuple[Optional[Query], Optional[str]]:
-    """Map a binance.com address onto a Query. Returns (query, None), or
+def _norm(text: Optional[str]) -> str:
+    """Case, accents and punctuation removed: how two spellings of one make
+    or model are compared (`onix-plus` in a path, `ONIX PLUS` in the echo)."""
+    t = unicodedata.normalize("NFKD", (text or "").lower())
+    t = "".join(c for c in t if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]", "", t)
+
+
+def query_from_url(url: str, sort: str = DEFAULT_SORT,
+                   per_page: int = DEFAULT_PER_PAGE
+                   ) -> Tuple[Optional[Query], Optional[str]]:
+    """Map a webmotors.com.br address onto a Query. Returns (query, None), or
     (None, reason) when the address is not one of the shapes this repo reads.
 
-    Accepted shapes. The P2P forms are the ones the site uses for its own
-    market pages:
+    Accepted: any listing address the site produces, whose path starts
+    /carros, /carros-usados, /carros-novos or /motos, followed by `estoque`
+    (all of Brazil), a state (`sp`), or a state and city (`sp-sao-paulo`),
+    then optionally a make, a model and anything further. And an advert
+    address (/comprar/...), which becomes an ad-mode query of one.
 
-        p2p.binance.com/{lang}/trade/{payment|all-payments}/{ASSET}?fiat=EUR   buy
-        p2p.binance.com/{lang}/trade/sell/{ASSET}?fiat=EUR&payment=Wise        sell
-        www.binance.com/{lang}/p2p/...                                        same
-        www.binance.com/{lang}/copy-trading
-        www.binance.com/{lang}/support/announcement/list/{catalogId}
-        www.binance.com/{lang}/support/announcement/c-{catalogId}
+    A `page=` in the query string is dropped: the API pages with its own
+    `actualPage` parameter, and a run starts at page 1 (use --pages).
     """
-    parsed = urlparse(url or "")
+    parsed = urlparse((url or "").strip())
     host = (parsed.hostname or "").lower()
-    if host not in SUPPORTED_HOSTS:
-        return None, ("%r is not a binance.com address. binance.us is a "
-                      "separate exchange with its own site and is not "
-                      "supported." % (parsed.hostname or url))
-    path = parsed.path or "/"
-    qs = {k: v[-1] for k, v in parse_qs(parsed.query).items()}
+    if host not in HOSTS:
+        return None, ("%r is not a webmotors.com.br address."
+                      % (parsed.hostname or url))
+    path = re.sub(r"/+$", "", parsed.path or "") or "/"
 
-    m = re.fullmatch(_LANG + r"(?:/p2p)?/trade/([^/]+)/([A-Za-z0-9]+)/?", path)
-    if m and (host != "www.binance.com" or "/p2p/" in path):
-        first, asset = m.group(1), m.group(2).upper()
-        side = "sell" if first.lower() == "sell" else "buy"
-        payment = qs.get("payment") if side == "sell" else first
-        pay_types: Tuple[str, ...] = ()
-        if payment and payment.lower() not in ("all-payments", "buy", "sell"):
-            pay_types = (payment,)
-        fiat = (qs.get("fiat") or "USD").upper()
-        return Query(mode="p2p", asset=asset, fiat=fiat, side=side,
-                     pay_types=pay_types), None
+    if path.startswith("/comprar/"):
+        if parse_ad_url(url) is None:
+            return None, ("%s looks like an advert address but does not end "
+                          "in its numeric id." % url)
+        return Query(mode="ad", ads=(canonical_ad_url(url),)), None
 
-    if re.fullmatch(_LANG + r"/copy-trading/?", path):
-        return Query(mode="copytrading"), None
+    m = _LISTING_PATH_RE.match(path)
+    if not m:
+        return None, ("%s is not a page this repo reads. Supported: a search "
+                      "page (/carros/estoque/..., /motos/sp/...) or an advert "
+                      "(/comprar/...)." % url)
+    vehicle = m.group(1)
+    rest = [s for s in (m.group(3) or "").split("/") if s]
+    location = rest[0] if rest else "estoque"
+    state = None
+    if location != "estoque":
+        uf = location.split("-", 1)[0]
+        if uf not in UFS:
+            return None, ("%r in %s is not a Brazilian state. The site answers "
+                          "an unknown one with the WHOLE country, so the run "
+                          "is refused before it starts. Use `estoque` for all "
+                          "of Brazil, or one of: %s."
+                          % (location, url, ", ".join(UFS)))
+        state = uf.upper()
+    make = rest[1] if len(rest) > 1 else None
+    model = rest[2] if len(rest) > 2 else None
+    qs = [(k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+          if k.lower() != "page"]
+    listing = BASE + path + (("?" + urlencode(qs)) if qs else "")
+    return Query(mode="search", listing_url=listing, vehicle=vehicle,
+                 sort=sort, per_page=per_page, make=make, model=model,
+                 state=state), None
 
-    m = re.fullmatch(_LANG + r"/support/announcement/(?:list/|c-)(\d+)/?", path)
-    if m:
-        return Query(mode="announcements", catalog=m.group(1)), None
-    if re.fullmatch(_LANG + r"/support/announcement/?", path):
-        return Query(mode="announcements"), None
 
-    return None, ("%s is not a page this repo reads. Supported: a P2P trade "
-                  "page, /copy-trading, or an announcement catalogue "
-                  "(/support/announcement/list/{id})." % url)
+def listing_url_from_parts(vehicle: str = "carros", condition: str = "all",
+                           state: Optional[str] = None,
+                           make: Optional[str] = None,
+                           model: Optional[str] = None
+                           ) -> Tuple[Optional[str], Optional[str]]:
+    """The listing address the site itself would use for these filters, or
+    (None, reason). Built so that --make/--model and --url go through ONE
+    path: the site's own address, parsed by the site's own API."""
+    if vehicle not in VEHICLES:
+        return None, "--vehicle must be one of %s" % ", ".join(VEHICLES)
+    if condition not in CONDITION_SUFFIX:
+        return None, "--condition must be one of %s" % ", ".join(CONDITION_SUFFIX)
+    if condition != "all" and vehicle != "carros":
+        return None, ("--condition is only offered for cars: the site's "
+                      "/carros-usados and /carros-novos listings were "
+                      "measured, the motorcycle ones were not.")
+    if model and not make:
+        return None, "--model needs --make"
+    loc = "estoque"
+    if state:
+        st = state.strip().lower()
+        if st not in UFS:
+            return None, ("--state %r is not a Brazilian state (%s). The site "
+                          "answers an unknown one with the whole country."
+                          % (state, ", ".join(UFS)))
+        loc = st
+    parts = [vehicle + CONDITION_SUFFIX[condition], loc]
+    for p in (make, model):
+        if p:
+            parts.append(slugify(p))
+    return BASE + "/" + "/".join(parts), None
+
+
+# ---------------------------------------------------------------------------
+# Addresses: adverts
+# ---------------------------------------------------------------------------
+
+def slugify(text: Optional[str]) -> str:
+    """The site's own slug rule, as its advert links spell it.
+
+    Derived from and verified against 660 advert links the site itself put
+    in its listing pages (cars and motorcycles, 15 searches under two
+    orderings, 2026-09-28), 660 of 660 identical:
+
+        accents removed            AUTOMÁTICO   -> automatico, CITROËN -> citroen
+        anything but [a-z0-9 -]    1.6 -> 16, G.III -> giii, 4MATIC+ -> 4matic
+          dropped
+        whitespace -> "-"          RANGE ROVER  -> range-rover
+
+    It matters more than a slug usually does: the detail endpoint answers
+    a wrong slug with HTTP 404 and the body `null`, the same answer as for
+    an advert that is gone.
+    """
+    t = unicodedata.normalize("NFKD", (text or "").strip().lower())
+    t = "".join(c for c in t if not unicodedata.combining(c))
+    t = re.sub(r"[^a-z0-9\s-]", "", t)
+    return re.sub(r"\s+", "-", t.strip())
+
+
+def _years(fabrication: Any, model: Any) -> str:
+    """`2013-2014`, or one year when the two agree: the site writes a 2024
+    car built in 2024 as `/2024/`, never `/2024-2024/`."""
+    yf, ym = _int(fabrication), _int(model)
+    if yf is None:
+        return str(ym) if ym is not None else ""
+    if ym is None or ym == yf:
+        return str(yf)
+    return "%d-%d" % (yf, ym)
+
+
+def ad_url(rec: Dict[str, Any], vehicle: str) -> str:
+    """An advert's address, built from its search record as the site builds it.
+
+        car         /comprar/{make}/{model}/{version}/{doors}-portas/{years}/{id}
+        motorcycle  /comprar/{make}/{model}/{cc}cc/{years}/{id}
+
+    A motorcycle record has no version at all; the site's third segment is
+    its displacement, and a displacement of 0 (not stated) is written `cc`.
+    """
+    sid = _int(rec.get("UniqueId"))
+    spec = rec.get("Specification") if isinstance(rec.get("Specification"), dict) else {}
+    if not sid:
+        return ""
+    make, model = slugify(_value(spec.get("Make"))), slugify(_value(spec.get("Model")))
+    years = _years(spec.get("YearFabrication"), spec.get("YearModel"))
+    if vehicle == "motos":
+        cc = _float(spec.get("CubicCentimeter"))
+        third = ("%dcc" % int(cc)) if cc else "cc"
+        parts = [make, model, third, years, str(sid)]
+    else:
+        parts = [make, model, slugify(_value(spec.get("Version"))),
+                 "%s-portas" % (_str(spec.get("NumberPorts")) or ""), years,
+                 str(sid)]
+    return BASE + "/comprar/" + "/".join(parts)
+
+
+@dataclass
+class AdAddress:
+    path: str       # /{make}/{model}/.../{id}, the part after /comprar
+    sku: str
+    kind: str       # car | bike
+
+
+_AD_PATH_RE = re.compile(r"^/comprar(/(?:[^/?#]+/)+(\d+))/?$")
+# A car's advert path carries its doors as `{n}-portas`; a motorcycle's does
+# not. Measured on the 660 links above, and the ONLY difference between the
+# two shapes: 600 of 600 car links carried the segment, 0 of 60 motorcycle
+# links did.
+_DOORS_SEGMENT_RE = re.compile(r"/\d+-portas/")
+
+
+def parse_ad_url(url: str) -> Optional[AdAddress]:
+    parsed = urlparse((url or "").strip())
+    if (parsed.hostname or "").lower() not in HOSTS:
+        return None
+    m = _AD_PATH_RE.match(parsed.path or "")
+    if not m:
+        return None
+    path = m.group(1)
+    kind = "car" if _DOORS_SEGMENT_RE.search(path) else "bike"
+    return AdAddress(path=path, sku=m.group(2), kind=kind)
+
+
+def canonical_ad_url(url: str) -> str:
+    ad = parse_ad_url(url)
+    return BASE + "/comprar" + ad.path if ad else url
+
+
+def ads_from_text(text: str) -> List[str]:
+    """Advert addresses from an --ads-file: a search run's JSON output (its
+    `url` column), or plain text with one address per line. Order kept,
+    duplicates dropped, anything that is not an advert address ignored."""
+    urls: List[str] = []
+    stripped = (text or "").lstrip()
+    if stripped.startswith("["):
+        try:
+            rows = json.loads(stripped)
+        except ValueError:
+            rows = []
+        for r in rows if isinstance(rows, list) else []:
+            if isinstance(r, dict) and isinstance(r.get("url"), str):
+                urls.append(r["url"])
+    else:
+        urls = [ln.strip() for ln in (text or "").splitlines()]
+    out, seen = [], set()
+    for u in urls:
+        ad = parse_ad_url(u)
+        if ad and ad.sku not in seen:
+            seen.add(ad.sku)
+            out.append(canonical_ad_url(u))
+    return out
 
 
 # ---------------------------------------------------------------------------
 # Page state
 # ---------------------------------------------------------------------------
 
-# The site's success code, on every endpoint.
-OK_CODE = "000000"
+# PerimeterX's refusal page, counted on 2026-09-28:
+#                                          refusal   served listing/ad/JSON
+#   _pxAppId                                   1           0
+#   captcha.px-cloud.net                       1           0
+#   /captcha/captcha.js                        2           0
+#   "Access to this page has been denied"      1           0
+# `px-captcha` (42 on the refusal) is deliberately NOT a marker: it is the
+# id of the element the challenge renders into, and a bare element id is the
+# shape §24 warns about, a thing another script could carry. The bare words
+# "captcha" and "perimeterx" are not markers either: the Scraping Browser's
+# auto-solve extension injects hunter scripts that say "captcha" on every
+# page it loads (§24); smoke_test scores this set against a page fetched
+# that way.
+PERIMETERX_MARKERS = ("_pxAppId", "captcha.px-cloud.net", "/captcha/captcha.js",
+                      "Access to this page has been denied")
 
-# Markers of the AWS WAF interstitials, counted on 2026-09-24:
-#   the CAPTCHA page real Chromium gets ("Human Verification", HTTP 405)
-#       window.gokuProps  1    *.token.awswaf.com  1    challenge.js  1
-#   the three endpoints' JSON responses: 0 of each
-# `gokuProps` and the token host are the WAF's own integration vocabulary,
-# not text a page would carry. The bare word `captcha` is NOT a marker: the
-# Scraping Browser's auto-solve extension injects hunter scripts that say it
-# on every page (CLAUDE.md §24).
-AWS_WAF_MARKERS = ("gokuProps", "token.awswaf.com", "awswaf.com/")
-
-# The HTTP statuses AWS WAF uses for an interstitial. 202 comes with an empty
-# body and `x-amzn-waf-action: challenge`, a silent JS challenge that a real
-# browser runs by itself. 405 is the CAPTCHA action.
-WAF_STATUSES = (202, 405)
+# CloudFront refusing the ADDRESS, before PerimeterX sees the request: the
+# 986-byte page every datacentre client got, headful Chromium included.
+CLOUDFRONT_MARKERS = ("The request could not be satisfied",)
 
 
 def detect_bot_challenge(html: Optional[str], url: str = "") -> Optional[str]:
-    """The vendor whose interstitial this is, or None."""
-    head = (html or "")[:200_000]
-    if any(m in head for m in AWS_WAF_MARKERS):
-        return "aws-waf"
+    """The vendor whose refusal this is, or None.
+
+    Entities are unescaped over a bounded prefix first, so a marker matches
+    the raw bytes an HTTP client gets and the DOM a browser serialises
+    alike (§20). Both refusal pages are under 12 KB.
+    """
+    head = html_lib.unescape((html or "")[:60_000])
+    if any(m in head for m in PERIMETERX_MARKERS):
+        return "perimeterx"
+    if "CloudFront" in head and any(m in head for m in CLOUDFRONT_MARKERS):
+        return "cloudfront"
     return None
 
 
@@ -482,109 +602,175 @@ def detect_page_state(text: Optional[str], status: Optional[int] = None,
                       url: str = "", waf_action: Optional[str] = None) -> str:
     """Name what the site answered with. See page_flow.STATE_POLICY.
 
-        content     the endpoint's JSON, code 000000, rows in it
-        empty       the same, no rows: an answer, not a failure
-        rejected    the endpoint refused the PARAMETERS: code != 000000, or
-                    an HTTP 400. Nothing to retry and nothing to solve.
-        challenge   AWS WAF: status 202/405, `x-amzn-waf-action`, or its
-                    markers on the page
-        throttled   429, or 418 (the site's own "you kept going after
-                    429" answer)
-        restricted  451, the status's own meaning: the exit's COUNTRY is
-                    refused. Not observed on this site (page_flow).
-        blocked     403, or any other refusal with no widget
-        unknown     anything else: not JSON, not an interstitial
+        content     a search payload with listings in it, or an advert
+        empty       a search payload with none: an answer, not a failure
+        gone        the detail endpoint's HTTP 404 with the body `null`: the
+                    advert is sold or withdrawn, or its address is not the
+                    site's own (a wrong slug gets the same answer)
+        rejected    the API gateway refused the PATH: HTTP 403 with
+                    {"message": "Missing Authentication Token"}, which is
+                    what a detail request without its slug gets
+        challenge   PerimeterX's refusal page (Press & Hold)
+        blocked     CloudFront refusing the address, or any other 403
+        throttled   429. NOT OBSERVED on this site by this repo; here
+                    because a 429 means the same thing wherever it appears
+        unknown     anything else
 
-    Signals are ordered by what they PROVE, not by what they cost (§17):
-    parseable JSON with the site's own envelope is checked first, because
-    no interstitial carries it.
+    Signals are ordered by what they PROVE, not by what they cost (§17): the
+    site's own JSON envelope first, because no refusal page carries it.
+    `waf_action` is accepted for the family's signature and ignored: this
+    site has no AWS WAF.
     """
     payload = _json_or_none(text)
-    if isinstance(payload, dict) and "code" in payload:
-        code = str(payload.get("code"))
-        if code != OK_CODE:
+    if isinstance(payload, dict):
+        if "SearchResults" in payload:
+            return "content" if count_rows(payload) > 0 else "empty"
+        if _int(payload.get("UniqueId")):
+            return "content"
+        if status == 403 and isinstance(payload.get("message"), str):
             return "rejected"
-        return "content" if count_rows(payload) > 0 else "empty"
-    if waf_action or status in WAF_STATUSES or detect_bot_challenge(text):
+    if status == 404 and (text or "").strip() == "null":
+        return "gone"
+    vendor = detect_bot_challenge(text)
+    if vendor == "perimeterx":
         return "challenge"
-    if status == 400:
-        return "rejected"
-    if status in (429, 418):
-        return "throttled"
-    if status == 451:
-        return "restricted"
-    if status == 403:
+    if vendor == "cloudfront" or status == 403:
         return "blocked"
+    if status == 429:
+        return "throttled"
     return "unknown"
 
 
 def api_error(text: Optional[str]) -> Optional[str]:
-    """The endpoint's own complaint, for a `rejected` response."""
-    payload = _as_dict(text)
-    if not payload:
-        return None
-    code, msg = payload.get("code"), payload.get("message")
-    if code is None or str(code) == OK_CODE:
-        return None
-    return "code %s: %s" % (code, msg or "(no message)")
+    """The gateway's own complaint, for a `rejected` response."""
+    msg = _as_dict(text).get("message")
+    return ("HTTP 403: %s" % msg) if isinstance(msg, str) and msg else None
 
 
 # ---------------------------------------------------------------------------
 # Payload access
 # ---------------------------------------------------------------------------
 
-def _row_list(payload: Dict[str, Any]) -> List[Any]:
-    """The list of records in any of the three envelopes, or []."""
-    data = payload.get("data")
-    if isinstance(data, list):                      # p2p
-        return data
-    if isinstance(data, dict):
-        if isinstance(data.get("list"), list):      # copy-trading
-            return data["list"]
-        cats = data.get("catalogs")                 # announcements
-        if isinstance(cats, list):
-            out: List[Any] = []
-            for c in cats:
-                if isinstance(c, dict) and isinstance(c.get("articles"), list):
-                    out.extend(c["articles"])
-            return out
-    return []
+def is_sponsored(rec: Dict[str, Any]) -> bool:
+    """A sponsored new-car tile the site splices into the results.
+
+    Measured 2026-09-28: 3 of 50 records on a page asked with
+    `mediaZeroKm=true`, each with `UniqueId: 0`, `MediaZeroKm: true`, no
+    `Seller` and an `AdvertisementLink` to a dealer's lead form. They are not
+    listings of this search, they have no id to key on, and counting them
+    would shift every position after them (§24). Each condition alone
+    identifies them; all three are checked so a tile that loses one of the
+    three still does not become a row.
+    """
+    return (not _int(rec.get("UniqueId")) or bool(rec.get("MediaZeroKm"))
+            or "Seller" not in rec)
+
+
+def _records(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    rows = payload.get("SearchResults")
+    return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
 
 
 def count_rows(payload: Any) -> int:
-    return len(_row_list(_as_dict(payload)))
+    return sum(1 for r in _records(_as_dict(payload)) if not is_sponsored(r))
 
 
-def total_results(payload: Any, mode: str) -> Optional[int]:
-    """The site's own count of everything that matches, from page 1.
+def sponsored_count(payload: Any) -> int:
+    return sum(1 for r in _records(_as_dict(payload)) if is_sponsored(r))
 
-    Read from page 1 ONLY. The P2P endpoint reports `total: 0` on a page
-    past the end, beside an empty `data`, so a later page's total states
-    nothing about the listing.
-    """
-    p = _as_dict(payload)
-    data = p.get("data")
-    if mode == "p2p":
-        t = p.get("total")
-    elif mode == "copytrading":
-        t = data.get("total") if isinstance(data, dict) else None
-    elif mode == "announcements":
-        cats = data.get("catalogs") if isinstance(data, dict) else None
-        t = cats[0].get("total") if cats and isinstance(cats[0], dict) else None
-    else:
-        t = None
+
+def total_results(payload: Any, mode: str = "search") -> Optional[int]:
+    """The site's own count of everything that matched, from page 1."""
+    if mode != "search":
+        return None
+    t = _as_dict(payload).get("Count")
     return t if isinstance(t, int) and t >= 0 else None
 
 
-def pages_available(total: Optional[int], mode: str) -> Optional[int]:
-    if total is None:
+def pages_available(payload: Any, mode: str = "search") -> Optional[int]:
+    """The site's own page count, which already includes its ~10,000-result
+    cap (SITE_RESULT_CAP). Read from page 1 only: `PageCurrent` on a later
+    page just echoes what was asked, even past the end."""
+    if mode != "search":
         return None
-    return max(1, math.ceil(total / ROWS_PER_PAGE[mode])) if total else 0
+    pag = _as_dict(payload).get("Pagination")
+    t = pag.get("PageTotal") if isinstance(pag, dict) else None
+    return t if isinstance(t, int) and t >= 0 else None
 
 
-def pages_to_fetch(pages_requested: int, available: Optional[int]) -> int:
-    ceiling = MAX_PAGES if available is None else min(available, MAX_PAGES)
-    return max(1, min(int(pages_requested), ceiling))
+def filter_mismatch(payload: Any, query: Query) -> Optional[str]:
+    """None when the site applied the make, model and state the address
+    asked for, else a refusal saying what it applied instead.
+
+    The search answers an unrecognised make with the whole catalogue and an
+    unrecognised model with the whole make (module docstring), HTTP 200
+    both times. What it DID apply is in `FilterCustom`: `Veiculos` lists the
+    make and model, `Sigla` the state. Reading that echo is the only way to
+    tell "no such model" from a result, short of knowing every model name.
+    """
+    if query.mode != "search":
+        return None
+    fc = _as_dict(payload).get("FilterCustom")
+    if not isinstance(fc, dict):
+        return None  # no echo to check against: nothing is concluded
+    vehicles = fc.get("Veiculos") if isinstance(fc.get("Veiculos"), list) else []
+    first = vehicles[0] if vehicles and isinstance(vehicles[0], dict) else {}
+    applied_make, applied_model = first.get("Marca"), first.get("Modelo")
+    problems = []
+    if query.make and _norm(applied_make) != _norm(query.make):
+        problems.append("make %r (the site applied %s)"
+                        % (query.make, "no make at all" if not applied_make
+                           else repr(applied_make)))
+    elif query.model and _norm(applied_model) != _norm(query.model):
+        problems.append("model %r (the site applied %s)"
+                        % (query.model, "every %s model" % applied_make
+                           if not applied_model else repr(applied_model)))
+    applied_state = (_str(fc.get("Sigla")) or "").upper()
+    if query.state and applied_state != query.state:
+        problems.append("state %r (the site applied %s)"
+                        % (query.state, applied_state or "the whole country"))
+    if not problems:
+        return None
+    total = total_results(payload)
+    return ("The site did not recognise the %s, and answered with HTTP 200 "
+            "and %s listing(s) anyway. Writing those would be a sample of "
+            "something nobody asked for, so the run is refused. Check the "
+            "spelling against the site's own address for that page."
+            % ("; ".join(problems),
+               "{:,}".format(total) if total is not None else "some"))
+
+
+# ---------------------------------------------------------------------------
+# Currency, from a page the site renders
+# ---------------------------------------------------------------------------
+
+_JSONLD_RE = re.compile(
+    r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+    re.S | re.I)
+# ISO 4217 codes a Brazilian marketplace could plausibly state. An
+# allowlist, never a bare [A-Z]{3}, so nothing that merely looks like a code
+# is read as one (§4).
+_ISO_CODES = ("BRL", "USD", "EUR", "ARS", "UYU", "PYG", "CLP")
+
+
+def currency_from_html(html: Optional[str]) -> Optional[str]:
+    """The `priceCurrency` a listing or advert page's JSON-LD states.
+
+    Measured 2026-09-28: a listing page carries it on every item of its
+    OfferCatalog (48 of 48 on the page read), an advert page once. No
+    endpoint states a currency at all, so this is read once per run and
+    threaded into the rows (page_flow), and a run that could not read it
+    writes null rather than a default (§4).
+    """
+    found = []
+    for m in _JSONLD_RE.finditer(html or ""):
+        for cur in re.findall(r'"priceCurrency"\s*:\s*"([A-Z]{3})"', m.group(1)):
+            if cur in _ISO_CODES:
+                found.append(cur)
+    if not found:
+        return None
+    # One currency or none: a page stating two is not a page this reads.
+    return found[0] if len(set(found)) == 1 else None
 
 
 # ---------------------------------------------------------------------------
@@ -602,189 +788,257 @@ def _float(v: Any) -> Optional[float]:
 
 
 def _int(v: Any) -> Optional[int]:
-    if v is None or isinstance(v, bool):
-        return None
-    try:
-        return int(v)
-    except (TypeError, ValueError):
-        return None
+    f = _float(v)
+    return int(f) if f is not None and f == int(f) else None
 
 
 def _str(v: Any) -> Optional[str]:
     if v is None:
         return None
-    s = str(v).strip()
+    s = re.sub(r"\s+", " ", str(v)).strip()
     return s or None
 
 
-def _iso_ms(v: Any) -> Optional[str]:
-    """Epoch milliseconds -> ISO-8601 UTC. None for anything implausible."""
-    n = _int(v)
-    # 2009-01-01 .. 2100-01-01 in ms: anything outside is not a timestamp.
-    if n is None or not (1_230_768_000_000 <= n <= 4_102_444_800_000):
+def _value(v: Any) -> Optional[str]:
+    """The site wraps many values as {"id": .., "Value": ".."}."""
+    if isinstance(v, dict):
+        return _str(v.get("Value"))
+    return _str(v)
+
+
+def _names(items: Any, key: str = "Name") -> Optional[List[str]]:
+    if not isinstance(items, list):
         return None
-    return datetime.fromtimestamp(n / 1000, tz=timezone.utc).isoformat()
+    out = [_str(i.get(key)) for i in items if isinstance(i, dict)]
+    out = [x for x in out if x]
+    return out or None
 
 
-def _round(v: Optional[float], places: int) -> Optional[float]:
-    return None if v is None else round(v, places)
+def _uf(state: Optional[str]) -> Optional[str]:
+    """`São Paulo (SP)` -> `SP`."""
+    m = re.search(r"\(([A-Z]{2})\)\s*$", state or "")
+    return m.group(1) if m else None
+
+
+def _leading_int(text: Any) -> Optional[int]:
+    """`104 cv` -> 104."""
+    m = re.match(r"\s*(\d+)", str(text or ""))
+    return int(m.group(1)) if m else None
+
+
+def _iso_date(v: Any) -> Optional[str]:
+    """`2026-07-08T10:42:57.333` -> the same, validated. The site's own
+    placeholder for "no date", `0001-01-01T00:00:00`, is None."""
+    s = _str(v)
+    if not s:
+        return None
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if not m or int(m.group(1)) < 1990:
+        return None
+    try:
+        datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except ValueError:
+        return None
+    return s
+
+
+# The base the site's own JSON-LD serves every photo from: 627 of 627
+# listing images checked matched this prefix + the record's `PhotoPath`,
+# used and new, cars and motorcycles (2026-09-28). A record with no
+# `PhotoPath` is shown the site's "no photo" placeholder, which is not a
+# photo of the vehicle, so it is null here.
+PHOTO_BASE = "https://image.webmotors.com.br/_fotos/anunciousados/gigante/"
+
+
+def _photo_url(path: Any) -> Optional[str]:
+    p = _str(path)
+    if not p:
+        return None
+    if p.startswith("http"):
+        return p
+    return PHOTO_BASE + p.replace("\\", "/").lstrip("/")
+
+
+# The site's seller types, by `SellerType`. `AdType.Value` says the same in
+# Portuguese and splits the dealers in two ("Loja" / "Concessionária"); it
+# is kept as `seller_kind` because a franchise dealer and a used-car lot are
+# different things to a buyer.
+SELLER_TYPES = {"PF": "private", "PJ": "dealer"}
+
+
+def _seller_fields(seller: Dict[str, Any]) -> Dict[str, Any]:
+    """The seller columns every row carries.
+
+    A PRIVATE seller (`SellerType: PF`) is a person. The search record holds
+    their city and postal code, and the detail record adds their first name
+    and part of their phone number. None of that is written beyond the city:
+    the name and phone are never read, the postal code of a person's home is
+    not a column, and a private seller's `seller_name` is always null. A
+    dealer's trading name (`FantasyName`) is a business's public name and is
+    kept.
+    """
+    kind = SELLER_TYPES.get(_str(seller.get("SellerType")) or "")
+    return {
+        "seller_id": _str(seller.get("Id")),
+        "seller_type": kind,
+        "seller_kind": _value(seller.get("AdType")),
+        "seller_name": _str(seller.get("FantasyName")) if kind == "dealer" else None,
+        "city": _str(seller.get("City")),
+        "state": _uf(seller.get("State")),
+    }
+
+
+def _vehicle_fields(rec: Dict[str, Any], vehicle: str) -> Dict[str, Any]:
+    spec = rec.get("Specification") if isinstance(rec.get("Specification"), dict) else {}
+    media = rec.get("Media") if isinstance(rec.get("Media"), dict) else {}
+    photos = media.get("Photos") if isinstance(media.get("Photos"), list) else []
+    first_photo = rec.get("PhotoPath")
+    if not first_photo and photos and isinstance(photos[0], dict):
+        first_photo = photos[0].get("PhotoPath")
+    color = spec.get("Color") if isinstance(spec.get("Color"), dict) else {}
+    cc = _int(spec.get("CubicCentimeter"))
+    return {
+        "vehicle": "car" if vehicle == "carros" else "motorcycle",
+        # `ListingType`: U = used, N = new (0 km).
+        "condition": {"U": "used", "N": "new"}.get(_str(rec.get("ListingType")) or ""),
+        "make": _value(spec.get("Make")),
+        "model": _value(spec.get("Model")),
+        "version": _value(spec.get("Version")),
+        "year_fabrication": _int(spec.get("YearFabrication")),
+        "year_model": _int(spec.get("YearModel")),
+        "odometer_km": _int(spec.get("Odometer")),
+        # A car states `Transmission`; a motorcycle states `Shift`.
+        "transmission": _str(spec.get("Transmission")) or _value(spec.get("Shift")),
+        "body_type": _str(spec.get("BodyType")),
+        "color": _str(color.get("Primary")),
+        "doors": _int(spec.get("NumberPorts")),
+        "engine_litres": _float(spec.get("EngineSize")),
+        # 0 is the site's "not stated" (a BMW G 310 R listed at 0 cc), so
+        # it is null rather than a displacement of nothing.
+        "engine_cc": cc if cc else None,
+        "horsepower_cv": _leading_int(spec.get("HorsePower")),
+        "traction": _str(spec.get("Traction")),
+        # `S`/`N` (sim/não) on cars; absent on motorcycles.
+        "armored": {"S": True, "N": False}.get(_str(spec.get("Armored")) or ""),
+        "attributes": _names(spec.get("VehicleAttributes")),
+        # How the asking price compares with the FIPE table value, in
+        # percent (105 = 5% above).
+        "fipe_pct": _int(rec.get("FipePercent")),
+        # The site's "Bom negócio" badge. It is either `true` or absent,
+        # never `false` (0 of 3,000 records), so absent is written False:
+        # no badge shown.
+        "good_deal": bool(rec.get("GoodDeal")),
+        "photo_count": len(photos),
+        "image_url": _photo_url(first_photo),
+    }
 
 
 # ---------------------------------------------------------------------------
 # Rows
 # ---------------------------------------------------------------------------
 
-def advertiser_url(user_no: Optional[str]) -> str:
-    return ("https://p2p.binance.com/en/advertiserDetail?advertiserNo=%s" % user_no
-            if user_no else "")
+def parse_listing(rec: Dict[str, Any], query: Query, *, page: int,
+                  position: int) -> Optional[Listing]:
+    if is_sponsored(rec):
+        return None
+    spec = rec.get("Specification") if isinstance(rec.get("Specification"), dict) else {}
+    prices = rec.get("Prices") if isinstance(rec.get("Prices"), dict) else {}
+    seller = rec.get("Seller") if isinstance(rec.get("Seller"), dict) else {}
+    url = ad_url(rec, query.vehicle)
+    if not url:
+        return None
+    return Listing(
+        url=url,
+        sku=str(_int(rec.get("UniqueId"))),
+        title=_str(spec.get("Title")),
+        # `Price` and `SearchPrice` agreed on 3,000 of 3,000 records.
+        price=_float(prices.get("Price")),
+        currency=query.currency,
+        **_vehicle_fields(rec, query.vehicle),
+        auction=bool(spec.get("Auction")),
+        **_seller_fields(seller),
+        page=page,
+        position=position,
+        mode="search",
+        sort=query.sort,
+        data_source="api-search",
+    )
 
 
-def lead_url(portfolio_id: Optional[str]) -> str:
-    return ("https://www.binance.com/en/copy-trading/lead-details/%s" % portfolio_id
-            if portfolio_id else "")
+def parse_ad(payload: Any, query: Query, page: int = 1) -> Optional[Ad]:
+    rec = _as_dict(payload)
+    sid = _int(rec.get("UniqueId"))
+    if not sid:
+        return None
+    vehicle = "motos" if _str(rec.get("Type")) == "bike" else "carros"
+    spec = rec.get("Specification") if isinstance(rec.get("Specification"), dict) else {}
+    prices = rec.get("Prices") if isinstance(rec.get("Prices"), dict) else {}
+    seller = rec.get("Seller") if isinstance(rec.get("Seller"), dict) else {}
+    evaluation = spec.get("Evaluation") if isinstance(spec.get("Evaluation"), dict) else {}
+    sfields = _seller_fields(seller)
+    address = parse_ad_url(query.ads[page - 1]) if 0 < page <= len(query.ads) else None
+    fipe = _float(evaluation.get("FIPE"))
+    return Ad(
+        url=(BASE + "/comprar" + address.path) if address else "",
+        sku=str(sid),
+        title=_str(spec.get("Title")),
+        price=_float(prices.get("Price")),
+        currency=query.currency,
+        **_vehicle_fields(rec, vehicle),
+        fuel=_str(spec.get("Fuel")),
+        final_plate=_int(spec.get("FinalPlate")),
+        optionals=_names(spec.get("Optionals")),
+        # A dealer's description is its sales copy. A private seller's is a
+        # person writing about their own car, often with their name or
+        # number in it (the one private fixture captured signs off with a
+        # name), so it is not written (see _seller_fields).
+        description=(_str(rec.get("LongComment"))
+                     if sfields["seller_type"] == "dealer" else None),
+        created_at=_iso_date(rec.get("CreatedDate")),
+        fipe_code=_str(evaluation.get("FIPEId")),
+        fipe_price=fipe if fipe else None,
+        **sfields,
+        page=page,
+        position=1,
+        mode="ad",
+        data_source="api-detail",
+    )
 
 
-def announcement_url(code: Optional[str]) -> str:
-    """The announcement's canonical address.
+def apply_market_prices(row: Ad, payload: Any) -> bool:
+    """Fold the averageprice endpoint's figures into an advert row.
 
-    The site's own article bodies link announcements as
-    `/en/support/announcement/{slug}-{code}`, and opening one of those in a
-    real browser redirects to `/en/support/announcement/detail/{code}`
-    (measured on two articles, 2026-09-24, past the WAF's CAPTCHA). The
-    redirect target is what is written here, since it needs no slug built
-    from a title.
+    What it returns (2026-09-28): the version's FIPE code and value, the
+    state its figures cover, and the smallest, medium and biggest price the
+    site holds for that version and year. True if a price was applied.
     """
-    return "%s/en/support/announcement/detail/%s" % (BASE, code) if code else ""
-
-
-def parse_p2p_ad(rec: Dict[str, Any], query: Query, *, page: int,
-                 position: int) -> Optional[P2PAd]:
-    adv = rec.get("adv") if isinstance(rec.get("adv"), dict) else None
-    who = rec.get("advertiser") if isinstance(rec.get("advertiser"), dict) else {}
-    if not adv:
-        return None
-    adv_no = _str(adv.get("advNo"))
-    if not adv_no:
-        return None
-    methods = [m for m in (adv.get("tradeMethods") or []) if isinstance(m, dict)]
-    user_no = _str(who.get("userNo"))
-    return P2PAd(
-        url=advertiser_url(user_no),
-        sku=adv_no,
-        title=_str(who.get("nickName")),
-        side=query.side,
-        advertiser_side=(_str(adv.get("tradeType")) or "").lower() or None,
-        asset=_str(adv.get("asset")),
-        fiat=_str(adv.get("fiatUnit")),
-        fiat_symbol=_str(adv.get("fiatSymbol")),
-        price=_float(adv.get("price")),
-        available=_float(adv.get("tradableQuantity") or adv.get("surplusAmount")),
-        min_order_fiat=_float(adv.get("minSingleTransAmount")),
-        max_order_fiat=_float(adv.get("dynamicMaxSingleTransAmount")
-                              or adv.get("maxSingleTransAmount")),
-        pay_methods=[m.get("identifier") for m in methods
-                     if isinstance(m.get("identifier"), str)] or None,
-        pay_method_names=[m.get("tradeMethodName") for m in methods
-                          if isinstance(m.get("tradeMethodName"), str)] or None,
-        pay_time_limit_min=_int(adv.get("payTimeLimit")),
-        ad_class=_str(adv.get("classify")),
-        extra_kyc_required=(bool(adv.get("takerAdditionalKycRequired"))
-                            if adv.get("takerAdditionalKycRequired") is not None
-                            else None),
-        privilege_type=_int(rec.get("privilegeType")),
-        advertiser_id=user_no,
-        advertiser_type=_str(who.get("userType")),
-        month_orders=_int(who.get("monthOrderCount")),
-        month_finish_rate=_float(who.get("monthFinishRate")),
-        positive_rate=_float(who.get("positiveRate")),
-        page=page,
-        position=position,
-        mode="p2p",
-        data_source="bapi",
-    )
-
-
-def parse_lead(rec: Dict[str, Any], query: Query, *, page: int,
-               position: int) -> Optional[LeadTrader]:
-    pid = _str(rec.get("leadPortfolioId"))
-    if not pid:
-        return None
-    current, cap = _int(rec.get("currentCopyCount")), _int(rec.get("maxCopyCount"))
-    return LeadTrader(
-        url=lead_url(pid),
-        sku=pid,
-        title=_str(rec.get("nickname")),
-        time_range=query.time_range,
-        roi_pct=_round(_float(rec.get("roi")), 4),
-        pnl=_round(_float(rec.get("pnl")), 4),
-        aum=_round(_float(rec.get("aum")), 4),
-        mdd_pct=_round(_float(rec.get("mdd")), 4),
-        win_rate_pct=_round(_float(rec.get("winRate")), 4),
-        copier_pnl=_round(_float(rec.get("copierPnl")), 4),
-        sharpe_ratio=_round(_float(rec.get("sharpRatio")), 4),
-        copiers=current,
-        max_copiers=cap,
-        is_full=(current >= cap) if (current is not None and cap) else None,
-        badge=_str(rec.get("badgeName")),
-        api_trading=(rec.get("apiKeyTag") == "API_KEY_TRADE"),
-        tradfi=(rec.get("tradFiTag") is not None),
-        portfolio_type=_str(rec.get("portfolioType")),
-        started_at=_iso_ms(rec.get("startTime")),
-        page=page,
-        position=position,
-        mode="copytrading",
-        sort=query.sort_label,
-        data_source="bapi",
-    )
-
-
-def parse_announcement(rec: Dict[str, Any], catalog: Dict[str, Any], *,
-                       page: int, position: int) -> Optional[Announcement]:
-    aid = _int(rec.get("id"))
-    title = _str(rec.get("title"))
-    if aid is None or not title:
-        return None
-    return Announcement(
-        url=announcement_url(_str(rec.get("code"))),
-        sku=str(aid),
-        title=title,
-        catalog_id=_int(catalog.get("catalogId")),
-        catalog_name=_str(catalog.get("catalogName")),
-        released_at=_iso_ms(rec.get("releaseDate")),
-        page=page,
-        position=position,
-        mode="announcements",
-        data_source="bapi",
-    )
+    p = _as_dict(payload)
+    if not p:
+        return False
+    row.market_price_min = _float(p.get("SmallestPrice")) or None
+    row.market_price_avg = _float(p.get("MediumPrice")) or None
+    row.market_price_max = _float(p.get("BiggestPrice")) or None
+    row.market_state = _str(p.get("State"))
+    if not row.fipe_code:
+        row.fipe_code = _str(p.get("FipeCode"))
+    if not row.fipe_price:
+        row.fipe_price = _float(p.get("FipePrice")) or None
+    return any(v is not None for v in (row.market_price_min, row.market_price_avg,
+                                       row.market_price_max))
 
 
 def parse_page(payload: Any, query: Query, page: int = 1) -> List[Any]:
     """Every row on one page of one mode's response, in the site's order.
 
     `position` counts the rows EMITTED, not the slots in the payload, so a
-    record the parser drops cannot shift every later position (§24).
+    sponsored tile the parser drops cannot shift every later position (§24).
     """
-    p = _as_dict(payload)
-    if str(p.get("code")) != OK_CODE:
-        return []
+    if query.mode == "ad":
+        row = parse_ad(payload, query, page)
+        return [row] if row else []
     rows: List[Any] = []
-    if query.mode == "announcements":
-        data = p.get("data") if isinstance(p.get("data"), dict) else {}
-        for cat in data.get("catalogs") or []:
-            if not isinstance(cat, dict):
-                continue
-            for rec in cat.get("articles") or []:
-                if isinstance(rec, dict):
-                    row = parse_announcement(rec, cat, page=page,
-                                             position=len(rows) + 1)
-                    if row:
-                        rows.append(row)
-        return rows
-    parse = parse_p2p_ad if query.mode == "p2p" else parse_lead
-    for rec in _row_list(p):
-        if isinstance(rec, dict):
-            row = parse(rec, query, page=page, position=len(rows) + 1)
-            if row:
-                rows.append(row)
+    for rec in _records(_as_dict(payload)):
+        row = parse_listing(rec, query, page=page, position=len(rows) + 1)
+        if row:
+            rows.append(row)
     return rows
-

@@ -1,0 +1,4614 @@
+{
+ "search_gol_p1": {
+  "SearchResults": [
+   {
+    "UniqueId": 74012141,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260909\\volkswagengol16micity8vflex4pmanual-WMIMAGEM02084334576.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260909\\volkswagengol16micity8vflex4pmanual-WMIMAGEM0209200444.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260909\\volkswagengol16micity8vflex4pmanual-WMIMAGEM02084334576.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 MI CITY 8V FLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 346062,
+      "Value": "1.6 MI CITY 8V FLEX 4P MANUAL"
+     },
+     "YearFabrication": "2013",
+     "YearModel": 2014.0,
+     "Odometer": 173000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "HorsePower": "104 cv",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l"
+    },
+    "Seller": {
+     "Id": 900001,
+     "SellerType": "PF",
+     "City": "São Paulo",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "São Paulo",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "SP"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 35900.0,
+     "SearchPrice": 35900.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 94,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79374446,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260913\\volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21585017417.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260913\\volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21584888656.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260913\\volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21585017417.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI 8V FLEX 4P MANUAL G.V",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 341843,
+      "Value": "1.0 MI 8V FLEX 4P MANUAL G.V"
+     },
+     "YearFabrication": "2010",
+     "YearModel": 2011.0,
+     "Odometer": 197000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "HorsePower": "72 cv",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l"
+    },
+    "Seller": {
+     "Id": 900002,
+     "SellerType": "PF",
+     "City": "Manaus",
+     "State": "Amazonas (AM)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Amazonas (AM)",
+       "City": "Manaus",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "AM"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 25649.0,
+     "SearchPrice": 25649.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 99,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79692776,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260917\\volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16092298037.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260917\\volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16094225527.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260917\\volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16092298037.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 MI TRENDLINE 8V FLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 345797,
+      "Value": "1.6 MI TRENDLINE 8V FLEX 4P MANUAL"
+     },
+     "YearFabrication": "2014",
+     "YearModel": 2015.0,
+     "Odometer": 200000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     },
+     "HorsePower": "104 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 900003,
+     "SellerType": "PF",
+     "City": "Rio de Janeiro",
+     "State": "Rio de Janeiro (RJ)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Rio de Janeiro (RJ)",
+       "City": "Rio de Janeiro",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "RJ"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 39990.0,
+     "SearchPrice": 39990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 96,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 74242354,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202608\\20260813\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem1241564213.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202608\\20260813\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem12415660130.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202608\\20260813\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem1241564213.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 349236,
+      "Value": "1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL"
+     },
+     "YearFabrication": "2022",
+     "YearModel": 2023.0,
+     "Odometer": 10198.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30413",
+      "Primary": "Vermelho"
+     },
+     "EngineSize": "1.0",
+     "HorsePower": "84 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "15"
+    },
+    "Seller": {
+     "Id": 3824568,
+     "SellerType": "PJ",
+     "City": "Indaiatuba",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "Balilla Fiat Indaiatuba",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Indaiatuba",
+       "Country": "Brasil",
+       "Neighborhood": "Vila Homero",
+       "ZipCode": "13338705",
+       "AbbrState": "Av. Presidente Vargas"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 92990.0,
+     "SearchPrice": 92990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "2611",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Valor à vista !\n\nVeículo revisados com garantia do Grupo Balilla !\n\nConsulte condições de até 2 anos de garantia !\n\nCarro periciado e laudo 100% aprovado !\n Outros Opcionais: Comando de áudio no volante, Kit Multimídia.",
+    "FipePercent": 92,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 80384495,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260927\\volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115276610.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260927\\volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115766213.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260927\\volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115276610.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 347690,
+      "Value": "1.0 12V MPI TOTALFLEX 4P MANUAL"
+     },
+     "YearFabrication": "2021",
+     "YearModel": 2022.0,
+     "Odometer": 65000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "EngineSize": "1.0",
+     "HorsePower": "84 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 900005,
+     "SellerType": "PF",
+     "City": "Rio de Janeiro",
+     "State": "Rio de Janeiro (RJ)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Rio de Janeiro (RJ)",
+       "City": "Rio de Janeiro",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "RJ"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 47800.0,
+     "SearchPrice": 47800.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "FipePercent": 94,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 1844,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "VOLKSWAGEN",
+     "IdModelo": 0,
+     "Modelo": "GOL",
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+    },
+    "4": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 40
+  }
+ },
+ "search_gol_p2": {
+  "SearchResults": [
+   {
+    "UniqueId": 79413671,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260914\\volkswagen-gol-1.6-cli-8v-alcool-2p-manual-wmimagem10374831342.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260914\\volkswagen-gol-1.6-cli-8v-alcool-2p-manual-wmimagem10374886565.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260914\\volkswagen-gol-1.6-cli-8v-alcool-2p-manual-wmimagem10374831342.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 CLI 8V ÁLCOOL 2P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 339539,
+      "Value": "1.6 CLI 8V ÁLCOOL 2P MANUAL"
+     },
+     "YearFabrication": "1996",
+     "YearModel": 1996.0,
+     "Odometer": 100.0,
+     "Transmission": "Manual",
+     "NumberPorts": "2",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30413",
+      "Primary": "Vermelho"
+     }
+    },
+    "Seller": {
+     "Id": 3907937,
+     "SellerType": "PJ",
+     "City": "Joinville",
+     "State": "Santa Catarina (SC)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "AUTO TIBA",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Santa Catarina (SC)",
+       "City": "Joinville",
+       "Country": "Brasil",
+       "Neighborhood": "Petrópolis",
+       "ZipCode": "89208545",
+       "AbbrState": "R.Paulo, 4687"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 79900.0,
+     "SearchPrice": 79900.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1614",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "BuscaCarros"
+     },
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Gol cli 1996\n\nR$: 79.900.00\n\nAr-condicionado \nDireção hidráulica \nVídros e travas elétricas \nAlarme \nMotor 1.9 foado \nPistões AFP para 1000 cv\nBielas Samscams 1000 cv\nPinos foados \nJunta c/anel oring sapinho \nEixo do comando auxiliar roletado\nCabeçote Versailles 2.0 todo feito novo\nPolia regulável billet Unique1 \nPrisioneiros cabeçote foados MTR\nTampa de válvulas Expert\nPolia virabrequim foada\nMotor de arranque reduzido \nBomba de óleo interna nova\nEmbreagem Cerâmica Ceramic Power 980 libras pedal leve 6 Pastilhas C/mola \nParafusos do volante do motor foados MTR\nCâmbio foado 1ªa4ª foados   BF câmbios ,5ª original\nBlocante Torsen BF câmbios\nTulipas foadas BF câmbios\nAlavanca de marchas engate rápido Unique1\nBomba de combustível de Mercedes\nFuelTech FT 250\nWideband NanoPro+ sonda Bosch\n4 Bicos Siemens deka 80lbs\nManômetros de pressão de óleo,combustível e turbo Cronomac \nKit instalação Beep turbo malha de aço \nShift Light ODG\nBarra anti-torção inferior AG\nBarra anti-torção superior AG\nTurbo Master power .50 C/Refluxo \nVálvula Wastegate e Prioridade Beep turbo \nColetor Auto Avionics\nReservatório respiro/suspiro de oléo Speed com conexões e mangueira Metal Horse \nCoxins do motor em PU\nBuchas da suspensão em PU\nPressurização em alumínio \nMangotes Metal Horse \nAbraçadeiras tucho inox Metal Horse \nManta térmica caixa quente turbina Metal Horse \nEscapamento 2,5 polegadas\nSuspensão trabalhada fixa \nRodas 15 audi a3 pneus novos\nDiscos e pinças de freio G4 disco ventilado\nLegalizado susp",
+    "FipePercent": 576,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79534911,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260916\\volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem01003552647.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260916\\volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem01003633085.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260916\\volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem01003552647.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 347690,
+      "Value": "1.0 12V MPI TOTALFLEX 4P MANUAL"
+     },
+     "YearFabrication": "2019",
+     "YearModel": 2020.0,
+     "Odometer": 100.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     },
+     "EngineSize": "1.0",
+     "HorsePower": "84 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 3963288,
+     "SellerType": "PJ",
+     "City": "Rio de Janeiro",
+     "State": "Rio de Janeiro (RJ)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "MFX GROUP",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Rio de Janeiro (RJ)",
+       "City": "Rio de Janeiro",
+       "Country": "Brasil",
+       "Neighborhood": "Irajá",
+       "ZipCode": "21235111",
+       "AbbrState": "Av.Félix, 665"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 43900.0,
+     "SearchPrice": 43900.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38329",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Você encontra o seminovo mais novo do Brasil, com a maior variedade de modelos e condições exclusivas de financiamento, incluindo sinal facilitado em até 18 vezes, além de carros revisados com garantia de quilometragem real. Viabilizamos a troca do seu carro usado com a melhor avaliação. O valor anunciado refere-se ao financiamento com um pequeno sinal, mas, para mais informações, entre em contato com nossa equipe. \nAs ofertas são atualizadas constantemente e podem sofrer alterações sem aviso prévio, e nos reservamos o direito de corrigir eventuais erros de digitação ou precificação..",
+    "FipePercent": 99,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79589349,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260916\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem11383666784.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260916\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem11383757733.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260916\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem11383666784.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 349236,
+      "Value": "1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL"
+     },
+     "YearFabrication": "2022",
+     "YearModel": 2023.0,
+     "Odometer": 530.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30413",
+      "Primary": "Vermelho"
+     },
+     "EngineSize": "1.0",
+     "HorsePower": "84 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "15"
+    },
+    "Seller": {
+     "Id": 3494243,
+     "SellerType": "PJ",
+     "City": "Jundiaí",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "EXPOENTE",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Jundiaí",
+       "Country": "Brasil",
+       "Neighborhood": "Vila Mafalda",
+       "ZipCode": "13206105",
+       "AbbrState": "Av. 14 de Dezembro, 3250"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 119990.0,
+     "SearchPrice": 119990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "2612",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Farol de neblina, Comando de Som no Volante, Android Auto, Apple CarPlay, Chave Reserva, 4 Airbags, Baixa km, Garantia da Loja, Pneus Novos, Feito Vistoria Cautelar\n\n",
+    "FipePercent": 119,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 78527986,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026/202609/20260910/volkswagen-gol-1-0-mi-trendline-8v-flex-4p-manual-wmimagem14325357435.webp",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026/202609/20260910/volkswagen-gol-1-0-mi-trendline-8v-flex-4p-manual-wmimagem14325384118.webp",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026/202609/20260910/volkswagen-gol-1-0-mi-trendline-8v-flex-4p-manual-wmimagem14325357435.webp",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI TRENDLINE 8V FLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 345795,
+      "Value": "1.0 MI TRENDLINE 8V FLEX 4P MANUAL"
+     },
+     "YearFabrication": "2014",
+     "YearModel": 2015.0,
+     "Odometer": 160000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "HorsePower": "76 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 3823798,
+     "SellerType": "PJ",
+     "City": "Ribeirão Pires",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": true,
+     "TrocaComTroco": true,
+     "ExceededPlan": false,
+     "FantasyName": "PlanAuto Multimarcas",
+     "IsCtaWhatsApp": true,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Ribeirão Pires",
+       "Country": "Brasil",
+       "Neighborhood": "planalto bella vista",
+       "ZipCode": "09400080",
+       "AbbrState": "av cap jose gallo 892"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 43890.0,
+     "SearchPrice": 43890.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1614",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Veiculo em Excelente estado de conservação, Laudo Cautelar APROVADO , Veiculo revisado, Completo, Bancos em couro, multimidia de 9 pol... --- Aceitamos seu veiculo usado na troca --- ENTRE EM CONTATO CONOSCO ? --- A Planauto Multimarcas atua a 18 anos no ramo de compra, venda e troca de veículos, sempre presando pela qualidade e respeito ao cliente. Mais de 5 mil veículos comercializados e 4 mil clientes atendidos Outros Opcionais: Distribuição eletrônica de frenagem, Kit Multimídia, MP3 Player, Pára-choques na cor do veículo, Porta-copos.",
+    "FipePercent": 116,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 78813470,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260903\\volkswagen-gol-1.0-mi-track-8v-flex-4p-manual-wmimagem14422140756.jpg",
+       "Order": 1
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260903\\volkswagen-gol-1.0-mi-track-8v-flex-4p-manual-wmimagem14422140756.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI TRACK 8V FLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 344965,
+      "Value": "1.0 MI TRACK 8V FLEX 4P MANUAL"
+     },
+     "YearFabrication": "2013",
+     "YearModel": 2014.0,
+     "Odometer": 120102.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30409",
+      "Primary": "Prata"
+     },
+     "HorsePower": "76 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 3841939,
+     "SellerType": "PJ",
+     "City": "Brasília",
+     "State": "Distrito Federal (DF)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "R15 MULTIMARCAS",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Distrito Federal (DF)",
+       "City": "Brasília",
+       "Country": "Brasil",
+       "Neighborhood": "scia",
+       "ZipCode": "71250025",
+       "AbbrState": "st scia qd 15 conjunto 5"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 46990.0,
+     "SearchPrice": 46990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1614",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "A procura de um VolksWagen Gol - Prata -  seminovo? Aqui tem. Veículo periciado. Gostou deste carro? Temos uma equipe de atendimento on-line pronta para te atender. Tire todas suas dúvidas de forma rápida e descomplicada, entrando em contato conosco, ou se preferir, faça uma visita, estamos te esperando!",
+    "FipePercent": 122,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 1844,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "VOLKSWAGEN",
+     "IdModelo": 0,
+     "Modelo": "GOL",
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+    },
+    "4": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+  },
+  "Pagination": {
+   "PageCurrent": 2,
+   "PageTotal": 40
+  }
+ },
+ "search_gol_price_asc_p1": {
+  "SearchResults": [
+   {
+    "UniqueId": 74811118,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202607\\20260716\\volkswagengol10mi16vgasolina4pmanual-WMIMAGEM21283282796.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202607\\20260716\\volkswagengol10mi16vgasolina4pmanual-WMIMAGEM21304534859.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202607\\20260716\\volkswagengol10mi16vgasolina4pmanual-WMIMAGEM21283282796.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI 16V GASOLINA 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 339492,
+      "Value": "1.0 MI 16V GASOLINA 4P MANUAL"
+     },
+     "YearFabrication": "1998",
+     "YearModel": 1999.0,
+     "Odometer": 402000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     }
+    },
+    "Seller": {
+     "Id": 900001,
+     "SellerType": "PF",
+     "City": "Londrina",
+     "State": "Paraná (PR)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Paraná (PR)",
+       "City": "Londrina",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "PR"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 8500.0,
+     "SearchPrice": 8500.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1236",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 86,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 75251837,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202607\\20260721\\volkswagengol10mi8vgasolina4pmanualgiii-WMIMAGEM13155682459.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202607\\20260721\\volkswagengol10mi8vgasolina4pmanualgiii-WMIMAGEM13162072521.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202607\\20260721\\volkswagengol10mi8vgasolina4pmanualgiii-WMIMAGEM13155682459.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI 8V GASOLINA 4P MANUAL G.III",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 339502,
+      "Value": "1.0 MI 8V GASOLINA 4P MANUAL G.III"
+     },
+     "YearFabrication": "2004",
+     "YearModel": 2005.0,
+     "Odometer": 250000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "HorsePower": "65 cv",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "51 l",
+     "WheelSize": "13"
+    },
+    "Seller": {
+     "Id": 900002,
+     "SellerType": "PF",
+     "City": "Rio Branco",
+     "State": "Acre (AC)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Acre (AC)",
+       "City": "Rio Branco",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "AC"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 10000.0,
+     "SearchPrice": 10000.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1245",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 78716212,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260902\\volkswagengol10mispecial8vgasolina2pmanual-WMIMAGEM06471992441.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260902\\volkswagengol10mispecial8vgasolina2pmanual-WMIMAGEM06472986268.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260902\\volkswagengol10mispecial8vgasolina2pmanual-WMIMAGEM06471992441.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI SPECIAL 8V GASOLINA 2P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 339521,
+      "Value": "1.0 MI SPECIAL 8V GASOLINA 2P MANUAL"
+     },
+     "YearFabrication": "2003",
+     "YearModel": 2004.0,
+     "Odometer": 375000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "2",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     }
+    },
+    "Seller": {
+     "Id": 900003,
+     "SellerType": "PF",
+     "City": "Maranguape",
+     "State": "Ceará (CE)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Ceará (CE)",
+       "City": "Maranguape",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "CE"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 11000.0,
+     "SearchPrice": 11000.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1236",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "MeuCarango"
+     },
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 87,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 51319887,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2024\\202403\\20240325\\volkswagen-gol-1.6-ls-8v-alcool-2p-manual-WMIMAGEM22040565038.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2024\\202403\\20240325\\volkswagen-gol-1.6-ls-8v-alcool-2p-manual-WMIMAGEM22044652264.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2024\\202403\\20240325\\volkswagen-gol-1.6-ls-8v-alcool-2p-manual-WMIMAGEM22040565038.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 LS 8V ÁLCOOL 2P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 339548,
+      "Value": "1.6 LS 8V ÁLCOOL 2P MANUAL"
+     },
+     "YearFabrication": "1986",
+     "YearModel": 1986.0,
+     "Odometer": 96500.0,
+     "Transmission": "Manual",
+     "NumberPorts": "2",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30412",
+      "Primary": "Verde"
+     }
+    },
+    "Seller": {
+     "Id": 900004,
+     "SellerType": "PF",
+     "City": "São Paulo",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "São Paulo",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "SP"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 11000.0,
+     "SearchPrice": 11000.0
+    },
+    "ListingType": "U",
+    "ProductCode": "1236",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79573351,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026/202609/20260925/volkswagen-gol-1-0-mi-8v-gasolina-2p-manual-wmimagem04004883116.webp",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026/202609/20260925/volkswagen-gol-1-0-mi-8v-gasolina-2p-manual-wmimagem04004898631.webp",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026/202609/20260925/volkswagen-gol-1-0-mi-8v-gasolina-2p-manual-wmimagem04004883116.webp",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI 8V GASOLINA 2P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 339499,
+      "Value": "1.0 MI 8V GASOLINA 2P MANUAL"
+     },
+     "YearFabrication": "1996",
+     "YearModel": 1996.0,
+     "Odometer": 300000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "2",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30409",
+      "Primary": "Prata"
+     }
+    },
+    "Seller": {
+     "Id": 3965685,
+     "SellerType": "PJ",
+     "City": "Itupeva",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "Europa Veículos",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Itupeva",
+       "Country": "Brasil",
+       "Neighborhood": "Jardim Primavera",
+       "ZipCode": "13295059",
+       "AbbrState": "Avenida Brasil, 1230"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 11000.0,
+     "SearchPrice": 11000.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38329",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "bom estado",
+    "FipePercent": 115,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 2221132,
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 MI STAR 8V GASOLINA 2P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 331092,
+      "Value": "1.6 MI STAR 8V GASOLINA 2P MANUAL"
+     },
+     "YearFabrication": "1989",
+     "YearModel": 1989.0,
+     "Odometer": 85000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "2",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30413",
+      "Primary": "Vermelho"
+     }
+    },
+    "Seller": {
+     "Id": 900006,
+     "SellerType": "PF",
+     "City": "Santo André",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Santo André",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "SP"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 11500.0,
+     "SearchPrice": 11500.0
+    },
+    "ListingType": "U",
+    "ProductCode": "95",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 97,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 1844,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "VOLKSWAGEN",
+     "IdModelo": 0,
+     "Modelo": "GOL",
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 5,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+    },
+    "4": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 40
+  }
+ },
+ "search_motos_honda_p1": {
+  "SearchResults": [
+   {
+    "UniqueId": 3015706,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026/202607/20260728/honda-elite-125i-wmimagem17324159876.webp",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026/202607/20260728/honda-elite-125i-wmimagem17324169525.webp",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026/202607/20260728/honda-elite-125i-wmimagem17324159876.webp",
+    "Specification": {
+     "Title": "HONDA ELITE 125i ",
+     "Make": {
+      "id": 4,
+      "Value": "HONDA"
+     },
+     "Model": {
+      "id": 2605,
+      "Value": "ELITE 125i"
+     },
+     "YearFabrication": "2021",
+     "YearModel": 2022.0,
+     "Odometer": 17222.0,
+     "CubicCentimeter": 125.0,
+     "BodyType": "Scooter",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      }
+     ],
+     "Engine": {
+      "Id": "193",
+      "Value": "4 Tempos"
+     },
+     "Break": {
+      "Id": "249",
+      "Value": "disco/tambor"
+     },
+     "Charge": {
+      "Id": "202",
+      "Value": "Injeção Eletrônica"
+     },
+     "Cooling": {
+      "Id": "213",
+      "Value": "ar"
+     },
+     "Shift": {
+      "Id": "218",
+      "Value": "automático"
+     },
+     "Starter": {
+      "Id": "233",
+      "Value": "elétrica"
+     },
+     "Color": {
+      "IdPrimary": "303",
+      "Primary": "Branco",
+      "IdSecundary": "303",
+      "Secundary": "Branco"
+     }
+    },
+    "Seller": {
+     "Id": 3961522,
+     "SellerType": "PJ",
+     "City": "São Bernardo do Campo",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "DII MOTOS",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "São Bernardo do Campo",
+       "Country": "Brasil",
+       "Neighborhood": "Assunção",
+       "ZipCode": "09810555",
+       "AbbrState": "R.Cristiano Angeli, 485"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 13990.0,
+     "SearchPrice": 13990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38491",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "ELITE 125I\n\nFinanciamento com entrada facilitada*\nAceitamos sua moto na troca\nVeículo com procedência e documentação em dia\nAprovação rápida e sem burocracia\nParcelamento no cartão de crédito em até 24x",
+    "FipePercent": 107,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 2991907,
+    "Specification": {
+     "Title": "HONDA XRE 300 ADVENTURE ",
+     "Make": {
+      "id": 4,
+      "Value": "HONDA"
+     },
+     "Model": {
+      "id": 2437,
+      "Value": "XRE 300 ADVENTURE"
+     },
+     "YearFabrication": "2021",
+     "YearModel": 2022.0,
+     "Odometer": 30279.0,
+     "CubicCentimeter": 300.0,
+     "BodyType": "Trail",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Engine": {
+      "Id": "193",
+      "Value": "4 Tempos"
+     },
+     "Break": {
+      "Id": "250",
+      "Value": "disco/disco"
+     },
+     "Charge": {
+      "Id": "202",
+      "Value": "Injeção Eletrônica"
+     },
+     "Cooling": {
+      "Id": "213",
+      "Value": "ar"
+     },
+     "Shift": {
+      "Id": "221",
+      "Value": "5"
+     },
+     "Starter": {
+      "Id": "233",
+      "Value": "elétrica"
+     },
+     "Color": {
+      "IdPrimary": "304",
+      "Primary": "Cinza",
+      "IdSecundary": "304",
+      "Secundary": "Cinza"
+     }
+    },
+    "Seller": {
+     "Id": 3882436,
+     "SellerType": "PJ",
+     "City": "Santa Rosa de Viterbo",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "DUAUTO MULTIMARCAS E MOTOS",
+     "IsCtaWhatsApp": true,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Santa Rosa de Viterbo",
+       "Country": "Brasil",
+       "Neighborhood": "CENTRO",
+       "ZipCode": "14270000",
+       "AbbrState": "AV SÃO PAULO , 977"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 32900.0,
+     "SearchPrice": 32900.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38491",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "CompreAuto"
+     },
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "HONDA XRE 300 ABS ADVENTURE  \nAno/modelo: 2021/2022.\nApenas 30.200 km. \nFreio a Disco Dianteiro.\nFreio a Disco Traseiro. \nFreios ABS. \nPainel Digital. \nManual. \nChave Reserva. \nPneus Novos. \nRevisada. \nDoc. OK. \nIPVA Pago.",
+    "FipePercent": 113,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 3072098,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260925\\hondacb_500_x_abswmimagem1907233970.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260925\\hondacb_500_x_abswmimagem19072377842.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260925\\hondacb_500_x_abswmimagem1907233970.jpg",
+    "Specification": {
+     "Title": "HONDA CB 500 X ABS ",
+     "Make": {
+      "id": 4,
+      "Value": "HONDA"
+     },
+     "Model": {
+      "id": 1925,
+      "Value": "CB 500 X ABS"
+     },
+     "YearFabrication": "2024",
+     "YearModel": 2024.0,
+     "Odometer": 19200.0,
+     "CubicCentimeter": 500.0,
+     "BodyType": "Naked",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Engine": {
+      "Id": "193",
+      "Value": "4 Tempos"
+     },
+     "Break": {
+      "Id": "250",
+      "Value": "disco/disco"
+     },
+     "Charge": {
+      "Id": "202",
+      "Value": "Injeção Eletrônica"
+     },
+     "Cooling": {
+      "Id": "212",
+      "Value": "líquida"
+     },
+     "Shift": {
+      "Id": "222",
+      "Value": "6"
+     },
+     "Starter": {
+      "Id": "233",
+      "Value": "elétrica"
+     },
+     "Color": {
+      "IdPrimary": "312",
+      "Primary": "Vermelho",
+      "IdSecundary": "312",
+      "Secundary": "Vermelho"
+     }
+    },
+    "Seller": {
+     "Id": 3951880,
+     "SellerType": "PJ",
+     "City": "Serra",
+     "State": "Espírito Santo (ES)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "7 MOTORS LTDA",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Espírito Santo (ES)",
+       "City": "Serra",
+       "Country": "Brasil",
+       "Neighborhood": "Jd Limoeiro",
+       "ZipCode": "29164050",
+       "AbbrState": "Av.Lourival Nunes, 355"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 42990.0,
+     "SearchPrice": 42990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38491",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Seja bem-vindo a 7MOTOS:  Financiamos em até 48 vezes Cartão de crédito até 24 vezes (acres. Taxa) Aceitamos seu BEM na TROCA (sob avalição da loja) Motos Revisada e com garantia Trabalhamos com moto de REPASSEPara mais informações entre em contato:(27) 99790-6219 / 27 99912-0433 QUEM PENSA GRANDE, PENSA 7MOTOS!",
+    "FipePercent": 98,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 3066250,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260917\\hondacg_160_titan_abswmimagem17244343419.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260917\\hondacg_160_titan_abswmimagem17244454545.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260917\\hondacg_160_titan_abswmimagem17244343419.jpg",
+    "Specification": {
+     "Title": "HONDA CG 160 TITAN ABS ",
+     "Make": {
+      "id": 4,
+      "Value": "HONDA"
+     },
+     "Model": {
+      "id": 33368,
+      "Value": "CG 160 TITAN ABS"
+     },
+     "YearFabrication": "2026",
+     "YearModel": 2026.0,
+     "Odometer": 2037.0,
+     "CubicCentimeter": 160.0,
+     "BodyType": "Street",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Engine": {
+      "Id": "193",
+      "Value": "4 Tempos"
+     },
+     "Break": {
+      "Id": "250",
+      "Value": "disco/disco"
+     },
+     "Charge": {
+      "Id": "202",
+      "Value": "Injeção Eletrônica"
+     },
+     "Cooling": {
+      "Id": "213",
+      "Value": "ar"
+     },
+     "Shift": {
+      "Id": "221",
+      "Value": "5"
+     },
+     "Starter": {
+      "Id": "233",
+      "Value": "elétrica"
+     },
+     "Color": {
+      "IdPrimary": "304",
+      "Primary": "Cinza",
+      "IdSecundary": "304",
+      "Secundary": "Cinza"
+     }
+    },
+    "Seller": {
+     "Id": 3854951,
+     "SellerType": "PJ",
+     "City": "Piracicaba",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 1,
+      "Value": "Loja"
+     },
+     "BudgetInvestimento": 1,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "RR MOTOS",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Piracicaba",
+       "Country": "Brasil",
+       "Neighborhood": "Paulicéia",
+       "ZipCode": "13424060",
+       "AbbrState": "R.Fernando Lopes, 689 "
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 23900.0,
+     "SearchPrice": 23900.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38491",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": " - ",
+    "FipePercent": 109,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 19473,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 2,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "HONDA",
+     "IdModelo": 0,
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "CorSecundaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "TipoRefrigeracao": [],
+   "TipoAlimentacao": [],
+   "TipoMotor": [],
+   "TipoPartida": [],
+   "TipoCambio": [],
+   "TipoFreio": [],
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Motos",
+     "Description": "https://www.webmotors.com.br/motos/estoque"
+    },
+    "3": {
+     "Key": "Honda",
+     "Description": "https://www.webmotors.com.br/motos/estoque/honda"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/motos/estoque/honda"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 213
+  }
+ },
+ "search_sp_toyota_p1": {
+  "SearchResults": [
+   {
+    "UniqueId": 80284767,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260925\\toyota-corolla-2.0-vvtie-flex-xei-direct-shift-wmimagem16281176580.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260925\\toyota-corolla-2.0-vvtie-flex-xei-direct-shift-wmimagem16290305795.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260925\\toyota-corolla-2.0-vvtie-flex-xei-direct-shift-wmimagem16281176580.jpg",
+    "Specification": {
+     "Title": "TOYOTA COROLLA 2.0 VVT-IE FLEX XEI DIRECT SHIFT",
+     "Make": {
+      "id": 35,
+      "Value": "TOYOTA"
+     },
+     "Model": {
+      "id": 776,
+      "Value": "COROLLA"
+     },
+     "Version": {
+      "id": 348132,
+      "Value": "2.0 VVT-IE FLEX XEI DIRECT SHIFT"
+     },
+     "YearFabrication": "2023",
+     "YearModel": 2023.0,
+     "Odometer": 32915.0,
+     "Transmission": "Automática",
+     "NumberPorts": "4",
+     "BodyType": "Sedã",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30409",
+      "Primary": "Prata"
+     },
+     "EngineSize": "2.0",
+     "HorsePower": "177 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "470 l",
+     "FuelTankCapacity": "50 l",
+     "WheelSize": "17"
+    },
+    "Seller": {
+     "Id": 3958781,
+     "SellerType": "PJ",
+     "City": "Presidente Prudente",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "GWM Caminho Presidente Prudent",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Presidente Prudente",
+       "Country": "Brasil",
+       "Neighborhood": "Jd Satélite",
+       "ZipCode": "19063008",
+       "AbbrState": "Av.Joaquim Constantino, 3961"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 122800.0,
+     "SearchPrice": 122800.0
+    },
+    "HotDeal": [
+     {
+      "Id": "3414",
+      "Value": "Loja Oficial GWM"
+     }
+    ],
+    "ListingType": "U",
+    "ProductCode": "38489",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "CompreAuto"
+     },
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Veículo em ótimo estado. PREÇO PARA RETIRADA NA CONCESSIONÁRIA\nAcompanha perícia cautelar de procedência.\nTodos os veículos são entregues inspecionados e com garantia!\nValor para pagamento à vista em dinheiro.\nFotos somente para fins ilustrativos. Sujeito a conferência e salvo erros de digitação/descrições.\nESTOQUE COMPLETO EM:\nwww.caminhoseminovos.com.br\nPara maiores informações:\nGWM Caminho\nPresidente Prudente - SP\nAv. Joaquim Constantino, 3961 – Jd. Satélite \nTel: (18) 3199-3355",
+    "FipePercent": 98,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79944041,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260921\\toyota-hiace-2.8-d4d-turbo-diesel-furgao-dx-automatico-wmimagem11242029824.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260921\\toyota-hiace-2.8-d4d-turbo-diesel-furgao-dx-automatico-wmimagem11242152310.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260921\\toyota-hiace-2.8-d4d-turbo-diesel-furgao-dx-automatico-wmimagem11242029824.jpg",
+    "Specification": {
+     "Title": "TOYOTA HIACE 2.8 D-4D TURBO DIESEL FURGÃO DX AUTOMÁTICO",
+     "Make": {
+      "id": 35,
+      "Value": "TOYOTA"
+     },
+     "Model": {
+      "id": 4035,
+      "Value": "HIACE"
+     },
+     "Version": {
+      "id": 380241,
+      "Value": "2.8 D-4D TURBO DIESEL FURGÃO DX AUTOMÁTICO"
+     },
+     "YearFabrication": "2026",
+     "YearModel": 2026.0,
+     "Odometer": 0.0,
+     "Transmission": "Automática",
+     "NumberPorts": "4",
+     "BodyType": "Van/Utilitário",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Garantia de fábrica"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     },
+     "EngineSize": "2.8",
+     "HorsePower": "174 cv",
+     "Traction": "Traseira",
+     "FuelTankCapacity": "70 l",
+     "WheelSize": "16"
+    },
+    "Seller": {
+     "Id": 3921117,
+     "SellerType": "PJ",
+     "City": "Barueri",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "TDrive Alphaville",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Barueri",
+       "Country": "Brasil",
+       "Neighborhood": "Alphaville Empresarial",
+       "ZipCode": "06465100",
+       "AbbrState": "Est.da Aldeinha, 120"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 344990.0,
+     "SearchPrice": 344990.0
+    },
+    "HotDeal": [
+     {
+      "Id": "3859",
+      "Value": "Loja Oficial Grupo Automob"
+     }
+    ],
+    "ListingType": "N",
+    "ProductCode": "38489",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "TOYOTA T-DRIVE ALPHAVILLE. \n\nTemos também condições com Venda exclusiva para CNPJ ou Produtor Rural, via Vendas Diretas. \n\n? Diferenciais:\n* Condições especiais de financiamento.\n* Planos sujeitos à análise de crédito.\n* Avaliação justa do seu veículo na troca, inclusive financiado.\n\nNossa equipe está preparada para oferecer um atendimento personalizado e ajudar você a encontrar o carro ideal.\n\nReservamo-nos o direito de corrigir possíveis erros de digitação e alterar valores sem aviso prévio.",
+    "FipePercent": 114,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79832737,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260919\\toyota-corolla-1.8-vvti-hybrid-flex-altis-premium-cvt-wmimagem10134034951.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260919\\toyota-corolla-1.8-vvti-hybrid-flex-altis-premium-cvt-wmimagem10134257237.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260919\\toyota-corolla-1.8-vvti-hybrid-flex-altis-premium-cvt-wmimagem10134034951.jpg",
+    "Specification": {
+     "Title": "TOYOTA COROLLA 1.8 VVT-I HYBRID FLEX ALTIS PREMIUM CVT",
+     "Make": {
+      "id": 35,
+      "Value": "TOYOTA"
+     },
+     "Model": {
+      "id": 776,
+      "Value": "COROLLA"
+     },
+     "Version": {
+      "id": 379444,
+      "Value": "1.8 VVT-I HYBRID FLEX ALTIS PREMIUM CVT"
+     },
+     "YearFabrication": "2026",
+     "YearModel": 2026.0,
+     "Odometer": 0.0,
+     "Transmission": "Automática",
+     "NumberPorts": "4",
+     "BodyType": "Sedã",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Garantia de fábrica"
+      }
+     ],
+     "Armored": "S",
+     "Color": {
+      "IdPrimary": "30405",
+      "Primary": "Cinza"
+     },
+     "EngineSize": "1.8",
+     "HorsePower": "101 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "470 l",
+     "FuelTankCapacity": "41 l",
+     "WheelSize": "17"
+    },
+    "Seller": {
+     "Id": 3921118,
+     "SellerType": "PJ",
+     "City": "São Paulo",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "TDrive Aricanduva",
+     "IsCtaWhatsApp": true,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "São Paulo",
+       "Country": "Brasil",
+       "Neighborhood": "Jd Sta Terezinha",
+       "ZipCode": "03527900",
+       "AbbrState": "Av.Aricanduva, 5555"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 269990.0,
+     "SearchPrice": 269990.0
+    },
+    "HotDeal": [
+     {
+      "Id": "3859",
+      "Value": "Loja Oficial Grupo Automob"
+     }
+    ],
+    "ListingType": "N",
+    "ProductCode": "38489",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "TOYOTA T-DRIVE ARICANDUVA * BLINDAGEM AVALLON *\n\nEncontre o seminovo ideal com a qualidade e a confiança que só a Toyota oferece. Todos os veículos passam por revisão criteriosa, possuem laudo cautelar aprovado e contam com garantia para sua tranquilidade.\n\n? Veículos revisados e com procedência.\n? Condições especiais de financiamento.\n? Avaliação diferenciada do seu usado, inclusive financiado.\n? Atendimento especializado para ajudar você a fazer a melhor escolha.",
+    "FipePercent": 131,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 13057,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "TOYOTA",
+     "IdModelo": 0,
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "São Paulo (SP)",
+   "Sigla": "SP",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Location": [
+    {
+     "Estado": "São Paulo",
+     "Abbr": "SP",
+     "Type": "State",
+     "Latitude": 0.0,
+     "Longitude": 0.0
+    }
+   ],
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Sp",
+     "Description": "https://www.webmotors.com.br/carros/sp"
+    },
+    "4": {
+     "Key": "Toyota",
+     "Description": "https://www.webmotors.com.br/carros/sp/toyota"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/sp/toyota"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 213
+  }
+ },
+ "search_typo_model": {
+  "SearchResults": [
+   {
+    "UniqueId": 79309070,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260911\\volkswagen-tcross-1.4-250-tsi-total-flex-highline-automatico-wmimagem1348386695.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260911\\volkswagen-tcross-1.4-250-tsi-total-flex-highline-automatico-wmimagem13483940349.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260911\\volkswagen-tcross-1.4-250-tsi-total-flex-highline-automatico-wmimagem1348386695.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN T-CROSS 1.4 250 TSI TOTAL FLEX HIGHLINE AUTOMÁTICO",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 3728,
+      "Value": "T-CROSS"
+     },
+     "Version": {
+      "id": 347982,
+      "Value": "1.4 250 TSI TOTAL FLEX HIGHLINE AUTOMÁTICO"
+     },
+     "YearFabrication": "2024",
+     "YearModel": 2025.0,
+     "Odometer": 12825.0,
+     "Transmission": "Automática",
+     "NumberPorts": "4",
+     "BodyType": "Utilitário esportivo",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      },
+      {
+       "Name": "Todas as revisões feitas pela concessionária"
+      },
+      {
+       "Name": "Garantia de fábrica"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     },
+     "EngineSize": "1.4",
+     "HorsePower": "150 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "373 l",
+     "FuelTankCapacity": "49 l",
+     "WheelSize": "17"
+    },
+    "Seller": {
+     "Id": 3881406,
+     "SellerType": "PJ",
+     "City": "Itumbiara",
+     "State": "Goiás (GO)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "UMUARAMA Seminovos VOLKSWAGEN ITUMBIARA",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Goiás (GO)",
+       "City": "Itumbiara",
+       "Country": "Brasil",
+       "Neighborhood": "Dt Agro Industrial",
+       "ZipCode": "75536100",
+       "AbbrState": "Av.Modesto de Carvalho, 2101"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 145990.0,
+     "SearchPrice": 145990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "38489",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Câmera de Ré, Comando de Som no Volante, Direção Elétrica, Kit Multimídia, Botão Start/Stop, Farol de LED, Luz Diurna, Android Auto, Apple CarPlay, Controle de Estabilidade, Integração com SmartPhones, Airbag Lateral, 6 Airbags, Farol Full LED, Isofix, DRL em LED, Baixa km, Garantia da Loja, Veículo de não-fumante, Pneus Novos, Feito Vistoria Cautelar\n\nCOMPRE COM QUEM TEM HISTÓRIA E CREDIBILIDADE!\n\nA Umuarama Concessionárias possui mais de 30 anos de atuação no mercado automotivo, construindo uma trajetória baseada em confiança, transparência e respeito aos seus clientes.\n\nCom presença em diferentes cidades e estados, representando grandes marcas do setor automotivo, a Umuarama oferece uma estrutura completa para você fazer seu negócio com muito mais segurança.\n\nNa Umuarama Seminovos, você conta com uma equipe especializada, veículos selecionados, opções de financiamento e todo o suporte de um dos grupos automotivos mais tradicionais da região.\n\nAqui você não compra apenas um veículo. Você compra a tranquilidade de fazer negócio com uma empresa que tem história, estrutura e credibilidade.\n\nEntre em contato com nossa equipe, consulte as condições de negociação.",
+    "FipePercent": 105,
+    "IsElegibleVehicleInspection": true,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 49145,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "VOLKSWAGEN",
+     "IdModelo": 0,
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 213
+  }
+ },
+ "search_bogus_make": {
+  "SearchResults": [
+   {
+    "UniqueId": 80269940,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260925\\land-rover-range-rover-vogue-4.4-se-sdv8-4x4-turbo-diesel-4p-automatico-wmimagem11490360573.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260925\\land-rover-range-rover-vogue-4.4-se-sdv8-4x4-turbo-diesel-4p-automatico-wmimagem11490470231.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260925\\land-rover-range-rover-vogue-4.4-se-sdv8-4x4-turbo-diesel-4p-automatico-wmimagem11490360573.jpg",
+    "Specification": {
+     "Title": "LAND ROVER RANGE ROVER VOGUE 4.4 SE SDV8 4X4 TURBO DIESEL 4P AUTOMÁTICO",
+     "Make": {
+      "id": 23,
+      "Value": "LAND ROVER"
+     },
+     "Model": {
+      "id": 3131,
+      "Value": "RANGE ROVER VOGUE"
+     },
+     "Version": {
+      "id": 345811,
+      "Value": "4.4 SE SDV8 4X4 TURBO DIESEL 4P AUTOMÁTICO"
+     },
+     "YearFabrication": "2019",
+     "YearModel": 2020.0,
+     "Odometer": 51431.0,
+     "Transmission": "Automática",
+     "NumberPorts": "4",
+     "BodyType": "Utilitário esportivo",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Todas as revisões feitas pela concessionária"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "EngineSize": "4.4",
+     "HorsePower": "339 cv",
+     "Traction": "Integral permanente",
+     "TrunkCapacity": "535 l",
+     "FuelTankCapacity": "105 l",
+     "WheelSize": "20"
+    },
+    "Seller": {
+     "Id": 3829387,
+     "SellerType": "PJ",
+     "City": "Curitiba",
+     "State": "Paraná (PR)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "Euro Import Jaguar Land Rover Curitiba",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Paraná (PR)",
+       "City": "Curitiba",
+       "Country": "Brasil",
+       "Neighborhood": "Santo Inacio",
+       "ZipCode": "82010340",
+       "AbbrState": "Rua Tobias de Macedo Junior, 217"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 499900.0,
+     "SearchPrice": 499900.0
+    },
+    "HotDeal": [
+     {
+      "Id": "3859",
+      "Value": "Loja Oficial Grupo Automob"
+     }
+    ],
+    "ListingType": "U",
+    "ProductCode": "38489",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "PERICIA CAUTELAR APROVADA.",
+    "FipePercent": 91,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": true,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 348850,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 213
+  }
+ },
+ "search_estoque_sponsored": {
+  "SearchResults": [
+   {
+    "UniqueId": 0,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "https://www.webmotors.com.br/imagens/prod/380224/MG_4_64_KW_ELETRICO_LUXURY_38022417010130898.webp",
+       "Order": 1
+      }
+     ]
+    },
+    "Specification": {
+     "Make": {
+      "id": 150,
+      "Value": "MG"
+     },
+     "Model": {
+      "id": 4055,
+      "Value": "4"
+     },
+     "Version": {
+      "id": 380224,
+      "Value": "64 KW ELÉTRICO LUXURY"
+     },
+     "YearFabrication": "2026",
+     "YearModel": 2026.0,
+     "Auction": false
+    },
+    "Prices": {
+     "Price": 189800.0
+    },
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": true,
+    "AdvertisementLink": "https://www.webmotors.com.br/mg/4/2026/64-kw-eletrico-luxury/387884/quero-negociar?lkid=3986"
+   },
+   {
+    "UniqueId": 0,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "https://www.webmotors.com.br/imagens/prod/380223/MG_4_64_KW_ELETRICO_COMFORT_38022317003596158.webp",
+       "Order": 1
+      }
+     ]
+    },
+    "Specification": {
+     "Make": {
+      "id": 150,
+      "Value": "MG"
+     },
+     "Model": {
+      "id": 4055,
+      "Value": "4"
+     },
+     "Version": {
+      "id": 380223,
+      "Value": "64 KW ELÉTRICO COMFORT"
+     },
+     "YearFabrication": "2026",
+     "YearModel": 2026.0,
+     "Auction": false
+    },
+    "Prices": {
+     "Price": 169600.0
+    },
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": true,
+    "AdvertisementLink": "https://www.webmotors.com.br/mg/4/2026/64-kw-eletrico-comfort/387883/quero-negociar?lkid=3986"
+   },
+   {
+    "UniqueId": 0,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "https://www.webmotors.com.br/imagens/prod/380193/MG_S5_64_KW_ELETRICO_LUXURY_38019316491588570.webp",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "https://www.webmotors.com.br/imagens/prod/380193/MG_S5_64_KW_ELETRICO_LUXURY_38019316492182097.webp",
+       "Order": 2
+      }
+     ]
+    },
+    "Specification": {
+     "Make": {
+      "id": 150,
+      "Value": "MG"
+     },
+     "Model": {
+      "id": 4052,
+      "Value": "S5"
+     },
+     "Version": {
+      "id": 380193,
+      "Value": "64 KW ELÉTRICO LUXURY"
+     },
+     "YearFabrication": "2026",
+     "YearModel": 2026.0,
+     "Auction": false
+    },
+    "Prices": {
+     "Price": 219800.0
+    },
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": true,
+    "AdvertisementLink": "https://www.webmotors.com.br/mg/s5/2026/64-kw-eletrico-luxury/387811/quero-negociar?lkid=3986"
+   },
+   {
+    "UniqueId": 80269940,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260925\\land-rover-range-rover-vogue-4.4-se-sdv8-4x4-turbo-diesel-4p-automatico-wmimagem11490360573.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260925\\land-rover-range-rover-vogue-4.4-se-sdv8-4x4-turbo-diesel-4p-automatico-wmimagem11490470231.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260925\\land-rover-range-rover-vogue-4.4-se-sdv8-4x4-turbo-diesel-4p-automatico-wmimagem11490360573.jpg",
+    "Specification": {
+     "Title": "LAND ROVER RANGE ROVER VOGUE 4.4 SE SDV8 4X4 TURBO DIESEL 4P AUTOMÁTICO",
+     "Make": {
+      "id": 23,
+      "Value": "LAND ROVER"
+     },
+     "Model": {
+      "id": 3131,
+      "Value": "RANGE ROVER VOGUE"
+     },
+     "Version": {
+      "id": 345811,
+      "Value": "4.4 SE SDV8 4X4 TURBO DIESEL 4P AUTOMÁTICO"
+     },
+     "YearFabrication": "2019",
+     "YearModel": 2020.0,
+     "Odometer": 51431.0,
+     "Transmission": "Automática",
+     "NumberPorts": "4",
+     "BodyType": "Utilitário esportivo",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Todas as revisões feitas pela concessionária"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "EngineSize": "4.4",
+     "HorsePower": "339 cv",
+     "Traction": "Integral permanente",
+     "TrunkCapacity": "535 l",
+     "FuelTankCapacity": "105 l",
+     "WheelSize": "20"
+    },
+    "Seller": {
+     "Id": 3829387,
+     "SellerType": "PJ",
+     "City": "Curitiba",
+     "State": "Paraná (PR)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "Euro Import Jaguar Land Rover Curitiba",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Paraná (PR)",
+       "City": "Curitiba",
+       "Country": "Brasil",
+       "Neighborhood": "Santo Inacio",
+       "ZipCode": "82010340",
+       "AbbrState": "Rua Tobias de Macedo Junior, 217"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 499900.0,
+     "SearchPrice": 499900.0
+    },
+    "HotDeal": [
+     {
+      "Id": "3859",
+      "Value": "Loja Oficial Grupo Automob"
+     }
+    ],
+    "ListingType": "U",
+    "ProductCode": "38489",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "PERICIA CAUTELAR APROVADA.",
+    "FipePercent": 91,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": true,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 348853,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque"
+  },
+  "Pagination": {
+   "PageCurrent": 1,
+   "PageTotal": 213
+  }
+ },
+ "search_gol_past_end": {
+  "SearchResults": [],
+  "Count": 1844,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "VOLKSWAGEN",
+     "IdModelo": 0,
+     "Modelo": "GOL",
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+    },
+    "4": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+  },
+  "Pagination": {
+   "PageCurrent": 41,
+   "PageTotal": 40
+  }
+ },
+ "search_gol_far_past_end": {
+  "SearchResults": [
+   {
+    "UniqueId": 74012141,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260909\\volkswagengol16micity8vflex4pmanual-WMIMAGEM02084334576.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260909\\volkswagengol16micity8vflex4pmanual-WMIMAGEM0209200444.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260909\\volkswagengol16micity8vflex4pmanual-WMIMAGEM02084334576.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 MI CITY 8V FLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 346062,
+      "Value": "1.6 MI CITY 8V FLEX 4P MANUAL"
+     },
+     "YearFabrication": "2013",
+     "YearModel": 2014.0,
+     "Odometer": 173000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "HorsePower": "104 cv",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l"
+    },
+    "Seller": {
+     "Id": 900001,
+     "SellerType": "PF",
+     "City": "São Paulo",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "São Paulo",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "SP"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 35900.0,
+     "SearchPrice": 35900.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 94,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79374446,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260913\\volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21585017417.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260913\\volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21584888656.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260913\\volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21585017417.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 MI 8V FLEX 4P MANUAL G.V",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 341843,
+      "Value": "1.0 MI 8V FLEX 4P MANUAL G.V"
+     },
+     "YearFabrication": "2010",
+     "YearModel": 2011.0,
+     "Odometer": 197000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "HorsePower": "72 cv",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l"
+    },
+    "Seller": {
+     "Id": 900002,
+     "SellerType": "PF",
+     "City": "Manaus",
+     "State": "Amazonas (AM)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Amazonas (AM)",
+       "City": "Manaus",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "AM"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 25649.0,
+     "SearchPrice": 25649.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 99,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 79692776,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260917\\volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16092298037.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260917\\volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16094225527.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260917\\volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16092298037.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.6 MI TRENDLINE 8V FLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 345797,
+      "Value": "1.6 MI TRENDLINE 8V FLEX 4P MANUAL"
+     },
+     "YearFabrication": "2014",
+     "YearModel": 2015.0,
+     "Odometer": 200000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30404",
+      "Primary": "Branco"
+     },
+     "HorsePower": "104 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 900003,
+     "SellerType": "PF",
+     "City": "Rio de Janeiro",
+     "State": "Rio de Janeiro (RJ)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Rio de Janeiro (RJ)",
+       "City": "Rio de Janeiro",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "RJ"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 39990.0,
+     "SearchPrice": 39990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "fixture: a private seller's own description, removed",
+    "FipePercent": 96,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 74242354,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202608\\20260813\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem1241564213.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202608\\20260813\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem12415660130.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202608\\20260813\\volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem1241564213.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 349236,
+      "Value": "1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL"
+     },
+     "YearFabrication": "2022",
+     "YearModel": 2023.0,
+     "Odometer": 10198.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30413",
+      "Primary": "Vermelho"
+     },
+     "EngineSize": "1.0",
+     "HorsePower": "84 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "15"
+    },
+    "Seller": {
+     "Id": 3824568,
+     "SellerType": "PJ",
+     "City": "Indaiatuba",
+     "State": "São Paulo (SP)",
+     "AdType": {
+      "id": 2,
+      "Value": "Concessionária"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "FantasyName": "Balilla Fiat Indaiatuba",
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "São Paulo (SP)",
+       "City": "Indaiatuba",
+       "Country": "Brasil",
+       "Neighborhood": "Vila Homero",
+       "ZipCode": "13338705",
+       "AbbrState": "Av. Presidente Vargas"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 92990.0,
+     "SearchPrice": 92990.0
+    },
+    "ListingType": "U",
+    "ProductCode": "2611",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "LongComment": "Valor à vista !\n\nVeículo revisados com garantia do Grupo Balilla !\n\nConsulte condições de até 2 anos de garantia !\n\nCarro periciado e laudo 100% aprovado !\n Outros Opcionais: Comando de áudio no volante, Kit Multimídia.",
+    "FipePercent": 92,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": true,
+    "MediaZeroKm": false
+   },
+   {
+    "UniqueId": 80384495,
+    "Media": {
+     "Photos": [
+      {
+       "PhotoPath": "2026\\202609\\20260927\\volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115276610.jpg",
+       "Order": 1
+      },
+      {
+       "PhotoPath": "2026\\202609\\20260927\\volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115766213.jpg",
+       "Order": 2
+      }
+     ]
+    },
+    "PhotoPath": "2026\\202609\\20260927\\volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115276610.jpg",
+    "Specification": {
+     "Title": "VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL",
+     "Make": {
+      "id": 5,
+      "Value": "VOLKSWAGEN"
+     },
+     "Model": {
+      "id": 788,
+      "Value": "GOL"
+     },
+     "Version": {
+      "id": 347690,
+      "Value": "1.0 12V MPI TOTALFLEX 4P MANUAL"
+     },
+     "YearFabrication": "2021",
+     "YearModel": 2022.0,
+     "Odometer": 65000.0,
+     "Transmission": "Manual",
+     "NumberPorts": "4",
+     "BodyType": "Hatchback",
+     "Auction": false,
+     "VehicleAttributes": [
+      {
+       "Name": "Aceita troca"
+      },
+      {
+       "Name": "Único dono"
+      },
+      {
+       "Name": "IPVA pago"
+      },
+      {
+       "Name": "Licenciado"
+      }
+     ],
+     "Armored": "N",
+     "Color": {
+      "IdPrimary": "30410",
+      "Primary": "Preto"
+     },
+     "EngineSize": "1.0",
+     "HorsePower": "84 cv",
+     "Traction": "Dianteira",
+     "TrunkCapacity": "285 l",
+     "FuelTankCapacity": "55 l",
+     "WheelSize": "14"
+    },
+    "Seller": {
+     "Id": 900005,
+     "SellerType": "PF",
+     "City": "Rio de Janeiro",
+     "State": "Rio de Janeiro (RJ)",
+     "AdType": {
+      "id": 4,
+      "Value": "Pessoa Física"
+     },
+     "BudgetInvestimento": 0,
+     "DealerScore": 0,
+     "CarDelivery": false,
+     "TrocaComTroco": false,
+     "ExceededPlan": false,
+     "IsCtaWhatsApp": false,
+     "AnswerQuickly": false,
+     "Localization": [
+      {
+       "State": "Rio de Janeiro (RJ)",
+       "City": "Rio de Janeiro",
+       "Country": "Brasil",
+       "ZipCode": "00000000",
+       "AbbrState": "RJ"
+      }
+     ]
+    },
+    "Prices": {
+     "Price": 47800.0,
+     "SearchPrice": 47800.0
+    },
+    "ListingType": "U",
+    "ProductCode": "674",
+    "Channels": [
+     {
+      "id": 0,
+      "Value": "Webmotors"
+     }
+    ],
+    "FipePercent": 94,
+    "GoodDeal": true,
+    "IsElegibleVehicleInspection": false,
+    "IsElegible360View": false,
+    "MediaZeroKm": false
+   }
+  ],
+  "Count": 1844,
+  "FilterCustom": {
+   "TipoAnuncio": 84,
+   "TipoVeiculo": 1,
+   "Veiculos": [
+    {
+     "IdMarca": 0,
+     "Marca": "VOLKSWAGEN",
+     "IdModelo": 0,
+     "Modelo": "GOL",
+     "IdVersao": 0
+    }
+   ],
+   "MotorDe": 0.0,
+   "MotorAte": 0.0,
+   "CvDe": 0.0,
+   "CvAte": 0.0,
+   "CapDe": 0.0,
+   "CapAte": 0.0,
+   "TanqueDe": 0.0,
+   "TanqueAte": 0.0,
+   "Tracao": [],
+   "TamanhoRoda": [],
+   "PrecoDe": 0.0,
+   "PrecoAte": 0.0,
+   "Estado": "",
+   "Sigla": "",
+   "Cidade": "",
+   "Keyword": "",
+   "QuilometragemDe": 0.0,
+   "QuilometragemAte": 0.0,
+   "Cambio": [],
+   "Combustivel": [],
+   "CorPrimaria": [],
+   "NumeroDePortas": [],
+   "FinalPlaca": [],
+   "Blindagem": [],
+   "Order": 1,
+   "Atributos": [],
+   "Opcionais": [],
+   "Carroceria": [],
+   "Leilao": [],
+   "Necessidade": [],
+   "ComFoto": false,
+   "ComVideo": false,
+   "CilindradasDe": 0.0,
+   "CilindradasAte": 0.0,
+   "Particular": false,
+   "Loja": false,
+   "Concessionaria": false,
+   "IdRevendedor": "",
+   "Feiroes": [],
+   "CompraCertificada": false
+  },
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros",
+     "Description": "https://www.webmotors.com.br/carros/estoque"
+    },
+    "3": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen"
+    },
+    "4": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+    }
+   },
+   "Canonical": "https://www.webmotors.com.br/carros/estoque/volkswagen/gol"
+  },
+  "Pagination": {
+   "PageCurrent": 500,
+   "PageTotal": 40
+  }
+ },
+ "detail_car_dealer": {
+  "UniqueId": 79573351,
+  "Prices": {
+   "Price": "11000",
+   "SearchPrice": "11000"
+  },
+  "Specification": {
+   "DatePublished": "2026-09-25T04:03:58.844953+00:00",
+   "Make": {
+    "id": 5,
+    "Value": "VOLKSWAGEN"
+   },
+   "Model": {
+    "id": 788,
+    "Value": "GOL"
+   },
+   "Version": {
+    "id": 339499,
+    "Value": "1.0 MI 8V GASOLINA 2P MANUAL"
+   },
+   "YearFabrication": "1996",
+   "YearModel": "1996",
+   "Odometer": "300000",
+   "Transmission": "Manual",
+   "Fuel": "Gasolina",
+   "FinalPlate": "9",
+   "Armored": "N",
+   "BodyType": "Hatchback",
+   "Color": {
+    "IdPrimary": "30409",
+    "Primary": "Prata"
+   },
+   "Colors": [
+    {
+     "IdPrimary": "30409",
+     "Primary": "Prata"
+    }
+   ],
+   "Optionals": [
+    {
+     "_id": 0,
+     "Name": "Ar quente"
+    }
+   ],
+   "VehicleAttributes": [
+    {
+     "Name": "Aceita troca"
+    }
+   ],
+   "NumberPorts": "2",
+   "Title": "VOLKSWAGEN GOL 1.0 MI 8V GASOLINA 2P MANUAL",
+   "Evaluation": {
+    "FIPEId": "005001-6",
+    "FIPE": 9585.0
+   }
+  },
+  "Seller": {
+   "Id": 3965685,
+   "SellerType": "PJ",
+   "FantasyName": "Europa Veículos",
+   "City": "Itupeva",
+   "State": "São Paulo (SP)",
+   "Phones": [
+    {
+     "type": "Business",
+     "order": 1,
+     "Value": "(11) 9801"
+    }
+   ],
+   "PhonesReal": [],
+   "AdType": {
+    "id": 1,
+    "Value": "Loja"
+   },
+   "CreatedDate": "2026-03-06T18:55:16.49",
+   "BudgetInvestimento": 0,
+   "CNPJ": "42831681000180",
+   "DealerScore": 0,
+   "CarDelivery": false,
+   "TrocaComTroco": false,
+   "ExceededPlan": false,
+   "HyundaiGroup": false,
+   "HyundaiGroupCNPJ": "",
+   "Localization": [
+    {
+     "State": "São Paulo (SP)",
+     "City": "Itupeva",
+     "Country": "Brasil",
+     "Neighborhood": "Jardim Primavera",
+     "ZipCode": "13295059",
+     "AbbrState": "Avenida Brasil, 1230"
+    }
+   ],
+   "IsCtaWhatsApp": false,
+   "AnswerQuickly": false
+  },
+  "CreatedDate": "2026-09-16T12:12:03",
+  "LongComment": "bom estado",
+  "Media": {
+   "Photos": [
+    {
+     "PhotoPath": "2026/202609/20260925/volkswagen-gol-1-0-mi-8v-gasolina-2p-manual-wmimagem04004883116.webp",
+     "Order": 1
+    },
+    {
+     "PhotoPath": "2026/202609/20260925/volkswagen-gol-1-0-mi-8v-gasolina-2p-manual-wmimagem04004898631.webp",
+     "Order": 2
+    }
+   ]
+  },
+  "ListingType": "U",
+  "ProductCode": "38329",
+  "ProductCodeVersion": "40710",
+  "FipePercent": 115,
+  "SellerBadges": false,
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros usados",
+     "Description": "https://www.webmotors.com.br/carros-usados/estoque"
+    },
+    "3": {
+     "Key": "Sp",
+     "Description": "https://www.webmotors.com.br/carros-usados/sp"
+    },
+    "4": {
+     "Key": "Itupeva",
+     "Description": "https://www.webmotors.com.br/carros-usados/sp-itupeva"
+    },
+    "5": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros-usados/sp-itupeva/volkswagen"
+    },
+    "6": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros-usados/sp-itupeva/volkswagen/gol"
+    },
+    "7": {
+     "Key": "1.0 Mi 8V Gasolina 2P Manual",
+     "Description": "https://www.webmotors.com.br/carros-usados/sp-itupeva/volkswagen/gol/10-mi-8v-gasolina-2p-manual"
+    }
+   }
+  },
+  "Type": "car",
+  "IsElegibleVehicleInspection": false,
+  "IsElegible360View": false
+ },
+ "detail_car_private": {
+  "UniqueId": 74811118,
+  "Prices": {
+   "Price": "8500",
+   "SearchPrice": "8500"
+  },
+  "Specification": {
+   "DatePublished": "2026-09-11T19:27:47.0214416+00:00",
+   "Make": {
+    "id": 5,
+    "Value": "VOLKSWAGEN"
+   },
+   "Model": {
+    "id": 788,
+    "Value": "GOL"
+   },
+   "Version": {
+    "id": 339492,
+    "Value": "1.0 MI 16V GASOLINA 4P MANUAL"
+   },
+   "YearFabrication": "1998",
+   "YearModel": "1999",
+   "Odometer": "402000",
+   "Transmission": "Manual",
+   "Fuel": "Gasolina",
+   "FinalPlate": "5",
+   "Armored": "N",
+   "BodyType": "Hatchback",
+   "Color": {
+    "IdPrimary": "30404",
+    "Primary": "Branco"
+   },
+   "Colors": [
+    {
+     "IdPrimary": "30404",
+     "Primary": "Branco"
+    }
+   ],
+   "Optionals": [
+    {
+     "_id": 0,
+     "Name": "Alarme"
+    },
+    {
+     "_id": 0,
+     "Name": "Desembaçador traseiro"
+    },
+    {
+     "_id": 0,
+     "Name": "Travas elétricas"
+    }
+   ],
+   "VehicleAttributes": [
+    {
+     "Name": "IPVA pago"
+    },
+    {
+     "Name": "Licenciado"
+    }
+   ],
+   "NumberPorts": "4",
+   "Title": "VOLKSWAGEN GOL 1.0 MI 16V GASOLINA 4P MANUAL",
+   "Evaluation": {
+    "FIPEId": "005126-8",
+    "FIPE": 9856.0
+   }
+  },
+  "Seller": {
+   "Id": 900001,
+   "SellerType": "PF",
+   "FirstName": "Fixture",
+   "City": "Londrina",
+   "State": "Paraná (PR)",
+   "AdType": {
+    "id": 4,
+    "Value": "Pessoa Física"
+   },
+   "CreatedDate": "0001-01-01T00:00:00",
+   "BudgetInvestimento": 0,
+   "DealerScore": 0,
+   "CarDelivery": false,
+   "TrocaComTroco": false,
+   "ExceededPlan": false,
+   "HyundaiGroup": false,
+   "Localization": [
+    {
+     "State": "Paraná (PR)",
+     "City": "Londrina",
+     "Country": "Brasil",
+     "ZipCode": "00000000",
+     "AbbrState": "PR"
+    }
+   ],
+   "IsCtaWhatsApp": false,
+   "AnswerQuickly": false
+  },
+  "CreatedDate": "2026-07-16T20:50:31.9",
+  "LongComment": "fixture: a private seller's own description, removed",
+  "Media": {
+   "Photos": [
+    {
+     "PhotoPath": "2026\\202607\\20260716\\volkswagengol10mi16vgasolina4pmanual-WMIMAGEM21283282796.jpg",
+     "Order": 1
+    },
+    {
+     "PhotoPath": "2026\\202607\\20260716\\volkswagengol10mi16vgasolina4pmanual-WMIMAGEM21304534859.jpg",
+     "Order": 2
+    }
+   ]
+  },
+  "ListingType": "U",
+  "ProductCode": "1236",
+  "ProductCodeVersion": "41057",
+  "FipePercent": 86,
+  "GoodDeal": true,
+  "SellerBadges": false,
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Carros usados",
+     "Description": "https://www.webmotors.com.br/carros-usados/estoque"
+    },
+    "3": {
+     "Key": "Pr",
+     "Description": "https://www.webmotors.com.br/carros-usados/pr"
+    },
+    "4": {
+     "Key": "Londrina",
+     "Description": "https://www.webmotors.com.br/carros-usados/pr-londrina"
+    },
+    "5": {
+     "Key": "Volkswagen",
+     "Description": "https://www.webmotors.com.br/carros-usados/pr-londrina/volkswagen"
+    },
+    "6": {
+     "Key": "gol",
+     "Description": "https://www.webmotors.com.br/carros-usados/pr-londrina/volkswagen/gol"
+    },
+    "7": {
+     "Key": "1.0 Mi 16V Gasolina 4P Manual",
+     "Description": "https://www.webmotors.com.br/carros-usados/pr-londrina/volkswagen/gol/10-mi-16v-gasolina-4p-manual"
+    }
+   }
+  },
+  "Type": "car",
+  "IsElegibleVehicleInspection": false,
+  "IsElegible360View": false
+ },
+ "detail_bike": {
+  "UniqueId": 3015706,
+  "Prices": {
+   "Price": "13990",
+   "SearchPrice": "13990"
+  },
+  "Specification": {
+   "DatePublished": "2026-08-01T20:44:09.4875461+00:00",
+   "Make": {
+    "id": 4,
+    "Value": "HONDA"
+   },
+   "Model": {
+    "id": 2605,
+    "Value": "ELITE 125i"
+   },
+   "YearFabrication": "2021",
+   "YearModel": "2022",
+   "Odometer": "17222",
+   "BodyType": "Scooter",
+   "Color": {
+    "IdPrimary": "303",
+    "Primary": "Branco",
+    "IdSecundary": "303",
+    "Secundary": "Branco"
+   },
+   "Colors": [
+    {
+     "IdPrimary": "303",
+     "Primary": "Branco",
+     "IdSecundary": "303",
+     "Secundary": "Branco"
+    }
+   ],
+   "LifeStyle": [
+    {
+     "Value": "Urbano"
+    }
+   ],
+   "VehicleAttributes": [
+    {
+     "Name": "Aceita troca"
+    },
+    {
+     "Name": "Único dono"
+    }
+   ],
+   "CubicCentimeter": 125.0,
+   "Engine": {
+    "Id": 193,
+    "Value": "4 Tempos"
+   },
+   "Break": {
+    "Id": 249,
+    "Value": "disco/tambor"
+   },
+   "Charge": {
+    "Id": 202,
+    "Value": "Injeção Eletrônica"
+   },
+   "Cooling": {
+    "Id": 213,
+    "Value": "ar"
+   },
+   "Shift": {
+    "Id": 218,
+    "Value": "automático"
+   },
+   "Starter": {
+    "Id": 233,
+    "Value": "elétrica"
+   },
+   "Title": "HONDA ELITE 125i ",
+   "Evaluation": {
+    "FIPEId": "811153-7",
+    "FIPE": 13083.0
+   }
+  },
+  "Seller": {
+   "Id": 3961522,
+   "SellerType": "PJ",
+   "FantasyName": "DII MOTOS",
+   "City": "São Bernardo do Campo",
+   "State": "São Paulo (SP)",
+   "Phones": [
+    {
+     "type": "Business",
+     "order": 1,
+     "Value": "(11) 981196880"
+    }
+   ],
+   "PhonesReal": [],
+   "AdType": {
+    "id": 1,
+    "Value": "Loja"
+   },
+   "CreatedDate": "2025-04-08T18:28:52.4",
+   "BudgetInvestimento": 0,
+   "CNPJ": "59467827000152",
+   "DealerScore": 0,
+   "CarDelivery": false,
+   "TrocaComTroco": false,
+   "ExceededPlan": false,
+   "HyundaiGroup": false,
+   "HyundaiGroupCNPJ": "",
+   "Localization": [
+    {
+     "State": "São Paulo (SP)",
+     "City": "São Bernardo do Campo",
+     "Country": "Brasil",
+     "Neighborhood": "Assunção",
+     "ZipCode": "09810555",
+     "AbbrState": "R.Cristiano Angeli, 485"
+    }
+   ],
+   "IsCtaWhatsApp": false,
+   "AnswerQuickly": false
+  },
+  "CreatedDate": "2026-07-28T17:29:17",
+  "LongComment": "ELITE 125I\n\nFinanciamento com entrada facilitada*\nAceitamos sua moto na troca\nVeículo com procedência e documentação em dia\nAprovação rápida e sem burocracia\nParcelamento no cartão de crédito em até 24x",
+  "Media": {
+   "Photos": [
+    {
+     "PhotoPath": "2026/202607/20260728/honda-elite-125i-wmimagem17324159876.webp",
+     "Order": 1
+    },
+    {
+     "PhotoPath": "2026/202607/20260728/honda-elite-125i-wmimagem17324169525.webp",
+     "Order": 2
+    }
+   ]
+  },
+  "ListingType": "U",
+  "ProductCode": "38491",
+  "ProductCodeVersion": "40907",
+  "FipePercent": 107,
+  "SellerBadges": false,
+  "SEO": {
+   "BreadCrumb": {
+    "1": {
+     "Key": "Home",
+     "Description": "https://www.webmotors.com.br/"
+    },
+    "2": {
+     "Key": "Motos Usadas",
+     "Description": "https://www.webmotors.com.br/motos-usadas/estoque"
+    },
+    "3": {
+     "Key": "Sp",
+     "Description": "https://www.webmotors.com.br/motos-usadas/sp"
+    },
+    "4": {
+     "Key": "São Bernardo Do Campo",
+     "Description": "https://www.webmotors.com.br/motos-usadas/sp-sao-bernardo-do-campo"
+    },
+    "5": {
+     "Key": "Honda",
+     "Description": "https://www.webmotors.com.br/motos-usadas/sp-sao-bernardo-do-campo/honda"
+    },
+    "6": {
+     "Key": "elite-125i",
+     "Description": "https://www.webmotors.com.br/motos-usadas/sp-sao-bernardo-do-campo/honda/elite-125i"
+    }
+   }
+  },
+  "Type": "bike",
+  "IsElegibleVehicleInspection": false,
+  "IsElegible360View": false
+ },
+ "avg_car_dealer": {
+  "Make": "VOLKSWAGEN",
+  "Model": "GOL",
+  "Version": "1.0 MI 8V GASOLINA 2P MANUAL",
+  "Year": "1996",
+  "FipeCode": "005001-6",
+  "FipePrice": 9585.0,
+  "State": "BR",
+  "BiggestPrice": 29900.0,
+  "MediumPrice": 12233.33,
+  "SmallestPrice": 7000.0,
+  "UpdateDateFipe": "2026-09-14T16:48:43.221Z",
+  "UpdateDateWebmotorsTable": "2024-10-27T14:00:38.601Z"
+ },
+ "avg_bike": {
+  "Make": "HONDA",
+  "Model": "ELITE 125i",
+  "Year": "2022",
+  "FipeCode": "811153-7",
+  "FipePrice": 13307.0,
+  "State": "SP",
+  "BiggestPrice": 15990.0,
+  "MediumPrice": 13513.46,
+  "SmallestPrice": 11500.0,
+  "UpdateDateFipe": "2026-09-14T16:49:04.003Z",
+  "UpdateDateWebmotorsTable": "2026-09-27T14:25:23.327Z"
+ },
+ "location": {
+  "response": {
+   "edge-country": "tur",
+   "edge-two-letter-country": "tr",
+   "ip": "192.0.2.1"
+  }
+ },
+ "detail_gone": {
+  "status": 404,
+  "body": "null"
+ },
+ "gateway_403": {
+  "status": 403,
+  "body": "{\"message\":\"Missing Authentication Token\"}"
+ },
+ "listing_gol_jsonld": "<html><head><script id=\"jsonld_online_business_rb\" data-qa=\"jsonld_online_business_rb\" type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"OnlineBusiness\",\"name\":\"Webmotors\",\"url\":\"https://www.webmotors.com.br\",\"logo\":\"https://www.webmotors.com.br/favicon.ico\",\"description\":\"A maior plataforma de compra e venda de veículos do Brasil.\",\"sameAs\":[\"https://www.facebook.com/webmotors\",\"https://www.instagram.com/webmotors\",\"https://www.youtube.com/user/webmotors\",\"https://x.com/webmotors\"]}</script><script id=\"jsonld_breadcrumblist_rb\" data-qa=\"jsonld_breadcrumblist_rb\" type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https://www.webmotors.com.br/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Carros\",\"item\":\"https://www.webmotors.com.br/carros/estoque\"},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"Volkswagen\",\"item\":\"https://www.webmotors.com.br/carros/estoque/volkswagen\"},{\"@type\":\"ListItem\",\"position\":4,\"name\":\"gol\",\"item\":\"https://www.webmotors.com.br/carros/estoque/volkswagen/gol\"}]}</script><script id=\"jsonld_offercatalog_rb\" data-qa=\"jsonld_offercatalog_rb\" type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"OfferCatalog\",\"name\":\"Carros Volkswagen Gol usados, seminovos e novos 0km à venda em todo o Brasil\",\"description\":\"Procurando Carros Volkswagen Gol Usados, Seminovos ou Novos 0km para comprar? Veja 2.554 ofertas aqui na Webmotors, a mais segura do Brasil para negociar veículos!\",\"url\":\"https://www.webmotors.com.br/carros/estoque/volkswagen/gol\",\"numberOfItems\":2554,\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.6 MI CITY 8V FLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260909/volkswagengol16micity8vflex4pmanual-WMIMAGEM02084334576.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"35900\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/16-mi-city-8v-flex-4p-manual/4-portas/2013-2014/74012141\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":2,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 MI 8V FLEX 4P MANUAL G.V\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260913/volkswagengol10mi8vflex4pmanualgv-WMIMAGEM21585017417.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"25649\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-mi-8v-flex-4p-manual-gv/4-portas/2010-2011/79374446\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":3,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.6 MI TRENDLINE 8V FLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260917/volkswagengol16mitrendline8vflex4pmanual-WMIMAGEM16092298037.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"39990\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/16-mi-trendline-8v-flex-4p-manual/4-portas/2014-2015/79692776\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":4,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.6 MSI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260916/volkswagen-gol-1-6-msi-totalflex-4p-manual-wmimagem12373376131.webp\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"62000\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/16-msi-totalflex-4p-manual/4-portas/2021-2022/79575743\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":5,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260910/volkswagen-gol-1-0-12v-mpi-totalflex-4p-manual-wmimagem04011520441.webp\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"56500\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2022-2023/79079147\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":6,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202608/20260813/volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem1241564213.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"92990\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-last-edition-4p-manual/4-portas/2022-2023/74242354\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":7,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260927/volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM11115276610.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"47800\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2021-2022/80384495\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":8,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 MI 8V FLEX 4P MANUAL G.V\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260909/volkswagengol10mi8vflex4pmanualgv-WMIMAGEM09064097246.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"36900\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-mi-8v-flex-4p-manual-gv/4-portas/2013-2014/79158515\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":9,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.6 LS 8V GASOLINA 2P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260921/volkswagengol16ls8vgasolina2pmanual-WMIMAGEM07260635830.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"35000\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/16-ls-8v-gasolina-2p-manual/2-portas/1983/79931498\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":10,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202608/20260821/volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem12110199454.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"109900\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-last-edition-4p-manual/4-portas/2022-2023/78268453\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":11,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.6 CL 8V GASOLINA 2P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260910/volkswagengol16cl8vgasolina2pmanual-WMIMAGEM13080383981.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"19000\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/16-cl-8v-gasolina-2p-manual/2-portas/1994/79242583\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":12,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 MI 8V FLEX 4P MANUAL G.IV\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260911/volkswagengol10mi8vflex4pmanualgiv-WMIMAGEM17293577473.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"30524\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-mi-8v-flex-4p-manual-giv/4-portas/2012-2013/79321505\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":13,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.8 CL 8V GASOLINA 2P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260922/volkswagengol18cl8vgasolina2pmanual-WMIMAGEM00445372676.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"21388\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/18-cl-8v-gasolina-2p-manual/2-portas/1996/79979961\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":14,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260901/volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem16384851285.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"61990\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2022-2023/76721265\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":15,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 MI CITY 8V FLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260901/volkswagengol10micity8vflex4pmanual-WMIMAGEM18394165361.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"36950\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-mi-city-8v-flex-4p-manual/4-portas/2013-2014/78696587\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":16,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260924/volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM1702561629.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"42700\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2018-2019/80210050\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":17,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260925/volkswagengol1012vmpitotalflex4pmanual-WMIMAGEM10435588995.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"48700\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2021-2022/80265440\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":18,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260924/volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem15114768630.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"69900\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2018-2019/79961987\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":19,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260917/volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem10351460117.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"35977\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2018-2019/79672979\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":20,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 MI CITY 8V FLEX 2P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260915/volkswagen-gol-1.0-mi-city-8v-flex-2p-manual-wmimagem10574426966.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"36900\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-mi-city-8v-flex-2p-manual/2-portas/2015-2016/79490789\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":21,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260901/volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem13503942491.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"49990\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2022-2023/78681604\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":22,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 8V GASOLINA 2P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202607/20260707/volkswagen-gol-1.0-8v-gasolina-2p-manual-wmimagem14085100480.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"69900\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-8v-gasolina-2p-manual/2-portas/1993/71375742\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":23,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202608/20260804/volkswagen-gol-1.0-12v-mpi-totalflex-4p-manual-wmimagem17315586932.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"62990\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-4p-manual/4-portas/2022-2023/76720887\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}},{\"@type\":\"ListItem\",\"position\":24,\"item\":{\"@type\":\"Vehicle\",\"name\":\"VOLKSWAGEN GOL 1.0 12V MPI TOTALFLEX LAST EDITION 4P MANUAL\",\"image\":[\"https://image.webmotors.com.br/_fotos/anunciousados/gigante/2026/202609/20260914/volkswagen-gol-1.0-12v-mpi-totalflex-last-edition-4p-manual-wmimagem18013215560.jpg\"],\"offers\":{\"@type\":\"Offer\",\"price\":\"89890\",\"url\":\"https://www.webmotors.com.br/comprar/volkswagen/gol/10-12v-mpi-totalflex-last-edition-4p-manual/4-portas/2022-2023/79441327\",\"availability\":\"https://schema.org/InStock\",\"priceCurrency\":\"BRL\"}}}]}</script></head><body></body></html>",
+ "advert_shell_jsonld": "<html><head></head><body></body></html>",
+ "px_refusal": "<!DOCTYPE html><html lang=\"en\"><head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <meta name=\"description\" content=\"px-captcha\">\n    <title>Access to this page has been denied</title>\n    \n<script src=\"/7Vv0zOst/captcha/captcha.js?a=c&amp;u=00000000-0000-0000-0000-000000000000&amp;v=&amp;m=0&amp;b=aHR0cHM6Ly93d3cud2VibW90b3JzLmNvbS5ici9hcGkvbG9jYXRpb24=&amp;h=R0VU\"></script><style>div.px-captcha-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.31); } div.px-captcha-container { position: fixed; height: 340px; background-color: #fff; font-family: Roboto, sans-serif; } img.px-captcha-logo { display: block; margin: auto; padding: 53px 0 31px; } div.px-captcha-header { color: #626364;  font-size: 29px; font-weight: 500; margin: 67px 0 33px; line-height: 0.83; text-align: center; } div.px-captcha-message { color: #626364; ; font-size: 18px;  min-height: 48px; margin: 0 0 29px; line-height: 1.33; text-align: center; } div#px-captcha { min-height: 100px; text-align: center; } div.px-captcha-refid { border-top: solid 1px #f0eeee; min-height: 27px; margin: 11px 0 0; border-radius: 0 0 3px 3px; background-color: #fafbfc; font-size: 10px; line-height: 2.7; text-align: center; color: #b1b5b8; } @media (min-width: 620px) { div.px-captcha-container { width: 530px; top: 50%; left: 50%; margin-top: -170px; margin-left: -265px; border-radius: 3px; box-shadow: 0 2px 9px -1px rgba(0, 0, 0, 0.13); } } @media (min-width: 481px) and (max-width: 620px) { div.px-captcha-container { width: 85%; top: 50%; left: 50%; margin-top: -170px; margin-left: -42.5%; border-radius: 3px; box-shadow: 0 2px 9px -1px rgba(0, 0, 0, 0.13); } } @media (max-width: 480px) { div.px-captcha-refid { position: fixed; width: 100%; left: 0; bottom: 0; border-radius: 0; font-size: 14px; line-height: 2; } } @media (max-width: 390px) { div.px-captcha-refid { font-size: 12px; line-height: 2.5; } }body { background-color: #fafbfc; } @media (max-width: 480px) { body { background-color: #fff; } div.px-captcha-container { width: 100%; top: 50%; left: 50%; margin-top: -170px; margin-left: -50%; } }</style><style>\n        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');\n        \n    </style><style type=\"text/css\">.px-loader-wrapper {    display: flex;}@keyframes loadingEffect {    0% {        background-position: 0;    }    100% {        background-position: 60vw;    }}.px-inner-loading-area {    width: 253px;    height: 50px;    border-radius: 100px;    animation-name: loadingEffect;    animation-duration: 1.2s;    animation-iteration-count: infinite;    animation-timing-function: ease;    animation-fill-mode: forwards;    background: linear-gradient(to right, #f6f6f6 8%, #f0f0f0 18%, #f6f6f6 33%);}.px-loading-area {    width: 253px;    height: 50px;    margin: undefined;}</style><script src=\"https://client.px-cloud.net/PX7Vv0zOst/main.min.js\"></script></head>\n<body>\n    <script>\n        /* PerimeterX assignments */\n        window._pxVid = '';\n        window._pxUuid = '00000000-0000-0000-0000-000000000000';\n        window._pxAppId = 'PX7Vv0zOst';\n        window._pxHostUrl = '/7Vv0zOst/xhr';\n        window._pxCustomLogo = 'https://www.webmotors.com.br/vender-carro/assets/logo-DY6lA2gI.svg';\n        window._pxJsClientSrc = '/7Vv0zOst/init.js';\n        window._pxMobile = false;\n        window._pxFirstPartyEnabled = true;\n\n        var pxCaptchaSrc = '/7Vv0zOst/captcha/captcha.js?a=c&u=00000000-0000-0000-0000-000000000000&v=&m=0&b=aHR0cHM6Ly93d3cud2VibW90b3JzLmNvbS5ici9hcGkvbG9jYXRpb24=&h=R0VU';\n        var script = document.createElement('script');\n        script.src = pxCaptchaSrc;\n        script.onload = onScriptLoad;\n        script.onerror = onScriptError;\n        var onScriptErrorCalled;\n        document.head.appendChild(script);\n        var timeoutID = setTimeout(onScriptError, 5000);\n        function onScriptLoad() {\n            clearTimeout(timeoutID);\n            setTimeout(function() {\n                if (!isContentLoaded()) {\n                    onScriptError();\n                }\n            }, 2500);\n        }\n        function onScriptError() {\n            if (onScriptErrorCalled) {\n                return;\n            }\n            onScriptErrorCalled = true;\n            script = document.createElement('script');\n            script.src = 'https://captcha.px-cloud.net/PX7Vv0zOst/captcha.js?a=c&u=00000000-0000-0000-0000-000000000000&v=&m=0&b=aHR0cHM6Ly93d3cud2VibW90b3JzLmNvbS5ici9hcGkvbG9jYXRpb24=&h=R0VU';\n            script.onload = function() {\n                clearTimeout(timeoutID);\n            };\n            script.onerror = window._pxOnError;\n            document.head.appendChild(script);\n            timeoutID = setTimeout(function() {\n                if (!isContentLoaded()) {\n                    window._pxOnError();\n                }\n            }, 5000);\n        }\n        function isContentLoaded() {\n            return !!document.querySelector('div,span');\n        }\n        window._pxOnError = function () {\n            var style = document.createElement('style');\n            style.innerText = '@import url(https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap);body{background-color:#fafbfc}.px-captcha-error-container{position:fixed;height:340px;background-color:#fff;font-family:Roboto,sans-serif}.px-captcha-error-header{color:#f0f1f2;font-size:29px;margin:67px 0 33px;font-weight:500;line-height:.83;text-align:center}.px-captcha-error-message{color:#f0f1f2;font-size:18px;margin:0 0 29px;line-height:1.33;text-align:center}.px-captcha-error-button{text-align:center;line-height:48px;width:253px;margin:auto;border-radius:50px;border:solid 1px #f0f1f2;font-size:20px;color:#f0f1f2}.px-captcha-error-wrapper{margin:18px 0 0}div.px-captcha-error{margin:auto;text-align:center;width:400px;height:30px;font-size:12px;background-color:#fcf0f2;color:#ce0e2d}img.px-captcha-error{margin:6px 8px -2px 0}.px-captcha-error-refid{border-top:solid 1px #f0eeee;height:27px;margin:13px 0 0;border-radius:0 0 3px 3px;background-color:#fafbfc;font-size:10px;line-height:2.5;text-align:center;color:#b1b5b8}@media (min-width:620px){.px-captcha-error-container{width:530px;top:50%;left:50%;margin-top:-170px;margin-left:-265px;border-radius:3px;box-shadow:0 2px 9px -1px rgba(0,0,0,.13)}}@media (min-width:481px) and (max-width:620px){.px-captcha-error-container{width:85%;top:50%;left:50%;margin-top:-170px;margin-left:-42.5%;border-radius:3px;box-shadow:0 2px 9px -1px rgba(0,0,0,.13)}}@media (max-width:480px){body{background-color:#fff}.px-captcha-error-header{color:#f0f1f2;font-size:29px;margin:55px 0 33px}.px-captcha-error-container{width:530px;top:50%;left:50%;margin-top:-170px;margin-left:-265px}.px-captcha-error-refid{position:fixed;width:100%;left:0;bottom:0;border-radius:0;font-size:14px;line-height:2}}@media (max-width:390px){div.px-captcha-error{font-size:10px}.px-captcha-error-refid{font-size:11px;line-height:2.5}}';\n            document.head.appendChild(style);\n            var div = document.createElement('div');\n            div.className = 'px-captcha-error-container';\n            div.innerHTML = '<div class=\"px-captcha-error-header\">Before we continue...</div><div class=\"px-captcha-error-message\">Press & Hold to confirm you are<br>a human (and not a bot).</div><div class=\"px-captcha-error-button\">Press & Hold</div><div class=\"px-captcha-error-wrapper\"><div class=\"px-captcha-error\"><img class=\"px-captcha-error\" src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAQCAMAAADDGrRQAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABFUExURUdwTNYELOEGONQILd0AONwALtwEL+AAL9MFLfkJSNQGLdMJLdQJLdQGLdQKLtYFLNcELdUGLdcBL9gFL88OLdUFLNEOLglBhT4AAAAXdFJOUwC8CqgNIRgRoAS1dWWuR4RTjzgryZpYblfkcAAAAI9JREFUGNNdj+sWhCAIhAdvqGVa1r7/oy6RZ7eaH3D4ZACBIed9wlOOMtUnSrEmZ6cHa9YAIfsbCkWrdpi/c50Bk2CO9mNLdMAu03wJA3HpEnfpxbyOg6ruyx8JJi6KNstnslp1dbPd9GnqmuYq7mmcv1zjnbQw8cV0xzkqo+fX1zkjUOO7wnrInUTxJiruC3vtBNRoQQn2AAAAAElFTkSuQmCC\">Please check your internet connection' + (window._pxMobile ? '' : ' or disable your ad-blocker') + '.</div></div><div class=\"px-captcha-error-refid\">Reference ID ' + window._pxUuid + '</div>';\n            document.body.appendChild(div);\n            if (window._pxMobile) {\n                setTimeout(function() {\n                    location.href = '/px/captcha_close?status=-1';\n                }, 5000);\n            }\n        };\n    </script>\n    \n\n\n<div id=\"px-captcha-wrapper\" dir=\"auto\"><div class=\"px-captcha-container\"><img class=\"px-captcha-logo\" height=\"40\" src=\"https://www.webmotors.com.br/vender-carro/assets/logo-DY6lA2gI.svg\" alt=\"Logo\"><div class=\"px-captcha-message\">Pressione e segure para confirmar<br>que você é um humano (e não um bot).</div><div id=\"px-captcha\" style=\"display: block; min-width: 253px;\"><iframe style=\"display: none; width: 100%; height: 52px; border: 0; -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; -ms-user-select: none; user-select: none;\" token=\"e81fb9aad861b5a97fc92a12c1db21489bcb69e2e56f139eb69408afd27c8d0076f29c51f6946e35410fd0906ba9fed25166a783b095126fa701ffa669c34cf3\" title=\"Desafio de verificação contra robôs\"></iframe></div><div class=\"px-captcha-refid\">ID de referência 00000000-0000-0000-0000-000000000000</div></div></div><iframe name=\"q7k2m8010129\" aria-hidden=\"true\" tabindex=\"-1\" style=\"display: none;\"></iframe><iframe src=\"https://js.px-cloud.net/?t=d-micehm2mu-1790587241101&amp;v=00000000-0000-0000-0000-000000000000&amp;h=d3d3LndlYm1vdG9ycy5jb20uYnI%3D&amp;a=PX7Vv0zOst\" data-frame-token=\"d-micehm2mu-1790587241101\" referrerpolicy=\"strict-origin-when-cross-origin\" aria-hidden=\"true\" tabindex=\"-1\" role=\"presentation\" title=\"\" style=\"position: absolute; visibility: hidden; pointer-events: none; border: 0px; top: 0px; left: 0px; width: 1px; height: 1px; overflow: hidden; opacity: 0;\"></iframe><iframe id=\"px-iframe-1790587241107\" style=\"position:absolute; visibility:hidden; pointer-events:none; border:0; top:0; left:0; width:100px; height:100px;\" sandbox=\"allow-scripts\" aria-hidden=\"true\" src=\"https://crcldu.com/bd/sync.html?v=1790587200000#1790587240926|1\"></iframe></body></html>",
+ "cloudfront_403": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">\n<TITLE>ERROR: The request could not be satisfied</TITLE>\n</HEAD><BODY>\n<H1>403 ERROR</H1>\n<H2>The request could not be satisfied.</H2>\n<HR noshade size=\"1px\">\nThe Amazon CloudFront distribution is configured to block access from your country.\nWe can't connect to the server for this app or website at this time. There might be too much traffic or a configuration error. Try again later, or contact the app or website owner.\n<BR clear=\"all\">\nIf you provide content to customers through CloudFront, you can find steps to troubleshoot and help prevent this error by reviewing the CloudFront documentation.\n<BR clear=\"all\">\n<HR noshade size=\"1px\">\n<PRE>\nGenerated by cloudfront (CloudFront)\nRequest ID: FIXTURE-REQUEST-ID\n</PRE>\n<ADDRESS>\n</ADDRESS>\n</BODY></HTML>",
+ "cdp_landing": "<html><head><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/captchafox/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/mt_captcha/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/turnstile/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/turnstile/hunter.js\" data-ts-input=\"cf-turnstile-response\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/amazon_waf/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/yandex/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/lemin/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/arkoselabs/hunter.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/arkoselabs/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/recaptcha/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/recaptcha/hunter.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/keycaptcha/hunter.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/geetest_v4/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/captcha/geetest/interceptor.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/communication_helpers.js\"></script><script src=\"chrome-extension://kjmkgkdkpedkejedfhmfcenooemhbpbo/content/core_helpers.js\"></script><meta name=\"color-scheme\" content=\"light dark\"><meta charset=\"utf-8\"><captcha-widgets></captcha-widgets></head><body><pre>{\"response\":{\"edge-country\":\"usa\",\"edge-region\":\"ny\",\"edge-county\":\"kings\",\"edge-city\":\"brooklyn\",\"edge-metro-code\":\"501\",\"edge-country-code\":\"840\",\"edge-region-code\":\"33\",\"edge-city-code\":\"366\",\"edge-continent-code\":\"6\",\"edge-two-letter-country\":\"us\",\"edge-area-codes\":\"347/718/929/917\",\"edge-gmt-offset\":\"-400\",\"edge-in-dst\":\"y\",\"edge-timezone-name\":\"america/new_york\",\"pulse-country\":\"usa\",\"pulse-region\":\"ny\",\"pulse-county\":\"kings\",\"pulse-city\":\"brooklyn\",\"pulse-metro-code\":\"501\",\"pulse-postal-code\":\"11234\",\"pulse-country-code\":\"840\",\"pulse-region-code\":\"33\",\"pulse-city-code\":\"366\",\"pulse-continent-code\":\"6\",\"pulse-two-letter-country\":\"us\",\"pulse-area-codes\":\"347/718/929/917\",\"pulse-gmt-offset\":\"-400\",\"pulse-in-dst\":\"y\",\"pulse-timezone-name\":\"america/new_york\",\"ip\":\"192.0.2.1\",\"edge-conn-speed\":\"broadband\",\"edge-latitude\":\"40.63\",\"edge-longitude\":\"-73.95\",\"edge-internal-code\":\"21\",\"edge-country-conf\":\"99\",\"edge-region-conf\":\"99\",\"edge-city-conf\":\"95\",\"pulse-internal-code\":\"24\",\"pulse-country-conf\":\"99\",\"pulse-region-conf\":\"99\",\"pulse-city-conf\":\"95\",\"pulse-postal-conf\":\"90\"}}</pre><div class=\"json-formatter-container\"></div></body></html>"
+}

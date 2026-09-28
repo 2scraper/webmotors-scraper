@@ -2,7 +2,7 @@
 """
 diff_runs.py
 ------------
-Diff two binance-scraper JSON outputs of the same mode by `sku`.
+Diff two webmotors-scraper JSON outputs of the same mode by `sku`.
 
     added      in the new run, not the old one
     removed    in the old run, not the new one
@@ -10,14 +10,16 @@ Diff two binance-scraper JSON outputs of the same mode by `sku`.
 
 What each means depends on the mode, and it is worth being exact:
 
-    p2p            an advert that appeared or went away, or whose price,
-                   limits or remaining quantity moved. P2P moves by the
-                   minute, so a diff an hour apart is mostly `changed`.
-    copytrading    a portfolio entering or leaving the slice the run fetched,
-                   or its figures moving. `removed` does NOT mean closed: a
-                   run fetches the first N of ~8,900 portfolios under one
-                   ordering, and a portfolio can fall below the cut.
-    announcements  a new article (`added`), or one the catalogue dropped.
+    search   a listing entering or leaving the slice the run fetched, or its
+             price, mileage or badge moving. `removed` does NOT mean sold: a
+             run fetches the first N listings under one ordering, the site
+             serves at most ~10,000 per search, and the "relevance" ordering
+             reorders itself within minutes (89 of 94 rows in common between
+             two runs 20 minutes apart, 2026-09-28). A listing can simply fall
+             below the cut.
+    ad       an advert's price or market-price range moving. An advert that
+             is gone is not a row at all; it is listed in the sidecar's
+             `ads_gone`.
 
 **The tracked columns are DERIVED from the row class, not listed by hand.**
 A hand-written list here is how a sibling family of repos came to report
@@ -32,8 +34,10 @@ Refused, with --force as the escape hatch:
   * runs that are not both `complete` — a short run's unfetched pages read as
     `removed`;
   * runs of different modes — their rows share no columns worth comparing;
-  * runs of different QUERIES (asset/fiat/side, period/ordering, catalogue),
-    from the sidecar — every line would describe the query change.
+  * runs of different QUERIES (listing address, ORDERING, page size), from
+    the sidecar — every line would describe the query change. The ordering
+    matters most: on a capped search it decides WHICH listings are in the
+    file at all.
 """
 
 import argparse
@@ -46,9 +50,9 @@ from typing import Dict, List, Optional, Tuple
 from output_writer import ROW_CLASS_BY_MODE, UNIQUE_BY_SKU_MODES
 
 # Columns that describe the RUN, or that restate the key, rather than the
-# advert/portfolio/article. `page` and `position` are here because a live
-# listing reorders itself between runs: a portfolio moving from position 4
-# to 5 is the ordering, not the portfolio.
+# vehicle. `page` and `position` are here because a live listing reorders
+# itself between runs: a car moving from position 4 to 5 is the ordering, not
+# the car.
 UNTRACKED_FIELDS = frozenset({
     "source", "scraped_at", "sku", "page", "position", "mode", "sort",
     "data_source", "url",
@@ -110,15 +114,8 @@ def diff_products(old: List[dict], new: List[dict],
 
 def _headline(row: dict) -> str:
     """The one detail per row that says what it is, by mode."""
-    mode = row.get("mode")
-    if mode == "p2p":
-        return "%s %s/%s @ %s" % (row.get("advertiser_side"), row.get("asset"),
-                                  row.get("fiat"), row.get("price"))
-    if mode == "copytrading":
-        return "ROI %s%% (%s)" % (row.get("roi_pct"), row.get("time_range"))
-    if mode == "announcements":
-        return str(row.get("released_at"))
-    return ""
+    return "%s %s %s" % (row.get("year_model"), row.get("price"),
+                         row.get("city") or "")
 
 
 def _print_summary(result: dict) -> None:
@@ -178,10 +175,10 @@ def _check_comparable(args) -> bool:
     if len(queries) == 2 and queries["--old"] != queries["--new"]:
         problems.append(
             f"the two runs asked different questions ({queries['--old']} vs "
-            f"{queries['--new']}). On copy-trading the ordering decides WHICH "
-            f"portfolios a capped run holds at all; on P2P the side and "
-            f"payment filter decide which adverts exist. Every line would "
-            f"describe the query rather than the site.")
+            f"{queries['--new']}). The ordering decides WHICH listings a "
+            f"capped search holds at all, and the address decides which "
+            f"exist. Every line would describe the query rather than the "
+            f"site.")
     if not problems:
         return True
     print("[!] Refusing to diff these two runs:")
@@ -193,7 +190,7 @@ def _check_comparable(args) -> bool:
 
 def parse_args():
     p = argparse.ArgumentParser(
-        description="Diff two binance-scraper JSON outputs by sku.")
+        description="Diff two webmotors-scraper JSON outputs by sku.")
     p.add_argument("--old", required=True, help="Earlier run's JSON output.")
     p.add_argument("--new", required=True, help="Later run's JSON output.")
     p.add_argument("--out", default=None,

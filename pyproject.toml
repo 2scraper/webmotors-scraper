@@ -42,7 +42,6 @@ dev = ["pytest>=7.0"]
 # invoked as a script (see CONTRIBUTING.md), not a module an installed
 # dependency would import.
 py-modules = [
-    "captcha_solver",
     "diff_runs",
     "env_config",
     "fingerprint_client",

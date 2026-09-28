@@ -1,59 +1,53 @@
 #!/usr/bin/env python3
 """
-binance-scraper — Playwright edition (primary engine)
-=====================================================
+webmotors-scraper — Playwright edition (primary engine)
+=======================================================
 
-Scrapes three things binance.com publishes and its official API does not:
+Scrapes Brazil's largest vehicle marketplace, webmotors.com.br:
 
-    --mode p2p            (default)  the P2P order book for one asset/fiat
-                                     pair: price, limits, payment methods,
-                                     and the advertiser's 30-day record
-    --mode copytrading               Futures copy-trading lead portfolios:
-                                     ROI, PnL, drawdown, AUM, copiers
-    --mode announcements             an announcement catalogue: new listings,
-                                     delistings, maintenance, ...
+    --mode search   (default)  a search page of cars or motorcycles: price,
+                               year, mileage, version, FIPE percentage,
+                               seller kind, city and state
+    --mode ad                  adverts, one row each: everything above plus
+                               fuel, optionals, the FIPE code and value, and
+                               the site's own market-price range
 
 Three engines ship in this repo and they must agree on exit codes, run
 status, and whether a run crashes or spends money. The shared decisions live
-in output_writer.finish_run() and page_flow.py so they cannot drift apart.
+in output_writer.finish_run() and page_flow.py, including the fetch loop
+itself, so they cannot drift apart.
 
-What is different about Binance
--------------------------------
-* **Every HTML page is behind AWS WAF, and none of the data needs one.**
-  Measured 2026-09-24 from a datacentre address: each page answers 202 with
-  `x-amzn-waf-action: challenge`, and real Chromium gets the WAF's CAPTCHA.
-  The three JSON endpoints the site's own front end calls answer the same
-  address normally. So this engine never renders a page. It lands the
-  browser on one of those endpoints (a GET, for a same-origin
-  www.binance.com document), then issues each request as a same-origin
+What is different about Webmotors
+---------------------------------
+* **Two gates, and they refuse different things.** CloudFront refuses every
+  datacentre ADDRESS (a 986-byte 403, headful Chromium included), and
+  PerimeterX refuses the CLIENT: a headless browser whose user agent says
+  `HeadlessChrome` got its Press & Hold page 0 of 3 times served, and the
+  same browser with that one token removed was served 3 of 3 (2026-09-28).
+  So this engine needs a residential exit (--proxy) or the Scraping Browser
+  (--cdp-endpoint), and it overrides the user agent (`_chrome_ua`).
+* **No page is rendered.** The browser lands on a 3 KB endpoint and asks the
+  site's own search and detail endpoints for every page with a same-origin
   `fetch()`. See product_parser's docstring.
-* **The browser earns its place if the WAF moves.** Should the endpoints
-  ever be gated, the landing navigation meets the WAF's own page. The
-  challenge action is a script a real browser runs by itself. The CAPTCHA
-  action is answered with 2Captcha's AmazonTask, and the token goes into the
-  `aws-waf-token` cookie (captcha_solver).
-* **The API does not validate its parameters**, and three of its silent
-  fallbacks would turn a typo into a healthy-looking run. The query is
-  therefore allowlisted before anything is sent, and --pay-type is checked
-  against the site's own list for the fiat.
-* **Every listing states its total on page 1**, so pages are PLANNED from
-  the site's arithmetic rather than discovered. Every page is addressable by
-  number, so --concurrency works in all three modes.
-* **The listings are live.** P2P's total moved from 186 to 187 between two
-  requests a minute apart. A multi-page run can therefore see one row twice
-  (dropped by the dedupe) or miss one that moved up across a page boundary
-  (invisible to any scraper). The README says so.
+* **The API does not validate what it is given.** A misspelt model is
+  answered with every model of the make, an unknown state with the whole
+  country, a page past the end with page 1 again. The ordering is
+  allowlisted, the site's echo of the filters is checked after page 1, and
+  pages are planned from the site's own page count.
+* **The site serves at most ~10,000 results per search.** The sidecar
+  records the site's own total beside what a run holds (`capped_by_site`).
 
 Usage
 -----
-    python playwright_scraper.py --asset USDT --fiat EUR --side buy --pages 3
+    python playwright_scraper.py --make volkswagen --model gol --pages 3 \\
+        --proxy http://USER:PASS@HOST:PORT
 
-    python playwright_scraper.py --mode copytrading --time-range 7D \\
-        --sort-by pnl --pages 5
+    python playwright_scraper.py --url "https://www.webmotors.com.br/carros/sp/toyota/corolla?anode=2020" \\
+        --sort price-asc
 
-    python playwright_scraper.py --mode announcements --category delisting
+    python playwright_scraper.py --category motos --make honda
 
-    python playwright_scraper.py --url "https://p2p.binance.com/en/trade/all-payments/USDT?fiat=EUR"
+    python playwright_scraper.py --mode ad --ads-file webmotors_rows.json
 
 Requires: pip install -r requirements.txt -r requirements-playwright.txt
           then: playwright install chromium   (only if NOT using --cdp-endpoint)
@@ -66,16 +60,12 @@ import re
 import sys
 import threading
 import time
-from typing import Optional
-from urllib.parse import urlparse
 
 from playwright.sync_api import (sync_playwright, Error as PWError,
                                  TimeoutError as PWTimeout)
 
-from captcha_solver import detect_aws_waf, solve_recaptcha, AWS_WAF_COOKIE
-from product_parser import (ANN_CATALOGS, COPY_SORTS, COPY_TIME_RANGES,
-                            DEFAULT_ANN_CATALOG, DEFAULT_COPY_SORT, P2P_SIDES,
-                            Query)
+from product_parser import (CONDITION_SUFFIX, DEFAULT_PER_PAGE, DEFAULT_SORT,
+                            MAX_PER_PAGE, MODES, SORTS, UFS, VEHICLES, Query)
 from output_writer import EXIT_API_ERROR
 import page_flow
 from proxy_pool import (from_args as proxy_pool_from_args, to_playwright, mask,
@@ -102,10 +92,10 @@ _PROXY_ERROR_MARKERS = (
 # The fetch() every page goes through. It is handed to `page.evaluate` as a
 # FUNCTION, which Playwright sends through `Runtime.callFunctionOn` rather
 # than evaluating a string, so it works under any Content-Security-Policy
-# (§18). It returns the status, the body and the WAF's own header, because
-# a 202 challenge has an empty body and the header is then the only signal.
+# (§18). No headers are set: the site's own front end sends none that the
+# endpoints need, and the one HTML page fetched per run (for its currency,
+# page_flow.read_currency) must be asked for as a browser asks for a page.
 #
-# `credentials: "include"` so a solved `aws-waf-token` cookie rides along.
 # The AbortController is the timeout: a browser fetch() has none of its own,
 # and §8 requires every remote call to be bounded.
 FETCH_JS = """
@@ -113,15 +103,13 @@ async ([url, method, body, timeoutMs]) => {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
-    const init = {method, credentials: "include", signal: ctl.signal,
-                  headers: {"accept": "application/json, text/plain, */*"}};
+    const init = {method, credentials: "include", signal: ctl.signal};
     if (body !== null) {
-      init.headers["content-type"] = "application/json";
+      init.headers = {"content-type": "application/json"};
       init.body = body;
     }
     const r = await fetch(url, init);
-    return {status: r.status, text: await r.text(),
-            waf: r.headers.get("x-amzn-waf-action")};
+    return {status: r.status, text: await r.text(), waf: null};
   } catch (e) {
     return {status: 0, text: "", waf: null, error: String(e)};
   } finally {
@@ -137,7 +125,14 @@ BODY_TEXT_JS = "() => document.body ? document.body.innerText : ''"
 
 
 def _chrome_ua(chromium_version: str) -> str:
-    """A desktop-Chrome UA naming the browser's OWN real version (§8)."""
+    """A desktop-Chrome UA naming the browser's OWN real version (§8).
+
+    LOAD-BEARING on this site, not cosmetic. Headless Chromium's default UA
+    carries the token `HeadlessChrome`, and PerimeterX refused that 0 of 3
+    times served, while the same headless browser with this UA was served 3
+    of 3, same exit, same session length (2026-09-28). In a headful browser
+    it changed nothing (served 2 of 2 with and without it).
+    """
     return (f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             f"(KHTML, like Gecko) Chrome/{chromium_version} Safari/537.36")
 
@@ -156,8 +151,7 @@ def _launch_local(pw, args, pool):
 
     A proxy rotation tears the whole browser down and calls this again.
     Cookies a bot manager issued against one exit, replayed from another,
-    are a stronger signal than either address alone (§8), and on this site
-    that includes a solved `aws-waf-token`.
+    are a stronger signal than either address alone (§8).
     """
     launch_kwargs = {"headless": args.headless}
     proxy = to_playwright(pool.current) if pool else None
@@ -189,13 +183,8 @@ class _Ops:
 
     page_flow owns the fetch loop for all three engines. This class answers
     only HOW Playwright does each step. `landed` records whether the page
-    sits on a www.binance.com document that fetch() can be issued from; the
-    loop owns it, and a relaunch clears it.
-
-    A rotation means a genuinely FRESH browser: cookies a bot manager issued
-    against one exit, replayed from another, are a stronger signal than
-    either address alone (§8), and here that includes a solved
-    `aws-waf-token`.
+    sits on a www.webmotors.com.br document that fetch() can be issued
+    from; the loop owns it, and a relaunch clears it.
     """
 
     def __init__(self, pw, args, pool, remote: bool = False):
@@ -221,17 +210,13 @@ class _Ops:
             raise page_flow.TransportError(_mask_credentials(str(e))) from None
         if resp is None:
             return None, None
-        try:
-            waf = resp.headers.get("x-amzn-waf-action")
-        except PWError:
-            waf = None
-        return resp.status, waf
+        return resp.status, None
 
     def document_text(self) -> str:
         """The landing document: JSON text when it is the endpoint's JSON.
 
         Chromium wraps a JSON response in its own viewer markup, so the
-        payload is only reachable as body.innerText. An interstitial is read
+        payload is only reachable as body.innerText. A refusal page is read
         as the whole markup, because its markers live in the markup.
         """
         try:
@@ -248,10 +233,6 @@ class _Ops:
     def wait_ms(self, ms: int) -> None:
         time.sleep(ms / 1000.0)
 
-    def solve_captcha(self) -> bool:
-        return handle_captcha_if_present(self.page, self.args,
-                                         _proxy_for_task(self.args, self.pool))
-
     def fetch(self, req, timeout_ms: int = page_flow.FETCH_TIMEOUT_MS):
         try:
             got = self.page.evaluate(
@@ -262,7 +243,7 @@ class _Ops:
             return None, "", None, "fetch() returned nothing"
         if got.get("error"):
             return None, "", None, str(got["error"])
-        return got.get("status"), got.get("text") or "", got.get("waf"), None
+        return got.get("status"), got.get("text") or "", None, None
 
     def proxy_failure(self, text: str) -> str:
         return _proxy_failure(text)
@@ -322,9 +303,10 @@ def _connect_remote(pw, args):
     context = browser.contexts[0] if browser.contexts else browser.new_context()
     page = context.new_page()
     # The Scraping Browser API's own CAPTCHA domain
-    # (https://2captcha.com/scraper/browser-api/api). If the WAF ever puts
-    # its CAPTCHA in front of the landing, the extension can clear it before
-    # the local solver gets a turn.
+    # (https://2captcha.com/scraper/browser-api/api). Enabled for parity with
+    # the family: if a challenge the extension handles ever appears in front
+    # of the landing, it can clear it. PerimeterX's refusal did not appear
+    # over this path in any run measured.
     try:
         cdp_session = context.new_cdp_session(page)
         cdp_session.send("Captcha.setAutoSolve", {"autoSolve": True, "options": [{"type": "*"}]})
@@ -333,8 +315,7 @@ def _connect_remote(pw, args):
         cdp_session.on("Captcha.solveFailed", lambda *_: logger.warning("[Scraping Browser] CAPTCHA auto-solve failed."))
         logger.info("Scraping Browser API Captcha.setAutoSolve enabled.")
     except Exception as e:  # noqa: BLE001
-        logger.info("Captcha.setAutoSolve not available on this --cdp-endpoint (%s) — "
-                    "relying on this script's own detect+solve logic instead.", e)
+        logger.info("Captcha.setAutoSolve not available on this --cdp-endpoint (%s).", e)
     return browser, context, page
 
 
@@ -348,69 +329,6 @@ _CREDENTIALS_IN_URL_RE = re.compile(r"([a-z][a-z0-9+.\-]*://)[^\s/@]+:[^\s/@]+@"
 def _mask_credentials(text: str) -> str:
     """`text` with any username:password in an embedded URL replaced."""
     return _CREDENTIALS_IN_URL_RE.sub(r"\1***:***@", text or "")
-
-
-def _proxy_for_task(args, pool) -> Optional[str]:
-    """The exit an AmazonTask should solve from, or None over CDP.
-
-    AmazonTaskProxyless on a proxied run returned `existing_token` and no
-    voucher in a sibling repo. 2Captcha's own exit had not been challenged,
-    so there was nothing to solve (captcha_solver._v2_task_for).
-    """
-    if args.cdp_endpoint or not pool:
-        return None
-    return pool.current
-
-
-def handle_captcha_if_present(page, args, proxy: Optional[str] = None) -> bool:
-    """Solve an AWS WAF CAPTCHA on the current document. True if one was
-    solved and the page reloaded.
-
-    Nothing is paid for a page that holds no puzzle. The WAF's CHALLENGE
-    action carries only `challenge.js`, and there is no answer to buy for
-    that. A browser that runs it passes by itself, which is what the settle
-    wait in `_land` is for (§19: "unsolvable" is a property of a page).
-    """
-    try:
-        html = page.content()
-    except PWError:
-        return False
-    challenge = detect_aws_waf(html, page.url)
-    if challenge is None:
-        return False
-    if not challenge.has_captcha_widget:
-        logger.info("AWS WAF %s action and no CAPTCHA widget on the page — "
-                    "not sending it to the solver; there is no puzzle to buy "
-                    "an answer to.", challenge.aws_waf_action)
-        return False
-    logger.warning("AWS WAF CAPTCHA on %s — attempting to solve (AmazonTask%s).",
-                   page.url, "" if proxy else "Proxyless")
-    if not args.twocaptcha_key:
-        logger.warning("No 2captcha API key — cannot solve it. Set "
-                       "TWOCAPTCHA_KEY in .env, or use a residential exit "
-                       "(--proxy), which the WAF may not challenge at all.")
-        return False
-    try:
-        token = solve_recaptcha(challenge, args.twocaptcha_key,
-                                api_version=args.captcha_api,
-                                min_score=args.min_score, proxy=proxy)
-    except Exception as e:  # noqa: BLE001 — a solver error is a warning (§8)
-        logger.error("Solving the AWS WAF CAPTCHA failed (%s) — continuing.",
-                     _mask_credentials(str(e)))
-        return False
-    domain = page_flow.cookie_domain(urlparse(page.url).hostname, html)
-    # AWS WAF reads its answer back from a COOKIE, not a form field. Set on
-    # the context so the reload and every fetch() after it carry it, and on
-    # the REGISTRABLE domain, which is where the site's own WAF integration
-    # keeps it: scoped to www.binance.com only, the same token left the page
-    # on "Human Verification" (2026-09-24).
-    page.context.add_cookies([{"name": AWS_WAF_COOKIE, "value": token,
-                               "domain": domain, "path": "/"}])
-    logger.info("Set %s for %s — reloading to let the WAF re-check.",
-                AWS_WAF_COOKIE, domain)
-    page.wait_for_timeout(1500)
-    page.reload(wait_until="domcontentloaded", timeout=60000)
-    return True
 
 
 def _fetch_pages_concurrently(args, pool, query: Query, page_nums, concurrency: int):
@@ -464,6 +382,10 @@ def scrape(args) -> int:
                        "remote browser has its own exit, and layering a second "
                        "proxy on top would contradict it.")
         pool = None
+    if not pool and not args.cdp_endpoint:
+        logger.warning("No --proxy and no --cdp-endpoint. CloudFront refused "
+                       "every datacentre address measured; from a residential "
+                       "connection of your own this can still work.")
     concurrency = page_flow.concurrency_for(args, pool)
     with sync_playwright() as pw:
         return page_flow.run_pages(
@@ -476,65 +398,54 @@ def scrape(args) -> int:
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
-        description="binance.com scraper — P2P adverts, copy-trading lead "
-                    "portfolios and announcements (Playwright edition)")
-    p.add_argument("--mode", choices=["p2p", "copytrading", "announcements"],
-                   default=None,
-                   help="p2p (default): the P2P order book for --asset/--fiat. "
-                        "copytrading: Futures copy-trading lead portfolios. "
-                        "announcements: one announcement catalogue, newest "
-                        "first. Inferred from --url when that is given.")
+        description="webmotors.com.br scraper — car and motorcycle listings "
+                    "and adverts (Playwright edition)")
+    p.add_argument("--mode", choices=list(MODES), default=None,
+                   help="search (default): a search page of listings. ad: "
+                        "adverts, one row each, with fuel, optionals, the FIPE "
+                        "value and the site's market-price range. Inferred "
+                        "from --url when that is given.")
     p.add_argument("--url", default=None,
-                   help="A binance.com page to read the query from instead of "
-                        "the flags: a P2P trade page "
-                        "(p2p.binance.com/en/trade/all-payments/USDT?fiat=EUR, "
-                        "…/trade/sell/BTC?fiat=TRY), /en/copy-trading, or "
-                        "/en/support/announcement/list/{id}. The page itself "
-                        "is never fetched — it is behind AWS WAF — only the "
-                        "query in it is read. Also read from BINANCE_URL.")
-    g = p.add_argument_group("p2p")
-    g.add_argument("--asset", default=None,
-                   help="The crypto asset (default USDT).")
-    g.add_argument("--fiat", default=None,
-                   help="The fiat currency, ISO 4217 (default USD).")
-    g.add_argument("--side", choices=P2P_SIDES, default=None,
-                   help="buy (default): adverts you could BUY the asset from. "
-                        "Those adverts are marked SELL by the site, because "
-                        "an advert carries the maker's side; the row keeps "
-                        "both as `side` and `advertiser_side`.")
-    g.add_argument("--pay-type", action="append", default=None, metavar="ID",
-                   help="Only adverts taking this payment method, by the "
-                        "site's identifier (SEPAinstant, Wise, BANK, …). "
-                        "Repeatable. Checked against the site's own list for "
-                        "the fiat before the search runs: the search answers "
-                        "an unknown one with an EMPTY result, not an error.")
-    g.add_argument("--amount", type=float, default=None,
-                   help="Only adverts whose limits admit an order of this much "
-                        "fiat.")
-    g = p.add_argument_group("copytrading")
-    g.add_argument("--time-range", choices=COPY_TIME_RANGES, default=None,
-                   help="The period ROI, PnL and drawdown cover (default 30D).")
-    g.add_argument("--sort-by", choices=sorted(COPY_SORTS), default=None,
-                   help="Ordering (default %s). Not cosmetic: a capped run "
-                        "holds the first N portfolios by this key, so it "
-                        "decides WHICH portfolios are in the file. `sharpe` "
-                        "also filters: portfolios without a Sharpe ratio are "
-                        "left out. Win rate is not offered: the API gave a "
-                        "nonsense key the same answer." % DEFAULT_COPY_SORT)
-    g.add_argument("--order", choices=["desc", "asc"], default=None,
-                   help="desc (default) or asc.")
-    g.add_argument("--hide-full", action="store_true",
-                   help="Leave out portfolios with no copier seat free.")
-    g = p.add_argument_group("announcements")
-    g.add_argument("--category", default=None,
-                   help="The announcement catalogue: %s, or a numeric "
-                        "catalogue id (default %s)."
-                        % (", ".join(ANN_CATALOGS), DEFAULT_ANN_CATALOG))
+                   help="A webmotors.com.br search page "
+                        "(/carros/estoque/volkswagen/gol, "
+                        "/carros/sp/toyota?anode=2020, /motos/estoque/honda) "
+                        "or an advert (/comprar/...). The site's own API "
+                        "reads the filters out of the address, so any search "
+                        "the site builds works. Also read from WEBMOTORS_URL.")
+    g = p.add_argument_group("search, without --url")
+    g.add_argument("--category", choices=list(VEHICLES), default=None,
+                   help="carros (default) or motos.")
+    g.add_argument("--condition", choices=list(CONDITION_SUFFIX), default=None,
+                   help="all (default), used or new. Cars only.")
+    g.add_argument("--state", default=None, metavar="UF",
+                   help="A Brazilian state by its two letters (%s). Default: "
+                        "all of Brazil." % ", ".join(u.upper() for u in UFS))
+    g.add_argument("--make", default=None,
+                   help="The make as the site's addresses spell it "
+                        "(volkswagen, mercedes-benz, land-rover).")
+    g.add_argument("--model", default=None,
+                   help="The model as the site's addresses spell it (gol, "
+                        "onix-plus). Needs --make. A misspelt model is caught: "
+                        "the site answers it with every model of the make, and "
+                        "the run is refused with what the site applied.")
+    g = p.add_argument_group("search")
+    g.add_argument("--sort", choices=list(SORTS), default=None,
+                   help="The site's own orderings (default %s). Not cosmetic: "
+                        "the site serves at most ~10,000 results per search, "
+                        "so the ordering decides WHICH listings a large search "
+                        "yields — 'relevance' put no private seller in the "
+                        "first 47 where 'price-asc' put 44." % DEFAULT_SORT)
+    g.add_argument("--per-page", type=int, default=None, metavar="N",
+                   help="Listings per page, 1-%d (default %d, the site's own)."
+                        % (MAX_PER_PAGE, DEFAULT_PER_PAGE))
+    g = p.add_argument_group("ad")
+    g.add_argument("--ads-file", default=None, metavar="PATH",
+                   help="Adverts to fetch: a search run's JSON output (its "
+                        "`url` column) or one advert address per line.")
     p.add_argument("--pages", type=int, default=1,
-                   help="Pages to fetch (20 adverts, 30 portfolios or 50 "
-                        "announcements each). Planned against the total the "
-                        "site states on page 1, so asking for more than exist "
-                        "fetches all of them.")
+                   help="Search pages to fetch. Planned against the page count "
+                        "the site states on page 1, so asking for more than "
+                        "exist fetches all of them. Ignored in ad mode.")
     p.add_argument("--delay", type=float, default=1.0,
                    help="Delay between pages, seconds (default %(default)s)")
     p.add_argument("--concurrency", type=int, default=1, metavar="N",
@@ -543,20 +454,18 @@ def parse_args(argv=None):
                         "proxy exit. Ignored with --cdp-endpoint.")
     p.add_argument("--retries", type=int, default=3,
                    help="Attempts per page on a transport failure (default 3). "
-                        "The pause doubles each time. A request the endpoint "
-                        "REFUSED is not retried: its parameters would be "
-                        "refused again.")
+                        "The pause doubles each time.")
     p.add_argument("--retry-delay", type=float, default=2.0,
                    help="Seconds before the first retry, doubling thereafter.")
     p.add_argument("--format", choices=["json", "csv", "both"], default="both")
-    p.add_argument("--out", default="binance_rows", help="Output file prefix")
-    p.add_argument("--locale", default="en-US",
-                   help="Browser locale (default en-US). It changes nothing in "
-                        "the data: the endpoints answer in English whatever "
-                        "the browser claims.")
+    p.add_argument("--out", default="webmotors_rows", help="Output file prefix")
+    p.add_argument("--locale", default="pt-BR",
+                   help="Browser locale (default pt-BR). The endpoints answer "
+                        "in Portuguese whatever the browser claims.")
     p.add_argument("--proxy", default=None,
                    help="Proxy URL, e.g. http://ACCOUNT:PASSWORD@HOST:9999 "
-                        "(2captcha.com/proxy)")
+                        "(2captcha.com/proxy). A RESIDENTIAL exit: CloudFront "
+                        "refuses datacentre addresses.")
     p.add_argument("--proxy-file", default=None,
                    help="File with one proxy URL per line to rotate across. "
                         "Wins over --proxy.")
@@ -566,10 +475,12 @@ def parse_args(argv=None):
     p.add_argument("--proxy-shuffle", action="store_true",
                    help="Shuffle the pool at startup.")
     p.add_argument("--proxy-block-retries", type=int, default=2,
-                   help="When a page is refused (403, 451, AWS WAF), retry it "
-                        "from this many OTHER exits (default 2). Needs a pool "
-                        "of more than one.")
-    p.add_argument("--twocaptcha-key", default=None, help="2captcha.com API key")
+                   help="When a page is refused (CloudFront, PerimeterX), "
+                        "retry it from this many OTHER exits (default 2). "
+                        "Needs a pool of more than one.")
+    p.add_argument("--twocaptcha-key", default=None,
+                   help="2captcha.com API key. Used by --fingerprint here: "
+                        "no captcha on this site is solved (see --solve-captcha).")
     p.add_argument("--allow-empty", action="store_true",
                    help="Write output files even when 0 rows were found.")
     p.add_argument("--fingerprint", action="store_true",
@@ -585,17 +496,16 @@ def parse_args(argv=None):
                    help="Fingerprint country, ISO 3166-1 alpha-2. Match it to "
                         "your proxy's exit country.")
     p.add_argument("--captcha-api", choices=["v2", "v1"], default="v2",
-                   help="Which 2captcha solver API to use (v2: createTask, "
-                        "which AmazonTask needs).")
+                   help="Kept for parity with the family. Inert here: see "
+                        "--solve-captcha.")
     p.add_argument("--solve-captcha", choices=["when-blocked", "always"],
                    default="when-blocked",
-                   help="when-blocked (default): solve an AWS WAF CAPTCHA only "
-                        "when it stands between the run and the data. No data "
-                        "path here renders one to an unchallenged session, so "
-                        "'always' behaves the same.")
+                   help="Kept for parity with the family. Inert here: the "
+                        "only challenge this site showed is PerimeterX's Press "
+                        "& Hold, which this repo does not implement, and no "
+                        "client this repo drives was shown it once served.")
     p.add_argument("--min-score", type=float, default=0.7,
-                   help="reCAPTCHA v3 minimum score (0.3, 0.7 or 0.9). Kept "
-                        "for parity with the family; AWS WAF has no score.")
+                   help="Kept for parity with the family. Inert here.")
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "

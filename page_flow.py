@@ -2,22 +2,23 @@
 page_flow.py
 ------------
 The retry / solve / blocked decision, as DATA rather than as three copies of
-an if-chain (CLAUDE.md §1).
+an if-chain (CLAUDE.md §1), and the one fetch loop all three engines share.
 
-binance.com answers one of this repo's requests in eight ways, and they want
-six different responses:
+webmotors.com.br answers one of this repo's requests in seven ways, and they
+want five different responses:
 
-    the endpoint's JSON with rows in it                 -> parse
-    the same JSON with no rows                          -> parse, it is an answer
-    the JSON with a non-success `code`, or HTTP 400     -> stop: the PARAMETERS
-                                                           were refused, and a
-                                                           retry sends them again
-    AWS WAF: 202 + x-amzn-waf-action, or its CAPTCHA    -> solve, or rotate
-    429 / 418                                           -> wait, same exit
-    451                                                 -> rotate: the site
-                                                           refuses the exit's
-                                                           jurisdiction
-    403                                                 -> rotate
+    a search payload with listings, or an advert        -> parse
+    a search payload with none                          -> parse, it is an answer
+    HTTP 404, body `null`, on an advert                 -> record it as gone:
+                                                           sold, withdrawn, or
+                                                           not the site's own
+                                                           address for it
+    HTTP 403 {"message": ...} from the API gateway      -> stop: the PATH was
+                                                           refused, and a retry
+                                                           sends it again
+    PerimeterX's refusal page                           -> a fresh browser, or
+                                                           another exit
+    CloudFront's 403 (the ADDRESS)                      -> another exit
     anything else                                       -> retry
 
 Three copies of that triage across three engines would drift, and the drift
@@ -29,18 +30,19 @@ Nothing here imports a browser, and **no JavaScript crosses this boundary**
 """
 
 import logging
-import re
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional
 
 from output_writer import dedupe_by_key, finish_run, SOURCE_DEFAULT
-from product_parser import (MAX_PAGES, DEFAULT_ANN_CATALOG,  # noqa: F401
-                            DEFAULT_COPY_SORT, ORIGIN_URL, Query, api_error,
-                            detect_bot_challenge, detect_page_state,
-                            pages_available, parse_page, pay_type_identifiers,
-                            pay_type_request, query_from_url, request_for,
-                            total_results)
-from product_parser import check_pay_types as check_pay_types_against
+from product_parser import (MAX_PAGES, ORIGIN_URL, ApiRequest, Query, BASE,
+                            DEFAULT_PER_PAGE, DEFAULT_SORT,
+                            ads_from_text, api_error, apply_market_prices,
+                            average_price_request, currency_from_html,
+                            currency_page, detect_bot_challenge,
+                            detect_page_state, filter_mismatch,
+                            listing_url_from_parts, pages_available,
+                            parse_ad_url, parse_page, query_from_url,
+                            request_for, sponsored_count, total_results)
 
 log = logging.getLogger("page_flow")
 
@@ -50,25 +52,19 @@ log = logging.getLogger("page_flow")
 # ---------------------------------------------------------------------------
 
 # How long one fetch() may take before the engine gives up on it. The
-# largest response measured was 76 KB of P2P JSON, which arrived in well
-# under a second. The bound exists because a browser fetch() has no timeout
-# of its own, and CLAUDE.md §8 requires every remote call to have one.
+# largest response measured was a 100-row search page, ~410 KB, which
+# arrived in about a second through a residential exit. The bound exists
+# because a browser fetch() has no timeout of its own, and CLAUDE.md §8
+# requires every remote call to have one.
 FETCH_TIMEOUT_MS = 30_000
 
-# How long to wait at the SAME exit after a 429/418 before trying again.
-# The site's public API documentation describes 429 as a warning and 418 as
-# an IP ban that follows ignoring it, so the response to either is to slow
-# down rather than to rotate.
+# How long to wait at the SAME exit after a 429 before trying again. NOT
+# OBSERVED on this site: 60+ requests in one session at one per second or
+# faster never drew one (2026-09-28). The wait is kept because a throttle,
+# wherever it appears, wants the opposite of a block: slow down, same exit.
 THROTTLE_WAIT_S = 10.0
 THROTTLE_RETRIES = 2
 
-# How long to let AWS WAF's own challenge script run on a landing before
-# judging it, and how often to look. The challenge action computes a token
-# and reloads the page by itself, so a real browser passes it with nothing
-# but time. Polled rather than slept, so a landing that was never
-# challenged costs nothing.
-CHALLENGE_SETTLE_MS = 15_000
-CHALLENGE_POLL_MS = 1_000
 
 # ---------------------------------------------------------------------------
 # The policy
@@ -89,35 +85,31 @@ def classify(html: Optional[str], status: Optional[int] = None,
 
 
 STATE_POLICY = {
-    "content":    {"retry": False, "solve": False, "blocked": False, "parse": True},
-    # A listing with nothing in it, e.g. a P2P market with no adverts. The
-    # site served exactly what was asked for, so this is EXIT_NO_PRODUCTS
-    # rather than EXIT_BLOCKED.
-    "empty":      {"retry": False, "solve": False, "blocked": False, "parse": True},
-    # The endpoint refused the PARAMETERS: code 000002 "illegal parameter",
-    # 11012004 "Invalid input", or an HTTP 400 with an empty body. The same
-    # request sent again gets the same answer, and no exit or solve changes
-    # it. So nothing retries and nothing counts as blocked. The engine stops
-    # and names the site's own complaint.
-    "rejected":   {"retry": False, "solve": False, "blocked": False, "parse": False},
-    # AWS WAF. A CAPTCHA page is solvable (AmazonTask). A bare 202 challenge
-    # is not, since there is no widget to buy an answer to, but a browser that
-    # runs its script can pass it. A fresh exit clears either, hence retry.
-    "challenge":  {"retry": True,  "solve": True,  "blocked": True,  "parse": False},
-    # Rate limited. The retry happens at the same exit after a wait
-    # (THROTTLE_*). It is NOT counted as blocked: calling a throttle a block
-    # reports exit 3 for a page that was about to come back, and sends a
-    # reader to buy a proxy they do not need (§24).
-    "throttled":  {"retry": True,  "solve": False, "blocked": False, "parse": False},
-    # HTTP 451, "Unavailable For Legal Reasons". NOT OBSERVED on binance.com
-    # by this repo: Binance's own API documentation names 403 (WAF), 429 and
-    # 418 and says nothing about 451. It is here because 451 is what the
-    # status means wherever it appears, and a jurisdiction refusal wants a
-    # different exit rather than a retry or a solve.
-    "restricted": {"retry": True,  "solve": False, "blocked": True,  "parse": False},
-    "blocked":    {"retry": True,  "solve": False, "blocked": True,  "parse": False},
-    # Not JSON and not an interstitial. Worth one more try.
-    "unknown":    {"retry": True,  "solve": False, "blocked": False, "parse": False},
+    "content":   {"retry": False, "solve": False, "blocked": False, "parse": True},
+    # A search that matched nothing. The site served exactly what was asked
+    # for, so this is EXIT_NO_PRODUCTS rather than EXIT_BLOCKED.
+    "empty":     {"retry": False, "solve": False, "blocked": False, "parse": True},
+    # An advert the detail endpoint answers 404 `null` for. Not a failure of
+    # the run: the site has said the advert is not there. It is recorded in
+    # the sidecar (`ads_gone`) and the run goes on to the next advert.
+    "gone":      {"retry": False, "solve": False, "blocked": False, "parse": False},
+    # The API gateway refused the PATH ("Missing Authentication Token"). The
+    # same request sent again gets the same answer.
+    "rejected":  {"retry": False, "solve": False, "blocked": False, "parse": False},
+    # PerimeterX refused this CLIENT. Nothing is solved: this repo does not
+    # implement an answer to its Press & Hold challenge, and no client this
+    # repo drives was shown it once the fixes in the engines were in (the
+    # table in product_parser's docstring). A fresh browser, or another
+    # exit, is what changes the answer, hence retry.
+    "challenge": {"retry": True,  "solve": False, "blocked": True,  "parse": False},
+    # CloudFront refusing the ADDRESS, or any other 403.
+    "blocked":   {"retry": True,  "solve": False, "blocked": True,  "parse": False},
+    # Rate limited: the retry happens at the same exit after a wait
+    # (THROTTLE_*), and it is NOT counted as blocked. Calling a throttle a
+    # block reports exit 3 for a page that was about to come back (§24).
+    "throttled": {"retry": True,  "solve": False, "blocked": False, "parse": False},
+    # Not JSON and not a refusal. Worth one more try.
+    "unknown":   {"retry": True,  "solve": False, "blocked": False, "parse": False},
 }
 
 
@@ -137,21 +129,20 @@ def should_parse(state: str) -> bool:
     return STATE_POLICY.get(state, STATE_POLICY["unknown"])["parse"]
 
 
-# Whether a blocked page is worth re-fetching at all. CONSULTED by every
-# engine, so setting it False really does stop the retry loop (§17).
+# Whether a blocked page is worth re-fetching at all. CONSULTED by the loop
+# below, so setting it False really does stop the retry (§17).
 RETRY_ON_BLOCKED = True
 
-# How many times to re-fetch a blocked page when there is no proxy pool to
-# rotate into. One: a WAF decision is about the address and the session, and
-# a second request from both unchanged is a second identical answer. WITH a
-# pool the engines retry once per remaining exit instead, because there the
-# retry changes the variable the refusal depends on.
-BLOCK_RETRIES_WITHOUT_POOL = 1
-
-# At most one solve per page. A challenge that survives a solved token is not
-# a challenge this run can pass, and a second solve is a second charge for
-# the same answer.
-SOLVES_PER_PAGE = 1
+# How many times to re-fetch a refused page, each from a FRESH browser, when
+# there is no proxy pool to rotate into. Three, because the usual single
+# --proxy here is a ROTATING residential gateway, which hands each new
+# browser a new exit, and CloudFront accepts only some of them. Measured
+# 2026-09-28, twelve fresh browsers each: a `-region-br` login was served 5
+# of 12 times (6 CloudFront refusals), a `-region-us` login 9 of 12. One
+# retry would leave a Brazilian run at roughly two chances in three; three
+# retries cost a second or two each. WITH a pool the loop retries once per
+# remaining exit instead (--proxy-block-retries).
+BLOCK_RETRIES_WITHOUT_POOL = 3
 
 
 # ---------------------------------------------------------------------------
@@ -161,11 +152,10 @@ SOLVES_PER_PAGE = 1
 def pages_to_plan(pages_requested: int, pages_available: Optional[int]) -> int:
     """How many pages a run may ask for, given the total page 1 reported.
 
-    Every listing here states its total on page 1, so the end is known up
-    front rather than discovered by walking off it. Walking off it would be
-    harmless here, since all three endpoints answer a page past the end with
-    an empty list, but it costs a request per worker. And P2P's
-    empty page reports `total: 0`, which would read as "the listing emptied".
+    Every search states its page count on page 1, and walking past it is
+    not harmless here: a page beyond the end is answered with rows of PAGE
+    ONE again (actualPage=500 of 77 returned ten of them, 2026-09-28), so
+    the plan never asks for one.
     """
     ceiling = MAX_PAGES if pages_available is None else min(pages_available, MAX_PAGES)
     return max(1, min(int(pages_requested), ceiling))
@@ -185,26 +175,33 @@ def concurrency_limit(cdp_endpoint: Optional[str]) -> Optional[int]:
 # Refusals: how they are named and what the reader is told
 # ---------------------------------------------------------------------------
 
-def refusal_name(state: str) -> str:
+def refusal_name(state: str, text: Optional[str] = None) -> str:
     """The name a refusal is reported by, in logs and in `stop_reason`."""
-    return {"challenge": "aws-waf", "restricted": "geo-451",
-            "blocked": "http-403"}.get(state, state)
+    if state == "challenge":
+        return "perimeterx"
+    if state == "blocked":
+        return detect_bot_challenge(text) or "http-403"
+    return state
 
 
-def refusal_advice(state: str) -> str:
+def refusal_advice(state: str, text: Optional[str] = None) -> str:
     """One sentence on what changes the answer, per refusal. Kept here so
     the three engines cannot give three different pieces of advice."""
-    if state == "restricted":
-        return ("HTTP 451 means the site refuses this exit's COUNTRY. "
-                "Binance's terms exclude some jurisdictions, the United "
-                "States among them. Use an exit elsewhere: --proxy, or a "
-                "Scraping Browser country- segment.")
     if state == "challenge":
-        return ("AWS WAF challenged this session. A residential exit "
-                "(--proxy) may not be challenged at all; otherwise set "
-                "TWOCAPTCHA_KEY so its CAPTCHA can be solved (AmazonTask).")
-    return ("The site refused this address (HTTP 403). A different exit is "
-            "what changes that: --proxy / --proxy-file, or --cdp-endpoint.")
+        return ("PerimeterX refused this browser. Measured: it refuses a "
+                "headless browser whose user agent says `HeadlessChrome` "
+                "(0 of 3) and serves one that does not (3 of 3), which is why "
+                "the engines override the user agent; a headful browser was "
+                "served too. If it still refuses, try --headful, a different "
+                "residential exit (--proxy), or --cdp-endpoint. This repo does "
+                "not implement solving PerimeterX's Press & Hold challenge.")
+    if (text and detect_bot_challenge(text) == "cloudfront") or state == "blocked":
+        return ("CloudFront refused this ADDRESS before the site saw the "
+                "request. Every datacentre address measured was refused, "
+                "headful Chromium included; residential exits in Brazil and "
+                "the US were served. Use a residential --proxy / --proxy-file, "
+                "or --cdp-endpoint.")
+    return ""
 
 
 def stop_reason_for(outcome) -> str:
@@ -222,51 +219,72 @@ def stop_reason_for(outcome) -> str:
 # The query, and the end of a run
 # ---------------------------------------------------------------------------
 
-# The query flags, by the argparse dest they land in. A flag left at None was
-# not typed, which is how build_query tells a user's value from a default.
-QUERY_FLAGS = (("asset", "--asset"), ("fiat", "--fiat"), ("side", "--side"),
-               ("pay_type", "--pay-type"), ("category", "--category"),
-               ("time_range", "--time-range"), ("sort_by", "--sort-by"),
-               ("order", "--order"))
+# The filter flags, by the argparse dest they land in. A flag left at None
+# was not typed, which is how build_query tells a user's value from a
+# default.
+FILTER_FLAGS = (("category", "--category"), ("condition", "--condition"),
+                ("state", "--state"), ("make", "--make"), ("model", "--model"))
 
 
 def build_query(args, error: Callable[[str], None]) -> Query:
-    """The Query a run sends, from --url or from the flags, validated.
+    """The Query a run sends, from --url, --ads-file or the flags, validated.
 
-    --url and the query flags are two ways to say the same thing. A flag the
-    user typed that disagrees with the URL would silently scrape something
-    neither of them named, so the combination is refused rather than merged
-    (the family's --country rule, §10). `error` is argparse's `p.error`, so
-    a refusal is exit 2 with the usage line, as in every engine.
+    --url and the filter flags are two ways to say the same thing. A flag
+    the user typed that disagrees with the URL would silently scrape
+    something neither of them named, so the combination is refused rather
+    than merged (the family's --country rule, §10). `error` is argparse's
+    `p.error`, so a refusal is exit 2 with the usage line, as in every
+    engine.
     """
-    if args.url:
-        query, why = query_from_url(args.url)
+    sort = args.sort or DEFAULT_SORT
+    per_page = args.per_page or DEFAULT_PER_PAGE
+    typed = [flag for dest, flag in FILTER_FLAGS
+             if getattr(args, dest, None) is not None]
+    ads_file = getattr(args, "ads_file", None)
+    if ads_file:
+        if args.url or typed:
+            error("--ads-file is a list of adverts; it cannot be combined "
+                  "with --url or the search filters.")
+        try:
+            with open(ads_file, encoding="utf-8") as f:
+                ads = ads_from_text(f.read())
+        except OSError as e:
+            error("cannot read --ads-file: %s" % e)
+        if not ads:
+            error("--ads-file %s holds no advert address "
+                  "(https://www.webmotors.com.br/comprar/...)" % ads_file)
+        query = Query(mode="ad", ads=tuple(ads))
+    elif args.url:
+        query, why = query_from_url(args.url, sort=sort, per_page=per_page)
         if query is None:
             error(why)
-        if args.mode and args.mode != query.mode:
-            error("--mode %s disagrees with --url, which is a %s page."
-                  % (args.mode, query.mode))
-        typed = [flag for dest, flag in QUERY_FLAGS
-                 if getattr(args, dest, None) is not None]
         if typed:
-            error("--url already carries the query; %s would have to agree "
-                  "with it and nothing checks that they do. Pass a URL or "
-                  "the flags, not both." % ", ".join(typed))
-        if args.amount is not None:
-            query.amount = args.amount
-        query.hide_full = bool(args.hide_full)
+            error("--url already carries the search; %s would have to agree "
+                  "with it and nothing checks that they do. Pass a URL or the "
+                  "flags, not both." % ", ".join(typed))
     else:
-        query = Query(mode=args.mode or "p2p",
-                      asset=(args.asset or "USDT").upper(),
-                      fiat=(args.fiat or "USD").upper(),
-                      side=args.side or "buy",
-                      pay_types=tuple(args.pay_type or ()),
-                      amount=args.amount,
-                      time_range=args.time_range or "30D",
-                      sort_by=args.sort_by or DEFAULT_COPY_SORT,
-                      order=args.order or "desc",
-                      hide_full=bool(args.hide_full),
-                      catalog=args.category or DEFAULT_ANN_CATALOG)
+        if args.mode == "ad":
+            error("--mode ad needs --url (an advert address) or --ads-file.")
+        url, why = listing_url_from_parts(args.category or "carros",
+                                          args.condition or "all",
+                                          args.state, args.make, args.model)
+        if url is None:
+            error(why)
+        query, why = query_from_url(url, sort=sort, per_page=per_page)
+        if query is None:
+            error(why)
+    if args.mode and args.mode != query.mode:
+        error("--mode %s disagrees with the input, which is %s."
+              % (args.mode, "an advert list" if query.mode == "ad"
+                 else "a search page"))
+    if query.mode == "ad":
+        if args.sort or args.per_page:
+            error("--sort and --per-page apply to a search, not to adverts.")
+        # One advert is one "page" of this run (Query's docstring).
+        if args.pages not in (1, len(query.ads)):
+            log.info("--pages is ignored in ad mode: every advert of the list "
+                     "is fetched (%d).", len(query.ads))
+        args.pages = len(query.ads)
     why = query.validate()
     if why:
         error(why)
@@ -277,13 +295,11 @@ def build_query(args, error: Callable[[str], None]) -> Query:
 
 def query_summary(query: Query) -> dict:
     """The query as the sidecar records it: only the fields its mode uses."""
-    if query.mode == "p2p":
-        return {"asset": query.asset, "fiat": query.fiat, "side": query.side,
-                "pay_types": list(query.pay_types), "amount": query.amount}
-    if query.mode == "copytrading":
-        return {"time_range": query.time_range, "sort_by": query.sort_by,
-                "order": query.order, "hide_full": query.hide_full}
-    return {"catalog": query.catalog}
+    if query.mode == "search":
+        return {"listing_url": query.listing_url, "category": query.vehicle,
+                "sort": query.sort, "per_page": query.per_page,
+                "make": query.make, "model": query.model, "state": query.state}
+    return {"ads": len(query.ads)}
 
 
 def finish(args, query: Query, outcomes: List, stop_reason: str,
@@ -307,54 +323,36 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
     available = getattr(first, "pages_available", None)
     ok_pages = [o for o in outcomes if o.ok]
     failed_pages = sorted(o.page_num for o in outcomes if not o.ok)
-    if rows and total:
-        log.info("The site reports %d match(es); this run holds %d (%.1f%%).",
-                 total, len(rows), 100.0 * len(rows) / total)
+    extra = {"query": query_summary(query), "currency": query.currency}
+    if query.mode == "search":
+        reachable = available * query.per_page if available is not None else None
+        extra.update({
+            "total_results": total,
+            "pages_available": available,
+            # The site serves at most ~10,000 results per search
+            # (product_parser.SITE_RESULT_CAP), and its page count already
+            # includes that. A run that fetched every page of a capped
+            # search is complete as a REQUEST and still a sample.
+            "reachable_max": reachable,
+            "capped_by_site": (bool(total > reachable)
+                               if total is not None and reachable is not None
+                               else None),
+            "sponsored_skipped": sum(o.sponsored for o in outcomes),
+        })
+        if rows and total:
+            log.info("The site reports %d match(es); this run holds %d (%.1f%%).",
+                     total, len(rows), 100.0 * len(rows) / total)
+    else:
+        extra["ads_gone"] = sorted(o.url for o in outcomes if o.state == "gone")
     last_ok = max([o.page_num for o in ok_pages] or [1])
     return finish_run(
         rows, args.out, args.format, args.allow_empty,
         blocked=blocked, stop_reason=stop_reason,
         pages_requested=args.pages, pages_completed=len(ok_pages),
         pages_failed=failed_pages, mode=query.mode, source=SOURCE_DEFAULT,
-        start_url=args.url or request_for(query, 1).url,
+        start_url=args.url or currency_page(query),
         final_url=request_for(query, last_ok).url,
-        extra={"total_results": total, "pages_available": available,
-               "query": query_summary(query)})
-
-
-_WAF_COOKIE_DOMAINS_RE = re.compile(r"awsWafCookieDomainList\s*=\s*\[([^\]]*)\]")
-
-
-def cookie_domain(host: Optional[str], html: Optional[str] = None) -> str:
-    """The domain an `aws-waf-token` cookie is set on: the one the SITE says.
-
-    AWS WAF's own integration names it on the challenge page, in
-    `window.awsWafCookieDomainList`, and the token cookie goes on the listed
-    domain that covers the page's host, or on the host itself when the list
-    is empty. Measured 2026-09-24:
-
-        binance.com         ['binance.com','binance.bh', ...]  -> .binance.com
-        transfermarkt.com   []                                 -> the host
-
-    On binance, a token scoped to www.binance.com alone left the page on
-    "Human Verification", and the same token on .binance.com was served. So
-    "the registrable domain" was binance's list, not a rule, and a site with
-    an empty list wants the host.
-    """
-    host = (host or "www.binance.com").lower()
-    listed = None
-    if html:
-        m = _WAF_COOKIE_DOMAINS_RE.search(html)
-        if m:
-            listed = [d.strip().strip("'\"").lower().lstrip(".")
-                      for d in m.group(1).split(",") if d.strip().strip("'\"")]
-    if listed is None:
-        # No page to read it from: this site's list, as measured.
-        listed = ["binance.com"]
-    for d in listed:
-        if host == d or host.endswith("." + d):
-            return "." + d
-    return host
+        extra=extra)
 
 
 # ---------------------------------------------------------------------------
@@ -362,24 +360,22 @@ def cookie_domain(host: Optional[str], html: Optional[str] = None) -> str:
 # ---------------------------------------------------------------------------
 #
 # Everything about fetching one page lives here, once: landing on the
-# origin, letting the WAF's script run, paying for a CAPTCHA, retrying a
-# transport failure, waiting out a throttle, rotating on a refusal, and
-# parsing what came back. The three engines differ only in HOW they ask
-# their driver, so each passes in an object with these operations and no
-# JavaScript crosses this boundary (§1):
+# origin, retrying a transport failure, waiting out a throttle, rotating on a
+# refusal, and parsing what came back. The three engines differ only in HOW
+# they ask their driver, so each passes in an object with these operations
+# and no JavaScript crosses this boundary (§1):
 #
 #     ops.goto(url)        -> (status, waf_header). Raises TransportError.
 #     ops.document_text()  -> the landing document, JSON text if it is JSON
 #     ops.wait_ms(ms)
-#     ops.solve_captcha()  -> True if a CAPTCHA was solved and the page reloaded
 #     ops.fetch(req)       -> (status, text, waf_header, error_or_None)
 #     ops.relaunch()       -> a fresh browser (on the pool's current exit)
 #     ops.landed           -> bool attribute, owned by the loop
 #     ops.proxy_failure(text) -> the driver's proxy-error name in text, or ""
 #
-# Before this, each engine carried its own copy of the loop, and a family
-# rule (§6) says the three must agree on exit codes and on whether a run
-# spends money. One copy is how that holds by construction.
+# One copy of the loop is how the family rule that the three engines agree
+# on exit codes and on whether a run spends money (§6) holds by
+# construction rather than by discipline.
 
 
 class TransportError(Exception):
@@ -400,14 +396,17 @@ class PageOutcome:
     blocked_by: Optional[str] = None
     load_failed: bool = False
     # The state the page came back as. Carried so the caller can tell an
-    # EMPTY page (the end of a live listing) from a failed one: both hold
-    # zero rows and they mean opposite things.
+    # EMPTY page (the end of a live listing) and a GONE advert from a failed
+    # page: all three hold zero rows and they mean different things.
     state: Optional[str] = None
-    # The endpoint's own complaint when it refused the parameters.
+    # The gateway's own complaint when it refused the path.
     rejected: Optional[str] = None
     # The site's own count of what matched, from this page's response.
     total_available: Optional[int] = None
     pages_available: Optional[int] = None
+    # Search only: what the site applied, when it is not what was asked.
+    filter_problem: Optional[str] = None
+    sponsored: int = 0
 
     @property
     def ok(self) -> bool:
@@ -415,48 +414,38 @@ class PageOutcome:
                 and self.rejected is None)
 
 
-# The columns the site filled on EVERY record of every capture, per mode.
-# Below this share, the payload shape has moved rather than the data being
-# unusual. Deliberately NOT here: `sharpe_ratio` (null on most portfolios,
-# as published) and `badge` (14 of 30 had none).
+# The columns the site filled on EVERY record of the 3,000 captured
+# (2026-09-28), per mode. Below this share, the payload shape has moved
+# rather than the data being unusual. Deliberately NOT here: `odometer_km`
+# (87.7% of cars), `fipe_pct` (93.8%), `image_url` (98.7%) — genuinely
+# absent on some records.
 CORE_FIELD_FLOOR = 99
 CORE_FIELDS = {
-    "p2p": ("sku", "title", "price", "min_order_fiat", "pay_methods"),
-    "copytrading": ("sku", "title", "roi_pct", "pnl", "copiers"),
-    "announcements": ("sku", "title", "released_at", "url"),
+    "search": ("sku", "url", "title", "price", "make", "model", "year_model",
+               "seller_type", "city", "state"),
+    "ad": ("sku", "url", "title", "price", "make", "model", "year_model",
+           "seller_type", "city", "state"),
 }
 
 
-def land(ops, args) -> Tuple[str, Optional[str]]:
-    """Put the page on a www.binance.com document that fetch() can use.
+def land(ops, args) -> tuple:
+    """Put the page on a www.webmotors.com.br document that fetch() can use.
 
     Returns (state, error): state is a policy state for the landing, and
-    error is a transport failure's text or None. Solves at most
-    SOLVES_PER_PAGE CAPTCHAs, because a CAPTCHA that survives a solved token
-    is not one this run can pass, and a second solve is a second charge for
-    the same answer.
+    error is a transport failure's text or None.
     """
     try:
         status, waf = ops.goto(ORIGIN_URL)
     except TransportError as e:
         return "load_failed", str(e)
-    state = classify(ops.document_text(), status, ORIGIN_URL, waf)
-    if state == "challenge":
-        # The WAF's challenge action computes a token and reloads the page
-        # by itself, so let it run before paying for anything.
-        waited = 0
-        while waited < CHALLENGE_SETTLE_MS and state == "challenge":
-            ops.wait_ms(CHALLENGE_POLL_MS)
-            waited += CHALLENGE_POLL_MS
-            state = classify(ops.document_text(), None, ORIGIN_URL, None)
-        if state == "challenge" and should_solve(state):
-            for _ in range(SOLVES_PER_PAGE):
-                if not ops.solve_captcha():
-                    break
-                state = classify(ops.document_text(), None, ORIGIN_URL, None)
-                if state != "challenge":
-                    break
-    ops.landed = state in ("content", "empty")
+    text = ops.document_text()
+    state = classify(text, status, ORIGIN_URL, waf)
+    if state == "unknown" and (text or "").lstrip().startswith("{"):
+        # /api/location's JSON is none of the payloads the classifier names,
+        # and the one thing that matters about the landing is that it is not
+        # a refusal.
+        state = "content"
+    ops.landed = state == "content"
     return state, None
 
 
@@ -495,13 +484,15 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
                    mask: Callable[[str], str] = lambda s: s) -> PageOutcome:
     """Fetch and parse one page. Retries, rotations and debug dumps live here.
 
-    Never raises for an EXPECTED failure. A timeout, a refusal, a WAF
-    challenge and a dead exit are all recorded on the outcome, because what
-    the run should do about them differs between the sequential and the
-    concurrent paths.
+    Never raises for an EXPECTED failure. A timeout, a refusal and a dead
+    exit are all recorded on the outcome, because what the run should do
+    about them differs between the sequential and the concurrent paths.
     """
     req = request_for(query, page_num)
-    outcome = PageOutcome(page_num=page_num, url=req.label)
+    outcome = PageOutcome(page_num=page_num, url=req.url if query.mode == "ad"
+                          else req.label)
+    if query.mode == "ad":
+        outcome.url = query.ads[page_num - 1]
 
     has_pool = bool(pool and len(pool) > 1)
     block_retries = 0 if not RETRY_ON_BLOCKED else (
@@ -510,7 +501,8 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
     state, text, last_error, exit_failed = "unknown", "", None, None
 
     for block_attempt in range(block_retries + 1):
-        log.info("Fetching page %d/%d: %s", page_num, args.pages, req.label)
+        log.info("Fetching %s %d/%d: %s", "advert" if query.mode == "ad"
+                 else "page", page_num, args.pages, req.label)
         exit_failed = None
         attempt = 0
         while attempt < args.retries:
@@ -528,16 +520,15 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
                 status, text, waf, last_error = ops.fetch(req)
                 state = ("load_failed" if last_error
                          else classify(text, status, req.url, waf))
-                if state == "challenge":
-                    # The WAF challenged this session after the landing. A
-                    # fresh navigation is where its page can run or be
-                    # solved, so the next attempt lands again.
+                if counts_as_blocked(state):
+                    # Refused after the landing: the session is spent, and
+                    # the next attempt lands again from a fresh browser.
                     ops.landed = False
             if state == "throttled" and throttles < THROTTLE_RETRIES:
                 throttles += 1
                 attempt -= 1  # a throttle wait spends its own budget (§24)
                 pause = THROTTLE_WAIT_S * throttles
-                log.warning("Rate-limited on page %d (HTTP 429/418) — waiting "
+                log.warning("Rate-limited on page %d (HTTP 429) — waiting "
                             "%.0fs at the same exit (%d/%d).", page_num, pause,
                             throttles, THROTTLE_RETRIES)
                 ops.wait_ms(int(pause * 1000))
@@ -560,14 +551,15 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
             continue
         if (counts_as_blocked(state) and should_retry(state)
                 and block_attempt < block_retries):
+            name = refusal_name(state, text)
             if has_pool:
                 log.warning("Page %d refused (%s) at %s — rotating to another "
-                            "exit (%d/%d).", page_num, refusal_name(state),
+                            "exit (%d/%d).", page_num, name,
                             mask(pool.current), block_attempt + 1, block_retries)
-                pool.advance(f"refused: {refusal_name(state)}")
+                pool.advance(f"refused: {name}")
             else:
                 log.warning("Page %d refused (%s) — re-fetching once from a "
-                            "fresh browser.", page_num, refusal_name(state))
+                            "fresh browser.", page_num, name)
             ops.relaunch()
             continue
         break
@@ -579,20 +571,26 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
                   mask(last_error or "the request never completed"))
         return outcome
     if state == "rejected":
-        outcome.rejected = api_error(text) or "HTTP 400, empty body"
-        log.error("The endpoint refused this request (%s). That is a statement "
-                  "about the PARAMETERS, and the same request sent again gets "
-                  "the same answer, so it is not retried. If the query looks "
-                  "right, the site's API has changed — open an issue with "
-                  "--dump-html.", outcome.rejected)
+        outcome.rejected = api_error(text) or "HTTP 403"
+        log.error("The API gateway refused this request (%s). That is a "
+                  "statement about the PATH, and the same request sent again "
+                  "gets the same answer, so it is not retried. If the address "
+                  "looks right, the site's API has changed — open an issue "
+                  "with --dump-html.", outcome.rejected)
         _dump(args, page_num, text)
         return outcome
+    if state == "gone":
+        log.warning("Advert %s is gone: the site answered 404. It was sold or "
+                    "withdrawn, or the address is not the site's own for it "
+                    "(a wrong slug gets the same answer).", outcome.url)
+        return outcome
     if counts_as_blocked(state):
-        outcome.blocked_by = refusal_name(state)
+        outcome.blocked_by = refusal_name(state, text)
         debug = _save_debug(args, page_num, text)
         log.error("Blocked by %s on page %d — saved to %s. This is exit 3, "
                   "distinct from an empty listing (exit 4). %s",
-                  outcome.blocked_by, page_num, debug, refusal_advice(state))
+                  outcome.blocked_by, page_num, debug,
+                  refusal_advice(state, text))
         return outcome
     if not should_parse(state):
         # throttled past its budget, or never the endpoint's JSON at all
@@ -607,39 +605,72 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
     _dump(args, page_num, text)
     rows = parse_page(text, query, page_num)
     outcome.products = rows
-    outcome.total_available = total_results(text, query.mode)
-    outcome.pages_available = pages_available(outcome.total_available, query.mode)
-    log.info("Parsed %d row(s) from page %d.", len(rows), page_num)
-    if page_num == 1 and outcome.total_available is not None:
-        log.info("The site reports %d match(es) — %s page(s) at this page "
-                 "size.", outcome.total_available, outcome.pages_available)
+    if query.mode == "search":
+        outcome.sponsored = sponsored_count(text)
+        outcome.total_available = total_results(text)
+        outcome.pages_available = pages_available(text)
+        if page_num == 1:
+            outcome.filter_problem = filter_mismatch(text, query)
+            if outcome.total_available is not None:
+                log.info("The site reports %d match(es) — %s page(s) at %d per "
+                         "page.", outcome.total_available,
+                         outcome.pages_available, query.per_page)
+        log.info("Parsed %d row(s) from page %d%s.", len(rows), page_num,
+                 " (%d sponsored tile(s) skipped)" % outcome.sponsored
+                 if outcome.sponsored else "")
+    elif rows:
+        _market_prices(ops, rows[0], page_num, mask)
     _core_field_warnings(rows, query.mode, page_num)
     return outcome
 
 
-def check_pay_types(ops, args, query: Query) -> Optional[str]:
-    """Refuse an unknown --pay-type before the search, with the reason.
+def _market_prices(ops, row, page_num: int, mask) -> None:
+    """The averageprice endpoint for one advert. A failure costs the four
+    market columns, never the advert: the row is kept and the run says so."""
+    address = parse_ad_url(row.url)
+    kind = address.kind if address else ("bike" if row.vehicle == "motorcycle" else "car")
+    req = average_price_request(kind, row.sku, page_num)
+    status, text, _waf, err = ops.fetch(req)
+    state = "load_failed" if err else classify(text, status, req.url)
+    if counts_as_blocked(state):
+        # PerimeterX refused this one request mid-session once in a live
+        # run (2026-09-28) and served the same request moments later. One
+        # more try from a fresh browser; the refusal leaves the session
+        # spent either way, so the next advert lands again.
+        ops.relaunch()
+        if land(ops, None)[0] == "content":
+            status, text, _waf, err = ops.fetch(req)
+            state = "load_failed" if err else classify(text, status, req.url)
+    if err or status != 200 or not apply_market_prices(row, text):
+        log.warning("No market prices for advert %s (%s) — the row is kept "
+                    "with them null.", row.sku,
+                    mask(err) if err else "HTTP %s, %s" % (status, state))
 
-    The search answers an unknown identifier with an EMPTY result, not an
-    error, so without this a typo is an exit-4 run reporting that nobody
-    trades on a market that is full of adverts. If the list itself cannot be
-    read, the run goes ahead unchecked with a warning rather than refusing
-    a correct query over a response it could not parse.
+
+def read_currency(ops, args, query: Query,
+                  mask: Callable[[str], str] = lambda s: s) -> None:
+    """Read the currency the site states, once per run, into the query.
+
+    No endpoint states one, and a rendered page's JSON-LD does
+    (product_parser.currency_from_html). The page is FETCHED, not
+    navigated to: its server-rendered HTML carries the JSON-LD, and
+    rendering it would run the site's own scripts, which redirect and fire
+    a dozen requests of their own. A failure leaves the currency null and
+    says so; it never stops the run.
     """
-    if not query.pay_types:
-        return None
-    if not ops.landed:
-        land(ops, args)
-    offered = None
-    if ops.landed:
-        _status, text, _waf, err = ops.fetch(pay_type_request(query.fiat))
-        offered = None if err else pay_type_identifiers(text)
-    if offered is None:
-        log.warning("Could not read the payment methods P2P offers for %s — "
-                    "--pay-type is sent unchecked. A typo in it will come back "
-                    "as an empty listing.", query.fiat)
-        return None
-    return check_pay_types_against(query.pay_types, offered)
+    if query.currency or not ops.landed:
+        return
+    page = currency_page(query)
+    req = ApiRequest("GET", page[len(BASE):] if page.startswith(BASE) else page, 0)
+    status, text, _waf, err = ops.fetch(req)
+    query.currency = None if err or status != 200 else currency_from_html(text)
+    if query.currency:
+        log.info("The site states prices in %s (from the JSON-LD of %s).",
+                 query.currency, page)
+    else:
+        log.warning("Could not read the currency from %s (%s) — the `currency` "
+                    "column will be null rather than a guess.", page,
+                    mask(err) if err else "HTTP %s" % status)
 
 
 def run_pages(open_ops, close_ops, run_concurrently, args, pool,
@@ -657,14 +688,17 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
     blocked, stop_reason = False, "completed"
     ops = open_ops()
     try:
-        refusal = check_pay_types(ops, args, query)
-        if refusal:
-            log.error("%s", refusal)
-            return 2
-
         # Page 1 is always fetched alone: its total decides how many pages
-        # there are to address (§7).
+        # there are to address (§7), and its echo decides whether the site
+        # searched for what was asked at all.
         first = fetch_one_page(ops, args, pool, query, 1, mask)
+        if first.filter_problem:
+            log.error("%s", first.filter_problem)
+            return 2
+        if first.ok:
+            read_currency(ops, args, query, mask)
+            for row in first.products:
+                row.currency = query.currency
         outcomes.append(first)
         if not first.ok:
             stop_reason = stop_reason_for(first)
@@ -674,7 +708,8 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
             if plan < args.pages:
                 log.info("Asked for %d page(s); the listing has %s. Fetching "
                          "all of them.", args.pages, first.pages_available)
-            rest = list(range(2, plan + 1)) if first.products else []
+            more_to_fetch = bool(first.products) or query.mode == "ad"
+            rest = list(range(2, plan + 1)) if more_to_fetch else []
             if rest and concurrency > 1:
                 close_ops(ops)
                 ops = None
@@ -691,6 +726,7 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
                 elif unattempted:
                     stop_reason = "pages_unattempted"
             else:
+                seen = {r.sku for r in first.products}
                 for page_num in rest:
                     ops.wait_ms(int(args.delay * 1000))
                     if pool and pool.rotates_per_page():
@@ -702,26 +738,46 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
                         stop_reason = stop_reason_for(outcome)
                         blocked = outcome.blocked_by is not None
                         break
-                    if not outcome.products:
-                        # The live listing shrank below the plan made from
-                        # page 1. A property of the DATA, and complete.
-                        log.info("Page %d came back empty — the listing ended "
-                                 "before the plan did.", page_num)
+                    if query.mode == "ad":
+                        continue
+                    if listing_ended(outcome, seen):
                         stop_reason = "end_of_listing"
                         break
+                    seen.update(r.sku for r in outcome.products)
     finally:
         if ops is not None:
             close_ops(ops)
     return finish(args, query, outcomes, stop_reason, blocked)
 
 
+def listing_ended(outcome: PageOutcome, seen) -> bool:
+    """Whether a search page says the live listing ended before the plan.
+
+    Two shapes, both properties of the DATA rather than of markup:
+    an empty page, and a page holding only rows already fetched — which is
+    how this site answers a page past its end (it serves page 1 again).
+    """
+    if not outcome.products:
+        log.info("Page %d came back empty — the listing ended before the plan "
+                 "did.", outcome.page_num)
+        return True
+    if all(r.sku in seen for r in outcome.products):
+        log.warning("Page %d holds only listings already fetched — the site "
+                    "answers a page past its end with page 1 again, so the "
+                    "listing ended before the plan did.", outcome.page_num)
+        return True
+    return False
+
+
 def worker_loop(ops, args, query: Query, work, results, results_lock,
                 exhausted, name: str, mask: Callable[[str], str] = lambda s: s):
     """One concurrent worker's page loop, after its engine opened `ops`.
 
-    Takes pages until the queue is empty or a page comes back empty (the
-    live listing ended before the plan did), which sets `exhausted` so the
-    other workers stop taking work too.
+    Takes pages until the queue is empty or a search page comes back empty
+    (the live listing ended before the plan did), which sets `exhausted` so
+    the other workers stop taking work too. A page that repeats earlier
+    rows is not detectable here, since a worker sees only its own pages; the
+    merge's dedupe drops those rows.
     """
     first = True
     while not exhausted.is_set():
@@ -733,9 +789,11 @@ def worker_loop(ops, args, query: Query, work, results, results_lock,
             ops.wait_ms(int(args.delay * 1000))
         first = False
         outcome = fetch_one_page(ops, args, ops.pool, query, page_num, mask)
+        for row in outcome.products:
+            row.currency = query.currency
         with results_lock:
             results.append(outcome)
-        if outcome.ok and not outcome.products:
+        if query.mode == "search" and outcome.ok and not outcome.products:
             log.info("[%s] page %d returned no rows — the listing ended; "
                      "stopping dispatch.", name, page_num)
             exhausted.set()
@@ -755,10 +813,8 @@ def concurrency_for(args, pool) -> int:
         return 1
     if not pool:
         log.warning("--concurrency %d with no proxy pool: every worker leaves "
-                    "from the SAME address. The endpoints answered a datacentre "
-                    "address normally, but N workers are N times the request "
-                    "rate from it, and the site answers a rate it dislikes with "
-                    "429 and then 418. Pass --proxy-file to spread the load.",
+                    "from the SAME address, which is N times the request rate "
+                    "from it. Pass --proxy-file to spread the load.",
                     concurrency)
     if concurrency > 8:
         log.warning("--concurrency %d means %d browsers at once (~150-300MB "
@@ -780,15 +836,54 @@ def worker_pool(pool, worker_index: int):
     return ProxyPool(proxies[offset:] + proxies[:offset], rotate="per-run")
 
 
+def ua_override(chromium_version: str, locale: str) -> dict:
+    """The CDP `Network.setUserAgentOverride` parameters for a COMPLETE
+    identity: the user agent string AND the client hints that go with it.
+
+    pyppeteer's `page.setUserAgent` and a bare Selenium override send the UA
+    string alone, and Chromium then drops the client hints entirely: no
+    `Sec-CH-UA` header, and `navigator.userAgentData.brands` an empty list,
+    which no real Chrome 153 reports. Measured 2026-09-28 against an echo
+    service, then on the site: PerimeterX refused pyppeteer that way 2 of 2,
+    while Playwright (whose override keeps the hints) was served on the same
+    exit. Half an identity is refused; a whole one is not (§24).
+
+    The version is the browser's OWN (§8), the platform agrees with the
+    Windows UA string, and the brand list is the one Chromium itself sends,
+    minus the `HeadlessChrome` token.
+    """
+    major = (chromium_version or "0").split(".")[0].split("/")[-1]
+    full = (chromium_version or "0").split("/")[-1]
+    brands = [{"brand": "Chromium", "version": major},
+              {"brand": "Not_A Brand", "version": "8"}]
+    return {
+        "userAgent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      f"Chrome/{full} Safari/537.36"),
+        "acceptLanguage": locale,
+        "platform": "Win32",
+        "userAgentMetadata": {
+            "brands": brands,
+            "fullVersionList": [{"brand": "Chromium", "version": full},
+                                {"brand": "Not_A Brand", "version": "8.0.0.0"}],
+            "fullVersion": full,
+            "platform": "Windows",
+            "platformVersion": "10.0.0",
+            "architecture": "x86",
+            "model": "",
+            "mobile": False,
+            "bitness": "64",
+            "wow64": False,
+        },
+    }
+
+
 def cdp_connect_hint(error_text: str) -> str:
     """What a failed --cdp-endpoint connection means, from its status.
 
-    Two answers that want opposite fixes. Measured 2026-09-24 against four
-    Scraping Browser endpoints left in sibling repos' .env files: all four
-    answered 401 Unauthorized, because a profile's credentials last about a
-    day. The message used to explain a 500 (a pid another run still holds)
-    whatever the status was, which sent the reader to wait for a run that
-    did not exist.
+    Two answers that want opposite fixes. A Scraping Browser profile's
+    credentials last about a day, so a 401 is usually an endpoint copied from
+    an older .env; a 500 is usually a pid another run still holds.
     """
     if "401" in (error_text or ""):
         return ("HTTP 401: the endpoint's credentials were refused. A Scraping "
@@ -801,18 +896,15 @@ def cdp_connect_hint(error_text: str) -> str:
 
 
 # Connecting to a Scraping Browser profile right after the previous run let
-# go of it answers HTTP 500 `profile_locked`: the service releases a profile
-# 1.6-1.9 s after a clean disconnect (measured 3 of 3, 2026-09-24). Two
-# back-to-back runs therefore failed with exit 5 in the first live matrix
-# through --cdp-endpoint. Three attempts 3 s apart ride that out, and a
-# profile genuinely held by another run still fails, after ~9 s, with the
-# pid explanation.
+# go of it answers HTTP 500 `profile_locked`: the service released a profile
+# 1.6-1.9 s after a clean disconnect in a sibling repo (3 of 3, 2026-09-24).
+# Three attempts 3 s apart ride that out, and a profile genuinely held by
+# another run still fails, after ~9 s, with the pid explanation.
 CDP_CONNECT_ATTEMPTS = 3
 CDP_LOCKED_WAIT_S = 3.0
 # pyppeteer does not surface the 500 at all: its connect() waits on a future
 # the rejected handshake never resolves, so only a timeout ends it. A
-# successful connect measured 0.8-0.95 s, so 10 s is an order of magnitude
-# of headroom and a third of the 30 s it used to wait per attempt.
+# successful connect measured under 2 s in the sibling repos.
 CDP_CONNECT_TIMEOUT_S = 10
 
 
@@ -825,3 +917,4 @@ def cdp_should_retry(error_text: str) -> bool:
         return False
     return ("profile_locked" in text or " 500" in text or "HTTP 500" in text
             or "did not return within" in text)
+

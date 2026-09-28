@@ -37,11 +37,9 @@ CLIS = ["playwright_scraper.py", "puppeteer_scraper.py", "selenium_scraper.py",
         "scraper_api_client.py", "fingerprint_client.py", "env_config.py",
         "diff_runs.py"]
 
-# One real run per mode: three row classes, three samples.
+# One real run per mode: two row classes, two samples.
 SAMPLE_FILES = ("sample_output.json", "sample_output.csv",
-                "sample_output_copytrading.json", "sample_output_copytrading.csv",
-                "sample_output_announcements.json",
-                "sample_output_announcements.csv")
+                "sample_output_ad.json", "sample_output_ad.csv")
 
 # Phrases that show up in hand-written or template sample data. The point of
 # committing a sample is that it came from a real run; a placeholder teaches
@@ -85,26 +83,15 @@ CREDENTIAL_ALLOWED = (
 # A 2captcha API key is a 32-character hex string.
 HEX32 = re.compile(r"\b[0-9a-f]{32}\b")
 
-# ONE context, and the reason is worth more than the tuple.
+# EMPTY, and that is the stricter arrangement rather than an omission.
 #
-# Binance names every announcement by a 32-hex `code`, and the row's `url`
-# is built from it: `/en/support/announcement/detail/{code}`, the site's own
-# canonical address (a slug link redirects there). That is a published page
-# address, and the sample output carries fifty of them.
-#
-# The fixtures do NOT need the exemption: `make_fixtures.py` replaces every
-# code with a non-hex placeholder, because the parser only needs a code to
-# exist, not its value. So the only 32-hex strings left in the working tree
-# are inside that exact URL, and a bare 32-hex anywhere else still fails,
-# including in the same file on another line.
-#
-# Two things that look like keys and are not caught, checked rather than
-# assumed: a P2P advertiser id is `s` + 32 hex, which the \b-bounded rule
-# does not match (no word boundary after the `s`); and an avatar URL's hex
-# file name, which the parser never writes.
-SITE_PUBLIC_IDS = (
-    re.compile(r"binance\.com/en/support/announcement/detail/[0-9a-f]{32}\b"),
-)
+# A sibling repo forgives a 32-hex inside its own announcement addresses.
+# This site publishes no 32-hex identifier at all: an advert's id is a short
+# integer and its photo file names are `WMIMAGEM` plus digits, checked in
+# every capture rather than assumed. So a bare 32-hex string anywhere in the
+# repo fails, with no exception to reason about (CLAUDE.md §24: before
+# adding an exemption, check whether the value is needed at all).
+SITE_PUBLIC_IDS = ()
 
 def _without_site_ids(line):
     """A line with this site's own published identifiers taken out.
@@ -155,9 +142,8 @@ HEX32_ALLOWED = ("sha", "hash", "nonce", "example", "md5", "digest",
 # EMPTY, and that is the stricter arrangement rather than an omission.
 #
 # A sibling repo exempts its generated data files from the bare-hex rule
-# wholesale. This one does not need to: the only 32-hex strings it produces
-# are announcement addresses, and SITE_PUBLIC_IDS forgives exactly that
-# context and nothing else, in every file.
+# wholesale. This one does not need to: nothing it generates holds a 32-hex
+# string at all.
 GENERATED_DATA_FILES = ()
 
 # A secret sitting in a field named like one. This is what the bare-hex rule
@@ -215,12 +201,10 @@ CAPTURES_IN_HISTORY_DECIDED = {
     # every blob before this repo was made public.
     #
     # Worth knowing what a capture of THIS site carries, so the decision can
-    # be made quickly: API responses only, no page markup. P2P adverts hold
-    # advertisers' public nicknames and ids; copy-trading holds lead
-    # traders' public nicknames and avatar URLs; announcements hold 32-hex
-    # article codes. None of it is ours (no key, no cookie, no proxy
-    # credential), and none of it is a person's private data: these are the
-    # pseudonymous handles the site shows every visitor on the same tile.
+    # be made quickly: API responses and refusal pages. A PRIVATE seller's
+    # record carries a first name, a postal code and their own text, and
+    # the /api/location landing carries the exit's IP and coordinates —
+    # which is why only make_fixtures.py's scrubbed cut is ever committed.
 }
 
 # Suffixes the HISTORY scan walks. It reads blobs out of git, where a
@@ -372,7 +356,7 @@ def help_check():
 def sample_check():
     """Each committed sample is a real run's output, and a schema test.
 
-    Three modes, three row classes, so three samples. Each file's rows are
+    Two modes, two row classes, so two samples. Each file's rows are
     checked against the row class of the mode THEY say they are, in column
     order, and each CSV's header against the same class. Rename a field in
     the code and forget the sample, and this fails rather than the docs
