@@ -3,9 +3,9 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "binance-scraper"
+name = "webmotors-scraper"
 version = "0.1.0"
-description = "binance.com scraper: P2P adverts, Futures copy-trading lead portfolios and announcements, from the site's own JSON endpoints (Playwright, Selenium or pyppeteer)."
+description = "webmotors.com.br scraper: Brazilian car and motorcycle listings and adverts (price, FIPE, mileage, seller), from the site's own JSON endpoints (Playwright, Selenium or pyppeteer)."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/2scraper/binance-scraper"
+Homepage = "https://github.com/2scraper/webmotors-scraper"
 
 # Mirrors requirements-playwright.txt / requirements-puppeteer.txt /
 # requirements-selenium.txt. Install exactly one — see those files for why:

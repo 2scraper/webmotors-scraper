@@ -2,10 +2,13 @@
 # container with its own Chromium — for a CI canary run or a scheduled job,
 # not required for local development (`pip install` directly is simpler there).
 #
-#   docker build -t binance-scraper .
-#   docker run --rm -v "$PWD/out:/out" binance-scraper \
-#     --mode copytrading \
-#     --pages 3 --out /out/leads
+#   docker build -t webmotors-scraper .
+#   docker run --rm -v "$PWD/out:/out" -e WEBMOTORS_PROXY webmotors-scraper \
+#     --make volkswagen --model gol --pages 3 --out /out/gol
+#
+# The site refuses datacentre addresses, so the container needs a
+# RESIDENTIAL proxy (WEBMOTORS_PROXY, passed through from your shell with
+# `-e`) or a Scraping Browser endpoint (WEBMOTORS_CDP_ENDPOINT).
 #
 # Pass --proxy/--twocaptcha-key the same way as running locally, or mount a
 # .env at /app/.env — nothing here bakes in a credential.

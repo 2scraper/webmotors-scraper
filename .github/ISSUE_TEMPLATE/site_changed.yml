@@ -1,5 +1,5 @@
 name: Site changed / API broke
-description: binance.com changed an endpoint and the parser no longer matches.
+description: webmotors.com.br changed an endpoint and the parser no longer matches.
 labels: ["site-change"]
 body:
   - type: markdown
@@ -7,23 +7,25 @@ body:
       value: |
         This is the most common way a scraper stops working, and it is worth
         its own report because the fix is different from a code bug:
-        something on binance.com moved.
+        something on webmotors.com.br moved.
 
-        Useful to know before filing: this repo reads NO HTML. Every row comes
-        from one of three JSON endpoints the site's own front end calls
-        (`product_parser.py` lists them), so a break is almost always a
-        renamed field, a new required parameter, or an endpoint going behind
-        the site's AWS WAF.
+        Useful to know before filing: this repo reads no HTML for its rows.
+        Every row comes from the JSON endpoints the site's own front end
+        calls (`product_parser.py` lists them), so a break is almost always a
+        renamed field, a moved filter echo, a changed advert-link slug, or
+        a change in what CloudFront or PerimeterX lets through.
 
   - type: dropdown
     id: what_broke
     attributes:
       label: What stopped matching
       options:
-        - The run stops with "The endpoint refused this request (code ...)"
-        - 0 rows on a query that visibly has results on the site
+        - The run stops with "The API gateway refused this request"
+        - 0 rows on a search that visibly has results on the site
+        - A correct make or model is refused as "not recognised"
         - A specific column is null or wrong on every row
-        - Every run is blocked by aws-waf, even from a residential exit
+        - Ad mode reports adverts from a fresh search as gone
+        - Every run is blocked (cloudfront or perimeterx), even from a residential exit
         - Pagination stops early or repeats rows
         - Something else
     validations:
@@ -34,7 +36,7 @@ body:
     attributes:
       label: Mode and query
       description: The mode and flags (or --url), and the country your exit IP was in.
-      placeholder: "--mode p2p --asset USDT --fiat EUR --side buy (exit IP: DE residential)"
+      placeholder: "--make volkswagen --model gol --pages 3 (exit: BR residential)"
     validations:
       required: true
 

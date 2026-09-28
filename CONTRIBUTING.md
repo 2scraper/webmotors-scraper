@@ -40,30 +40,34 @@ not the check caught it.
 
 ## Reporting a site change
 
-Binance changing its API is the normal way this stops working, and it has
-its own issue template. The parser reads no HTML at all: every row comes out
-of one of three JSON endpoints the site's own front end calls
-(`product_parser.py` names them). So there are only four things that can
-break, and each is loud or guarded:
+Webmotors changing its API is the normal way this stops working, and it has
+its own issue template. The parser reads no HTML for its rows: every row
+comes out of the JSON endpoints the site's own front end calls
+(`product_parser.py` names them). So there are five things that can break,
+and each is loud or guarded:
 
-1. **The envelope.** Every endpoint answers `{"code": "000000", "data": …}`.
-   A non-success code is classified `rejected` and the run stops naming the
-   site's own complaint. It is not retried and not counted as blocked.
-2. **A parameter the endpoint stops accepting.** Same path: `rejected`, with
-   the site's message. The first place to look is the allowlists at the top
-   of `product_parser.py`, which exist because the API accepts several wrong
-   values SILENTLY (see "Pull requests" below).
-3. **A record's own field names** (`adv.price`, `advertiser.nickName`,
-   `roi`, `leadPortfolioId`, `releaseDate`, ...). This is the one that can be
-   QUIET: the row still writes, with that column null. `page_flow.CORE_FIELDS`
-   is the guard, a coverage floor of 99% on the columns every captured record
+1. **The search envelope.** `SearchResults`, `Count`, `Pagination` and
+   `FilterCustom`. Without `SearchResults` a response is not classified as
+   content at all, and the run retries and then fails loudly.
+2. **The filter echo** (`FilterCustom.Veiculos`, `Sigla`). This is how a
+   misspelt make or model is caught, because the site answers it with a
+   WIDER search rather than an error. If the echo moves, `filter_mismatch`
+   stops seeing anything and says nothing — the one guard here that fails
+   OPEN, by design, since refusing correct runs over a response it cannot
+   read would be worse.
+3. **A record's own field names** (`Specification.Version`, `Prices.Price`,
+   `Seller.SellerType`, ...). This is the one that can be QUIET: the row
+   still writes, with that column null. `page_flow.CORE_FIELDS` is the
+   guard, a coverage floor of 99% on the columns every captured record
    carried.
-4. **The endpoints going behind AWS WAF.** Every HTML page on the site
-   already is. If the endpoints follow, the README's central claim (no key,
-   no proxy) stops being true, and the canary will say so, because it runs
-   with no secrets from a GitHub runner.
+4. **The advert slug.** Row URLs are built as the site builds them
+   (`product_parser.slugify`, 660 of 660 identical to the site's own links),
+   and the detail endpoint answers a wrong slug with 404. If `--mode ad` on
+   a fresh search's output starts reporting adverts as gone, the rule moved.
+5. **The gates.** CloudFront (the address) and PerimeterX (the client). The
+   canary runs through a residential proxy and fails by name on either.
 
-If you are reporting a break, say which of those four it is, and attach the
+If you are reporting a break, say which of those five it is, and attach the
 `--dump-html` output: the exact JSON the parser was given, on success as well
 as failure.
 
@@ -86,12 +90,10 @@ history needs a decision, not a red check on every push.
 Then the rest of the presentation, in the order that matters:
 
 1. `python3 smoke_test.py` green, and the canary dispatched at least once.
-   It runs daily with no secrets at all and is expected to be green, because
-   no mode needs a credential and a green badge there is exactly the claim
-   the README makes. Its first dispatch (2026-09-24) was served in all
-   three modes from a GitHub-hosted runner with no proxy. If a later run
-   is refused for the runner's address, the canary's `BINANCE_PROXY`
-   secret (an exit elsewhere) is the fix, with no workflow edit.
+   Without a `WEBMOTORS_PROXY` secret it SKIPS with a notice, because
+   CloudFront refuses the runner's datacentre address; dispatch it once to
+   see the skip branch run, and again with the secret set to see the real
+   one.
 2. The repo description, homepage and topics set (see the family notes on
    what those should say).
 3. Only then the row in the org profile README — and check it with an
@@ -110,31 +112,29 @@ Six properties in this repo exist because they were measured against
 expectation and cost real time. Tests pin all six, so a PR that breaks one
 fails rather than silently regressing:
 
-- **Every query parameter is allowlisted, because the API does not validate.**
-  An unknown copy-trading `dataType` returns a full list under some OTHER
-  ordering; `pageSize` above 30 is silently capped at 30; an unknown P2P
-  `payTypes` entry returns an empty result for a market full of adverts.
-  Each of those turns a typo into a run that looks healthy. `--pay-type` is
-  therefore checked against the site's own list for the fiat before the
-  search runs.
-- **The P2P side is inverted in the data.** A `buy` query returns adverts
-  whose `tradeType` is `SELL`, because an advert carries the maker's side.
-  Rows keep both, as `side` (what was asked) and `advertiser_side`.
-- **A refused parameter is `rejected`, not blocked.** The announcements
-  endpoint answers a page size outside {1, 2, 5, 10, 15, 20, 50} with HTTP 400
-  and an EMPTY body. Classified as a block, that would send a reader to buy a
-  proxy for a typo.
-- **Pages are planned from page 1's total**, and a page past the end is an
-  answer, not an error: all three endpoints return an empty list there. P2P
-  also reports `total: 0` on that page, which is why only page 1's total is
-  ever read.
-- **The listings are live**, so a multi-page run can see a row twice. The
-  dedupe drops it and the log says so. A non-zero count there is the site
-  moving, not a bug.
-- **AWS WAF: the token that clears the CAPTCHA is `existing_token` on the
-  registrable domain.** A `captcha_voucher` set as the cookie on the page's
-  own host left the page on "Human Verification". `captcha_solver` and
-  `page_flow.cookie_domain` pin the version that was measured to work.
+- **The user agent override is load-bearing, and so are its client hints.**
+  PerimeterX refused headless Chromium's default UA (`HeadlessChrome`) 0 of 3
+  times served and the same browser with a plain Chrome UA 3 of 3. And a
+  UA override that drops the client hints (pyppeteer's `setUserAgent`) was
+  refused 2 of 2: `page_flow.ua_override` sends both.
+- **The API widens a search it does not understand.** A misspelt model is
+  answered with every model of the make, an unknown make with the whole
+  catalogue, an unknown state with the whole country, an unknown `order`
+  with the default ordering — all HTTP 200. The ordering is allowlisted, the
+  state is checked before sending, and make/model are checked against the
+  site's own echo after page 1.
+- **A page past the end is page 1 again.** `actualPage=500` of 40 returned
+  ten rows of page 1 with `PageCurrent: 500` echoed back. Pages are planned
+  from page 1's `PageTotal`, and a page holding only rows already fetched
+  ends the run.
+- **Sponsored new-car tiles are not listings.** `UniqueId: 0`,
+  `MediaZeroKm: true`, no seller. They are skipped and `position` counts only
+  the rows written.
+- **No endpoint states a currency.** It is read once per run from a listing
+  page's JSON-LD and threaded into the rows; a run that cannot read it
+  writes null, never a default.
+- **A private seller is a person.** Their name, postal code and own
+  description are never written, and the fixtures are scrubbed of them.
 
 Plus the family's own invariants, which are not negotiable:
 
@@ -154,35 +154,37 @@ Plus the family's own invariants, which are not negotiable:
 
 ### If your change needs a live run
 
-Most do not: the suite covers the parser, the writers, the classifier and
-the CLI contract against real, trimmed responses. If yours genuinely needs
-binance.com, say in the PR what you ran (engine, mode, query), from which
-exit, and what you got, including the sidecar's `total_results`.
+Most do not: the suite covers the parser, the writers, the classifier, the
+shared fetch loop and the CLI contract against real, trimmed responses. If
+yours genuinely needs webmotors.com.br, say in the PR what you ran (engine,
+mode, query), through what kind of exit, and what you got, including the
+sidecar's `total_results`.
 
-Two things about running this live that are specific to Binance:
+Two things about running this live that are specific to Webmotors:
 
-* **No mode needs an exit, a key or an account.** The endpoints answered a
-  datacentre VPS normally, so "it worked from my laptop" is reproducible
-  here in a way it is not on most sibling repos.
-* **Binance's terms exclude some jurisdictions, the United States among
-  them** (binance.us is a separate exchange). What an address there is
-  answered with has not been measured by this repo. If a run from one is
-  refused, that is the terms, not a bug.
+* **You need a residential exit** (or a residential connection of your
+  own). CloudFront refused every datacentre address measured. A rotating
+  residential gateway is accepted only some of the time per exit, so a
+  refusal on one attempt is not a finding; three in a row is.
+* **Selenium cannot authenticate a proxy.** From a server, test it through
+  a proxy that authorises by source address, or not at all.
 
 **Run more than the primary engine.** "Mirror them exactly" is a design
 rule, not a verification. The fetch loop is shared (`page_flow.run_pages`),
-but each engine's driver plumbing is its own, and only running it proves it.
+but each engine's driver plumbing is its own — pyppeteer's user-agent
+override was refused by the site while Playwright's was served — and only
+running it proves it.
 
 ## Scope
 
-This repo reads **public data** on binance.com: the P2P advert list, the
-public copy-trading leaderboard and the announcement catalogues, exactly as
-the site's own front end fetches them for an anonymous visitor.
+This repo reads **public data** on webmotors.com.br: search results and
+advert pages, exactly as the site's own front end fetches them for an
+anonymous visitor.
 
-Out of scope: anything behind a login, anything that places an order,
-opens a P2P trade, copies a portfolio or submits any other form, and
-anything that defeats a protection rather than passing it the way an
-ordinary browser does.
+Out of scope: anything behind a login, a seller's contact details, anything
+that sends a lead, a message or a proposal to a seller, and anything that
+defeats a protection rather than passing it the way an ordinary browser
+does.
 
 ## Licence
 

@@ -12,23 +12,17 @@ body:
 
         A few things answer most reports faster than we can:
 
-        - **Exit 3 from a US address?** Binance's terms exclude some
-          jurisdictions, the United States among them (binance.us is a
-          separate exchange). Try an exit elsewhere, and say in the report
-          what the sidecar's `stop_reason` was: this repo has not measured
-          what such an address is answered with.
-        - **Exit 3 with `blocked_aws-waf`?** The site's AWS WAF challenged
-          the session. The data endpoints were not gated when this repo was
-          written, so this is news worth reporting, together with the exit
-          you used. A residential `--proxy`, or `TWOCAPTCHA_KEY` for the WAF's
-          CAPTCHA (AmazonTask), are the two answers.
-        - **Exit 4, zero rows?** The query may genuinely match nothing, for
-          example a P2P market with no adverts for that payment method. That is
-          a correct answer. See
-          [TROUBLESHOOTING.md](../blob/main/TROUBLESHOOTING.md).
-        - **Every advert says `sell` on a buy query?** That is the site's
-          own convention: an advert carries the maker's side. `side` says
-          what you asked for; `advertiser_side` is the advert's.
+        - **Exit 3 naming `cloudfront`?** The site refused the ADDRESS:
+          every datacentre address measured was refused. Use a residential
+          `--proxy`, or `--cdp-endpoint`.
+        - **Exit 3 naming `perimeterx`?** The site refused the CLIENT. Say
+          which engine, whether headless or headful, and which exit, in the
+          report: the engines' identity handling is what failed.
+        - **Exit 2, "the site did not recognise the model"?** The spelling
+          is not the site's. Copy it from the site's own address for that
+          search. See [TROUBLESHOOTING.md](../blob/main/TROUBLESHOOTING.md).
+        - **An advert missing from ad-mode output?** It is in the sidecar's
+          `ads_gone`: the site answered 404 for it.
 
   - type: dropdown
     id: engine
@@ -62,7 +56,7 @@ body:
       label: Exit code
       description: >-
         `echo $?` straight after the run. These mean specific things: 3 is a
-        refusal (WAF, 403 or 451), 4 is "ran fine, found nothing", 5 is "the
+        refusal (CloudFront or PerimeterX), 4 is "ran fine, found nothing", 5 is "the
         data never arrived". The table is in the README.
       placeholder: "4"
     validations:

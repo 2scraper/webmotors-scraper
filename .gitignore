@@ -7,27 +7,25 @@
 *.json
 *.csv
 !package.json
-# Committed on purpose: a real 5-row excerpt of a real run, so a reader can see
-# the exact output shape without installing anything.
+# Committed on purpose: one small real run per mode, so a reader can see the
+# exact output shape without installing anything.
 !sample_output.json
 !sample_output.csv
-!sample_output_copytrading.json
-!sample_output_copytrading.csv
-!sample_output_announcements.json
-!sample_output_announcements.csv
+!sample_output_ad.json
+!sample_output_ad.csv
 !fixtures_generated.json
-binance_rows.*
-binance_rows_*.*
+webmotors_rows.*
+webmotors_rows_*.*
 
 # --- the live-test harness's working directory ---------------------------
 live_results/
 live_results.zip
 # ANY working directory a live run writes into, by KIND rather than by the one
-# name an older repo used (CLAUDE.md §24). Measured here: `live/` was not
+# name an older repo used (CLAUDE.md §24). Measured in a sibling: `live/` was not
 # listed, and a `--dump-html` of a 3-page run wrote `canary_dump.json.page3`,
 # which `*.json` does not cover. It sat untracked and NOT ignored, one
 # `git add -A` from a commit, until the credential scan flagged the 32-hex
-# announcement codes inside it.
+# ids inside it.
 live/
 out/
 output/
