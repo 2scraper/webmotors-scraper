@@ -7,6 +7,41 @@ toolkit can: a patch release means **fixes**, not that every flag and
 default is frozen. A default that changes behaviour for an existing user is
 said so at the top of its release notes.
 
+## [0.1.1] — 2026-10-08
+
+> **Exit codes change for a page the parser cannot read.** v0.1.0 treated a
+> listing record with no usable `UniqueId` or no `Seller` as advertising, so
+> a moved payload shape read as an EMPTY page: exit 4 on page 1 ("nothing
+> matched"), and a `complete` run with exit 0 when it happened on a later
+> page. It now ends as `parser_found_nothing`: exit 5 when nothing was read,
+> exit 6 (`partial`, rows kept) when earlier pages were. A pipeline that
+> treated exit 4 as "empty search" was being told something false.
+
+Fixes from a third-party audit of v0.1.0, each reproduced before changing
+anything and each pinned by a check that a planted fault turns red.
+
+### Fixed
+
+- A record is sponsored only on a POSITIVE marker (`MediaZeroKm` or
+  `AdvertisementLink`). Measured across every capture: 3 of 3 sponsored
+  tiles carry both, 0 of 3,386 listings carry either. A listing that cannot
+  be read is counted in the sidecar's new `malformed_records` and logged.
+- Core columns that fall below their coverage floor are recorded in the
+  sidecar (`columns_below_floor`), not only logged, and the canary fails on
+  them and on any malformed record.
+- Ad mode: the sidecar's `query` identifies the SET of adverts asked for
+  (`ads_sha256`, order-independent) and lists them in `ads_requested`.
+  v0.1.0 recorded only their number, so `diff_runs.py` compared two
+  different lists of one length.
+- `diff_runs.py` refuses two search runs of different depth
+  (`pages_requested`): the extra pages read as listings the market added.
+
+### Changed
+
+- A skipped canary run says so at the top of its summary page, and the
+  README says the badge is green because the canary skips: this repository
+  has no proxy secret set.
+
 ## [0.1.0] — 2026-09-28
 
 First release. Two modes over webmotors.com.br's own JSON endpoints, three

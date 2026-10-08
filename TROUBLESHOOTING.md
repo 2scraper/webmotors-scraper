@@ -65,6 +65,15 @@ falls in. Nothing is written, so an earlier good file is left alone;
   Browser profile (they last about a day); a 500 is a profile another run
   still holds.
 
+## `stop_reason: parser_found_nothing` (exit 5, or 6 after earlier pages)
+
+The site sent a page of listings and none could be read: the payload's shape
+has moved (a renamed id field, typically). This is **not** an empty search.
+The page is saved as `<out>_page<N>_debug.html`; open a "Site changed" issue
+with it. A sidecar whose `malformed_records` is above 0, or whose
+`columns_below_floor` is not empty, is the same thing caught earlier: some
+records or columns stopped arriving while the rest still parse.
+
 ## Exit 6 — partial
 
 Some pages came back and a later one did not. The output holds what was

@@ -672,6 +672,90 @@ def check_ad_mode_end_to_end():
           ("page", "/carros/estoque") in ops.fetches)
 
 
+def _with_renamed(name, field, only=None):
+    """A real capture with `field` renamed on its records (all, or the first
+    `only`): the payload's shape moving, which no live response showed."""
+    d = copy.deepcopy(FIXTURES[name])
+    for rec in d["SearchResults"][:only]:
+        rec["Renamed" + field] = rec.pop(field)
+    return json.dumps(d)
+
+
+def check_a_moved_shape_is_never_an_empty_listing():
+    """Third-party audit, 2026-10-08: with UniqueId renamed, v0.1.0 called
+    every listing 'sponsored', the page EMPTY, and a 3-page run ended
+    complete, exit 0, on page 2."""
+    import product_parser as P
+    moved = _with_renamed("search_gol_p2", "UniqueId")
+    equal("a page of listings without a usable id is CONTENT, not empty",
+          P.detect_page_state(moved, 200), "content")
+    equal("...and none of it is counted as advertising", P.sponsored_count(moved), 0)
+
+    rc, meta, rows, ops = _run({("search", 1): [(200, fx("search_gol_p1"))],
+                                ("search", 2): [(200, moved)]}, pages=3)
+    equal("page 2 unreadable: exit 6, page 1's rows kept", (rc, len(rows or [])), (6, 5))
+    equal("...named as the parser finding nothing", meta["stop_reason"], "parser_found_nothing")
+    equal("...partial, with the page named", (meta["status"], meta["pages_failed"]),
+          ("partial", [2]))
+    equal("...and counted", meta["malformed_records"], 5)
+
+    rc, meta, rows, ops = _run({("search", 1): [(200, _with_renamed("search_gol_p1", "UniqueId"))]},
+                               pages=1)
+    equal("page 1 unreadable: exit 5 (nothing obtained), never 4 (nothing listed)", rc, 5)
+
+    rc, meta, rows, ops = _run({("search", 1): [(200, _with_renamed("search_gol_p1", "UniqueId", 1))]},
+                               pages=1)
+    equal("ONE unreadable record among five: four rows written", len(rows or []), 4)
+    equal("...and the one counted in the sidecar", meta["malformed_records"], 1)
+    equal("...the run itself is complete: nothing was left unfetched",
+          (rc, meta["status"]), (0, "complete"))
+
+    rc, meta, rows, ops = _run({("search", 1): [(200, _with_renamed("search_gol_p1", "Seller"))]},
+                               pages=1)
+    equal("a moved Seller: rows still written", len(rows or []), 5)
+    check("...and the columns it emptied are in the sidecar, not only the log",
+          {"seller_type", "city", "state"} <= set(meta["columns_below_floor"]),
+          repr(meta["columns_below_floor"]))
+    rc, meta, rows, ops = _run({("search", 1): [(200, fx("search_gol_p1"))]}, pages=1)
+    equal("a healthy page: no shortfall, no malformed record",
+          (meta["columns_below_floor"], meta["malformed_records"]), ([], 0))
+
+
+def check_an_ad_runs_identity_is_its_set_of_adverts():
+    """Third-party audit, 2026-10-08: v0.1.0 recorded only how MANY adverts a
+    run asked for, so two different lists of one length compared."""
+    import page_flow as F
+    import product_parser as P
+    a = _ad_q("detail_car_dealer", "detail_bike")
+    b = _ad_q("detail_car_private", "detail_bike")
+    flipped = P.Query("ad", ads=tuple(reversed(a.ads)))
+    qa, qb = F.query_summary(a), F.query_summary(b)
+    equal("same length", (qa["ads"], qb["ads"]), (2, 2))
+    check("...different sets, different identity", qa != qb)
+    equal("the same set in another order is the same question", F.query_summary(flipped), qa)
+    import diff_runs as D
+    rows = [asdict(r) for r in P.parse_page(fx("detail_car_dealer"), a, 1)]
+    with tempfile.TemporaryDirectory() as tmp:
+        x, y = os.path.join(tmp, "x.json"), os.path.join(tmp, "y.json")
+        for path, q in ((x, qa), (y, qb)):
+            json.dump(rows, open(path, "w"))
+            json.dump({"status": "complete", "mode": "ad", "query": q},
+                      open(path[:-5] + ".meta.json", "w"))
+        check("diff_runs refuses two different advert lists",
+              not D._check_comparable(types.SimpleNamespace(old=x, new=y)))
+        srows = [asdict(r) for r in P.parse_page(fx("search_gol_p1"), _q())]
+        for path, pages in ((x, 3), (y, 5)):
+            json.dump(srows, open(path, "w"))
+            json.dump({"status": "complete", "mode": "search", "pages_requested": pages,
+                       "query": {"sort": "relevance"}}, open(path[:-5] + ".meta.json", "w"))
+        check("diff_runs refuses a 3-page and a 5-page run of one search",
+              not D._check_comparable(types.SimpleNamespace(old=x, new=y)))
+        json.dump({"status": "complete", "mode": "search", "pages_requested": 3,
+                   "query": {"sort": "relevance"}}, open(y[:-5] + ".meta.json", "w"))
+        check("...and accepts the same depth", D._check_comparable(
+            types.SimpleNamespace(old=x, new=y)))
+
+
 def check_every_engine_implements_the_operations_page_flow_uses():
     """The fetch loop is shared, so an engine missing ONE operation fails
     only when a live run reaches it. The set is DERIVED from page_flow's own
