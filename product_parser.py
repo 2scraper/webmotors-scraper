@@ -658,12 +658,19 @@ def is_sponsored(rec: Dict[str, Any]) -> bool:
     `mediaZeroKm=true`, each with `UniqueId: 0`, `MediaZeroKm: true`, no
     `Seller` and an `AdvertisementLink` to a dealer's lead form. They are not
     listings of this search, they have no id to key on, and counting them
-    would shift every position after them (§24). Each condition alone
-    identifies them; all three are checked so a tile that loses one of the
-    three still does not become a row.
+    would shift every position after them (§24).
+
+    Only a POSITIVE advertising marker makes a record sponsored. v0.1.0 also
+    called a record sponsored when it lacked a usable `UniqueId` or a
+    `Seller`, and a third-party audit (2026-10-08) showed what that cost:
+    with `UniqueId` renamed in a real capture, every listing on the page
+    "was sponsored", the page read as EMPTY, and a 3-page run ended
+    `complete`, exit 0, on page 2. A missing field is the payload's shape
+    moving, and it is counted as a malformed record instead
+    (`malformed_count`), never as an advert. Measured across every capture:
+    3 of 3 tiles carry both markers below, 0 of 3,386 listings carry either.
     """
-    return (not _int(rec.get("UniqueId")) or bool(rec.get("MediaZeroKm"))
-            or "Seller" not in rec)
+    return bool(rec.get("MediaZeroKm")) or bool(rec.get("AdvertisementLink"))
 
 
 def _records(payload: Dict[str, Any]) -> List[Dict[str, Any]]:

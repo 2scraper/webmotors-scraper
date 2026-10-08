@@ -163,7 +163,15 @@ def _check_comparable(args) -> bool:
                 problems.append(f"{label} ({path}) is a {mode!r} run, which "
                                 f"is not one row per sku.")
         if meta and meta.get("query") is not None:
-            queries[label] = meta["query"]
+            queries[label] = dict(meta["query"])
+            # A search's DEPTH is part of the question: a 3-page and a
+            # 5-page run of one listing differ by two pages of "added" rows
+            # that the market never added (audit, 2026-10-08). It is what
+            # was ASKED, not what completed — a listing that shrank and ended
+            # early is a real change and stays comparable.
+            if (meta.get("mode") == "search"
+                    and meta.get("pages_requested") is not None):
+                queries[label]["pages_requested"] = meta["pages_requested"]
         if status is not None and status != "complete":
             problems.append(
                 f"{label} ({path}) was a {status!r} run — stopped after "

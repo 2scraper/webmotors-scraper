@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "webmotors-scraper"
-version = "0.1.0"
+version = "0.1.1"
 description = "webmotors.com.br scraper: Brazilian car and motorcycle listings and adverts (price, FIPE, mileage, seller), from the site's own JSON endpoints (Playwright, Selenium or pyppeteer)."
 readme = "README.md"
 license = "MIT"

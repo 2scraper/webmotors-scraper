@@ -54,6 +54,11 @@ jobs:
         if: env.WEBMOTORS_PROXY == ''
         run: |
           echo "::notice::No WEBMOTORS_PROXY secret. CloudFront refuses datacentre addresses (a GitHub runner is one), so a live run here could only fail. Set a residential proxy secret to enable this canary (see the header)."
+          # A green run that tested nothing must SAY so where a reader looks.
+          # The badge cannot: GitHub colours it by the run's conclusion
+          # (third-party audit, 2026-10-08).
+          echo "## ${{ matrix.name }}: SKIPPED — the site was NOT contacted" >> "$GITHUB_STEP_SUMMARY"
+          echo "No residential proxy secret is set, so no live step ran. This run proves the workflow is intact, not that the scraper works today." >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v4
         if: env.WEBMOTORS_PROXY != ''
@@ -120,6 +125,10 @@ jobs:
           priced = sum(1 for r in rows if isinstance(r["price"], float) and r["price"] > 0)
           if priced != len(rows):
               problems.append("%d of %d rows have a price" % (priced, len(rows)))
+          if meta.get("malformed_records"):
+              problems.append("%d listing record(s) could not be read" % meta["malformed_records"])
+          if meta.get("columns_below_floor"):
+              problems.append("columns below their floor: %s" % meta["columns_below_floor"])
           named = [r["sku"] for r in rows if r["seller_type"] == "private" and r["seller_name"]]
           if named:
               problems.append("a private seller carries a name: %s" % named[0])

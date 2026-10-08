@@ -228,7 +228,11 @@ captured on 2026-09-28 (`tools/capture.py`), cut and scrubbed by
 CI runs the suite on Python 3.9 and 3.12, once per engine in its own
 virtualenv, builds the Docker image, and scans for committed credentials.
 The canary runs a real search daily when a residential proxy secret is set,
-and skips with a notice when it is not.
+and skips with a notice when it is not. **This repository has no such secret
+set, so the canary badge above is green because it skipped:** it says the
+workflow is intact, not that the site was scraped today. Each skipped run
+says so at the top of its summary page. Measure the scraper yourself with
+the commands under "Run".
 
 ## Legal
 

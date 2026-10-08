@@ -29,6 +29,7 @@ Nothing here imports a browser, and **no JavaScript crosses this boundary**
 (§1). Each engine spells its fetch() in its own driver's dialect.
 """
 
+import hashlib
 import logging
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional
@@ -42,7 +43,8 @@ from product_parser import (MAX_PAGES, ORIGIN_URL, ApiRequest, Query, BASE,
                             detect_page_state, filter_mismatch,
                             listing_url_from_parts, pages_available,
                             parse_ad_url, parse_page, query_from_url,
-                            request_for, sponsored_count, total_results)
+                            request_for, sponsored_count, total_results,
+                            count_rows)
 
 log = logging.getLogger("page_flow")
 
@@ -206,6 +208,8 @@ def refusal_advice(state: str, text: Optional[str] = None) -> str:
 
 def stop_reason_for(outcome) -> str:
     """The run's stop_reason when `outcome` is the page that ended it."""
+    if getattr(outcome, "unread", False):
+        return "parser_found_nothing"
     if getattr(outcome, "rejected", None):
         return "api_rejected"
     if getattr(outcome, "blocked_by", None):
@@ -299,7 +303,15 @@ def query_summary(query: Query) -> dict:
         return {"listing_url": query.listing_url, "category": query.vehicle,
                 "sort": query.sort, "per_page": query.per_page,
                 "make": query.make, "model": query.model, "state": query.state}
-    return {"ads": len(query.ads)}
+    # The SET of adverts asked for, not how many. v0.1.0 recorded only the
+    # count, so two runs over two different lists of the same length read as
+    # one question and diff_runs compared them (third-party audit,
+    # 2026-10-08). The hash is over the sorted ids, so the order a file
+    # lists them in does not matter, and adverts that turn out to be gone
+    # stay in the scope that was ASKED, which is what the hash describes.
+    skus = sorted(a.rstrip("/").rsplit("/", 1)[-1] for a in query.ads)
+    return {"ads": len(skus),
+            "ads_sha256": hashlib.sha256("\n".join(skus).encode()).hexdigest()}
 
 
 def finish(args, query: Query, outcomes: List, stop_reason: str,
@@ -338,12 +350,23 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
                                if total is not None and reachable is not None
                                else None),
             "sponsored_skipped": sum(o.sponsored for o in outcomes),
+            # Records the site sent as listings that could not be read. 0 on
+            # every page captured (3,386 listings); anything else is the
+            # payload's shape moving, and the canary fails on it.
+            "malformed_records": sum(o.malformed for o in outcomes),
         })
         if rows and total:
             log.info("The site reports %d match(es); this run holds %d (%.1f%%).",
                      total, len(rows), 100.0 * len(rows) / total)
     else:
         extra["ads_gone"] = sorted(o.url for o in outcomes if o.state == "gone")
+        extra["ads_requested"] = sorted(
+            a.rstrip("/").rsplit("/", 1)[-1] for a in query.ads)
+    # Columns that fell below the measured floor on some page. A warning in
+    # the log is read by nobody once the run exits 0, so it goes where a
+    # pipeline (and the canary) reads it.
+    extra["columns_below_floor"] = sorted(
+        {c for o in outcomes for c in o.field_shortfall})
     last_ok = max([o.page_num for o in ok_pages] or [1])
     return finish_run(
         rows, args.out, args.format, args.allow_empty,
@@ -407,11 +430,17 @@ class PageOutcome:
     # Search only: what the site applied, when it is not what was asked.
     filter_problem: Optional[str] = None
     sponsored: int = 0
+    # Records sent as listings that the parser could not read.
+    malformed: int = 0
+    # The page held listing records and NONE could be read: the payload's
+    # shape has moved. Not an empty listing (see fetch_one_page).
+    unread: bool = False
+    field_shortfall: List[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
         return (not self.load_failed and self.blocked_by is None
-                and self.rejected is None)
+                and self.rejected is None and not self.unread)
 
 
 # The columns the site filled on EVERY record of the 3,000 captured
@@ -449,10 +478,12 @@ def land(ops, args) -> tuple:
     return state, None
 
 
-def _core_field_warnings(rows: List, mode: str, page_num: int) -> None:
+def _core_field_warnings(rows: List, mode: str, page_num: int) -> List[str]:
+    """The core columns below the floor on this page, each also logged."""
+    short = []
     for name in CORE_FIELDS.get(mode, ()):
         if not rows:
-            return
+            return short
         filled = sum(1 for r in rows if getattr(r, name, None) not in (None, "", []))
         share = 100.0 * filled / len(rows)
         if share < CORE_FIELD_FLOOR:
@@ -460,6 +491,8 @@ def _core_field_warnings(rows: List, mode: str, page_num: int) -> None:
                         "measured floor of %d%%. Every record of every capture "
                         "had one, so the payload shape has moved — re-run with "
                         "--dump-html.", share, page_num, name, CORE_FIELD_FLOOR)
+            short.append(name)
+    return short
 
 
 def _dump(args, page_num: int, text: str) -> None:
@@ -607,6 +640,23 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
     outcome.products = rows
     if query.mode == "search":
         outcome.sponsored = sponsored_count(text)
+        listed = count_rows(text)
+        outcome.malformed = listed - len(rows)
+        if outcome.malformed:
+            log.error("Page %d: %d of %d listing record(s) could not be read "
+                      "(no usable UniqueId). Every record of every capture had "
+                      "one, so the payload's shape has moved — re-run with "
+                      "--dump-html.", page_num, outcome.malformed, listed)
+        if listed and not rows:
+            # The site sent listings and the parser read none. Reported as
+            # an empty page, this ended a 3-page run `complete` with exit 0
+            # on a page holding 47 listings (audit, 2026-10-08).
+            outcome.unread = True
+            debug = _save_debug(args, page_num, text)
+            log.error("Page %d was served with %d listing record(s) and none "
+                      "were read — the payload's shape has moved. Saved to %s. "
+                      "This is NOT an empty listing; open an issue with that "
+                      "file.", page_num, listed, debug)
         outcome.total_available = total_results(text)
         outcome.pages_available = pages_available(text)
         if page_num == 1:
@@ -620,7 +670,7 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
                  if outcome.sponsored else "")
     elif rows:
         _market_prices(ops, rows[0], page_num, mask)
-    _core_field_warnings(rows, query.mode, page_num)
+    outcome.field_shortfall = _core_field_warnings(rows, query.mode, page_num)
     return outcome
 
 
