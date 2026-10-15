@@ -16,7 +16,55 @@ said so at the top of its release notes.
 > script of yours passes 0, pass **1**: the flag counts ATTEMPTS, so 1 means
 > "try once and do not retry".
 
+> **Behaviour change:** negative values of `--delay`, `--retry-delay` and
+> `--proxy-block-retries`, `--concurrency` below 1 and `--pages` below 1 are
+> now usage errors (exit 2) naming the flag, in every browser engine. In
+> `scraper_api_client.py`, `--retries`, `--delay` and `--retry-delay` below 0
+> and `--pages` below 1 are refused the same way (`--retries 0` stays legal
+> there: it counts EXTRA attempts).
+
+> **Behaviour change:** CSV cells that begin with `=`, `+`, `-`, `@`, a tab
+> or a line break now get a leading `'`, so a spreadsheet reads them as text.
+> Numbers and the JSON output are unchanged; the sidecar's
+> `csv_cells_escaped` says how many cells were changed.
+
+> **Behaviour change:** the canary now FAILS, naming the missing secret, when
+> neither `WEBMOTORS_PROXY` nor `WEBMOTORS_CDP_ENDPOINT` is set. It used to
+> skip and end green without contacting the site.
+
 ### Fixed
+
+- **A failed write destroyed the previous good output.** JSON, CSV, the
+  `.meta.json` sidecar and `diff_runs.py --out` were opened with truncation,
+  so a full disk or an interrupt mid-write left a short, invalid file where a
+  good one had been. Each file is now written to a temporary file in the same
+  directory, flushed, synced and renamed over the target; the temporary file
+  is removed on failure. A new file gets the mode `open()` would have given
+  it (`0o666` minus the umask); an existing file keeps its own mode. The
+  three files are replaced one by one, not as a single transaction.
+- **CSV cells were not protected against formula injection.** Titles,
+  versions, attributes, optionals and dealer names and descriptions are
+  third-party text, and a cell starting with `=` ran as a formula when the
+  CSV was opened in a spreadsheet. Escaping runs after list columns are
+  joined.
+- **A copied `.env.example` broke the README's flag examples.** It shipped an
+  active `WEBMOTORS_URL`, and a URL from `.env` was treated as a typed
+  `--url`, so `--make volkswagen --model gol` exited 2. The example line now
+  ships commented out, and a `WEBMOTORS_URL` from the environment is only a
+  default: typed search flags, `--ads-file` or a different `--mode` replace
+  it. A typed `--url` with filter flags is still refused.
+- **The Scraping Browser 401 hint claimed credentials "last about a day".**
+  That figure is not a constant (an endpoint was seen working after ten
+  days). The hint, README, TROUBLESHOOTING and `.env.example` now say the
+  credentials were refused (expired, revoked or mistyped) without guessing a
+  lifetime.
+- **The bug-report template's example command used flags this scraper does
+  not have.** It now shows a Volkswagen Gol search.
+- **The banned-wording check read virtualenvs.** A `.venv` inside the repo,
+  as the README suggests, had its site-packages scanned. Directories holding
+  a `pyvenv.cfg` are now skipped.
+- **Comments cited private notes by section number.** They now state the
+  reason in place, and a suite check fails if such a citation returns.
 
 - **`--retries 0` fetched nothing and called it a result.** The load loop is
   `range(1, retries + 1)`, so 0 never runs it and the engine judged
@@ -25,6 +73,13 @@ said so at the top of its release notes.
   `page_flow.attempts` in every entry point; a check reads the source of each
   one and calls the validator, so a new engine declaring the flag with a
   plain int fails the suite.
+
+### Changed
+
+- **The canary covers ad mode** (the first three adverts of the car search)
+  and accepts a 2Captcha Scraping Browser API endpoint
+  (`WEBMOTORS_CDP_ENDPOINT`) as well as a residential proxy. Without either
+  secret it fails rather than skipping.
 
 ## [0.1.1] — 2026-10-08
 

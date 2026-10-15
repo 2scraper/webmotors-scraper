@@ -17,7 +17,8 @@ sidecar's `stop_reason` in `<out>.meta.json` if one was written.
   `estoque` for all of Brazil.
 * **"--url already carries the search"** — pass a URL or the filter flags,
   not both. Merging them could scrape something neither named. A
-  `WEBMOTORS_URL` in `.env` counts as a `--url`.
+  `WEBMOTORS_URL` in `.env` is only a default: typed filter flags or an
+  `--ads-file` replace it.
 * **"--condition is only offered for cars"** — the used/new listings were
   measured for cars only.
 
@@ -61,9 +62,9 @@ falls in. Nothing is written, so an earlier good file is left alone;
   be refused again, so it is not retried. If the address looks right, the API
   changed: open a "Site changed" issue with `--dump-html` output.
 * **"Gave up on page N"** — a timeout or a dead proxy. The log names which.
-* **`could not connect to --cdp-endpoint`** — a 401 is an expired Scraping
-  Browser profile (they last about a day); a 500 is a profile another run
-  still holds.
+* **`could not connect to --cdp-endpoint`** — a 401 means the profile's
+  credentials were refused (expired, revoked or mistyped): copy the endpoint
+  again from the dashboard. A 500 is a profile another run still holds.
 
 ## `stop_reason: parser_found_nothing` (exit 5, or 6 after earlier pages)
 

@@ -1,7 +1,7 @@
 """
 product_parser.py
 -----------------
-Everything this repo knows about webmotors.com.br lives here (CLAUDE.md §1).
+Everything this repo knows about webmotors.com.br lives here.
 
 Two modes, four of the site's own JSON endpoints
 ------------------------------------------------
@@ -41,7 +41,7 @@ Measured 2026-09-28. The whole site sits behind CloudFront and PerimeterX:
 
 The same answers hold for the JSON endpoints: the refusal is about the
 CLIENT and the ADDRESS, never about the route, so the endpoints are not an
-ungated side door (§21). They are simply the cheapest thing a served browser
+ungated side door. They are simply the cheapest thing a served browser
 can ask for. A browser lands on a small endpoint (ORIGIN_URL), which gives it
 a www.webmotors.com.br origin, and issues every page as a same-origin
 `fetch()`. Nothing is rendered, so a 3 MB listing page and its third-party
@@ -238,7 +238,7 @@ class Query:
     # The currency the site states, read ONCE per run (page_flow) from the
     # JSON-LD of a page the site renders. No endpoint states one, and a
     # constant compiled in here would be a guess wearing a fact's clothes
-    # (§4). None until read, and None for good if it could not be.
+    #. None until read, and None for good if it could not be.
     currency: Optional[str] = None
 
     def validate(self) -> Optional[str]:
@@ -548,10 +548,10 @@ def ads_from_text(text: str) -> List[str]:
 #   "Access to this page has been denied"      1           0
 # `px-captcha` (42 on the refusal) is deliberately NOT a marker: it is the
 # id of the element the challenge renders into, and a bare element id is the
-# shape §24 warns about, a thing another script could carry. The bare words
+# weak kind of marker, a thing another script could carry. The bare words
 # "captcha" and "perimeterx" are not markers either: the Scraping Browser's
 # auto-solve extension injects hunter scripts that say "captcha" on every
-# page it loads (§24); smoke_test scores this set against a page fetched
+# page it loads; smoke_test scores this set against a page fetched
 # that way.
 PERIMETERX_MARKERS = ("_pxAppId", "captcha.px-cloud.net", "/captcha/captcha.js",
                       "Access to this page has been denied")
@@ -566,7 +566,7 @@ def detect_bot_challenge(html: Optional[str], url: str = "") -> Optional[str]:
 
     Entities are unescaped over a bounded prefix first, so a marker matches
     the raw bytes an HTTP client gets and the DOM a browser serialises
-    alike (§20). Both refusal pages are under 12 KB.
+    alike. Both refusal pages are under 12 KB.
     """
     head = html_lib.unescape((html or "")[:60_000])
     if any(m in head for m in PERIMETERX_MARKERS):
@@ -616,7 +616,7 @@ def detect_page_state(text: Optional[str], status: Optional[int] = None,
                     because a 429 means the same thing wherever it appears
         unknown     anything else
 
-    Signals are ordered by what they PROVE, not by what they cost (§17): the
+    Signals are ordered by what they PROVE, not by what they cost: the
     site's own JSON envelope first, because no refusal page carries it.
     `waf_action` is accepted for the family's signature and ignored: this
     site has no AWS WAF.
@@ -658,7 +658,7 @@ def is_sponsored(rec: Dict[str, Any]) -> bool:
     `mediaZeroKm=true`, each with `UniqueId: 0`, `MediaZeroKm: true`, no
     `Seller` and an `AdvertisementLink` to a dealer's lead form. They are not
     listings of this search, they have no id to key on, and counting them
-    would shift every position after them (§24).
+    would shift every position after them.
 
     Only a POSITIVE advertising marker makes a record sponsored. v0.1.0 also
     called a record sponsored when it lacked a usable `UniqueId` or a
@@ -756,7 +756,7 @@ _JSONLD_RE = re.compile(
     re.S | re.I)
 # ISO 4217 codes a Brazilian marketplace could plausibly state. An
 # allowlist, never a bare [A-Z]{3}, so nothing that merely looks like a code
-# is read as one (§4).
+# is read as one.
 _ISO_CODES = ("BRL", "USD", "EUR", "ARS", "UYU", "PYG", "CLP")
 
 
@@ -767,7 +767,7 @@ def currency_from_html(html: Optional[str]) -> Optional[str]:
     OfferCatalog (48 of 48 on the page read), an advert page once. No
     endpoint states a currency at all, so this is read once per run and
     threaded into the rows (page_flow), and a run that could not read it
-    writes null rather than a default (§4).
+    writes null rather than a default.
     """
     found = []
     for m in _JSONLD_RE.finditer(html or ""):
@@ -1038,7 +1038,7 @@ def parse_page(payload: Any, query: Query, page: int = 1) -> List[Any]:
     """Every row on one page of one mode's response, in the site's order.
 
     `position` counts the rows EMITTED, not the slots in the payload, so a
-    sponsored tile the parser drops cannot shift every later position (§24).
+    sponsored tile the parser drops cannot shift every later position.
     """
     if query.mode == "ad":
         row = parse_ad(payload, query, page)

@@ -90,12 +90,12 @@ history needs a decision, not a red check on every push.
 Then the rest of the presentation, in the order that matters:
 
 1. `python3 smoke_test.py` green, and the canary dispatched at least once.
-   Without a `WEBMOTORS_PROXY` secret it SKIPS with a notice, because
-   CloudFront refuses the runner's datacentre address; dispatch it once to
-   see the skip branch run, and again with the secret set to see the real
-   one.
-2. The repo description, homepage and topics set (see the family notes on
-   what those should say).
+   It needs a `WEBMOTORS_PROXY` (residential) or `WEBMOTORS_CDP_ENDPOINT`
+   secret, because CloudFront refuses the runner's datacentre address;
+   without either it FAILS and names the missing secret.
+2. The repo description, homepage and topics set (what the scraper reads,
+   which engines and paid products it supports, and nothing it does not
+   use).
 3. Only then the row in the org profile README — and check it with an
    ANONYMOUS request rather than your own logged-in browser. A row pointing
    at a private repo is a 404 for every visitor, which costs more trust than

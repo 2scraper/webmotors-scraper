@@ -60,6 +60,7 @@ from product_parser import (BASE, DEFAULT_PER_PAGE, DEFAULT_SORT, MAX_PAGES,
                             request_for, total_results)
 from output_writer import dedupe_by_key, finish_run, SOURCE_DEFAULT
 import env_config
+from page_flow import at_least
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("scraper_api_client")
@@ -407,9 +408,9 @@ def parse_args():
                    help="The site's own orderings (default %s)." % DEFAULT_SORT)
     p.add_argument("--per-page", type=int, default=None, metavar="N",
                    help="Listings per page (default %d)." % DEFAULT_PER_PAGE)
-    p.add_argument("--pages", type=int, default=1,
+    p.add_argument("--pages", type=at_least("--pages", 1), default=1,
                    help="Search pages to fetch (default 1). Each is a billable task.")
-    p.add_argument("--delay", type=float, default=1.0,
+    p.add_argument("--delay", type=at_least("--delay", 0, float), default=1.0,
                    help="Seconds between pages (default 1.0)")
     p.add_argument("--format", choices=["json", "csv", "both"], default="both")
     p.add_argument("--out", default="webmotors_rows_scraperapi", help="Output file prefix")
@@ -427,14 +428,17 @@ def parse_args():
                       help="Wait for a page load state instead of specific content")
     p.add_argument("--allow-empty", action="store_true",
                    help="Write output files even when 0 rows were parsed.")
-    p.add_argument("--retries", type=int, default=1,
+    p.add_argument("--retries", type=at_least("--retries", 0), default=1,
                    help="Extra attempts if a refusal comes back. Each attempt is "
                         "a separate billable task, so this defaults to 1.")
-    p.add_argument("--retry-delay", type=int, default=10,
+    p.add_argument("--retry-delay", type=at_least("--retry-delay", 0), default=10,
                    help="Seconds between retries (default 10)")
     p.add_argument("--dump-html", default=None,
                    help="Also write the response (JSON) to this path, even on success")
     args = p.parse_args()
+    # Before .env fills it: a WEBMOTORS_URL is a default, and an --ads-file
+    # typed on the command line replaces it rather than conflicting with it.
+    typed_url = args.url
     # This client uses --key and --cdp-url rather than --twocaptcha-key and
     # --cdp-endpoint, so the env mapping is spelled out instead of defaulted.
     env_config.apply(args, keys={
@@ -442,6 +446,8 @@ def parse_args():
         "WEBMOTORS_CDP_ENDPOINT": "cdp_url",
         "WEBMOTORS_URL": "url",
     })
+    if args.url and not typed_url and args.ads_file:
+        args.url = None
     if not args.url and not args.ads_file:
         p.error("--url (a search page or an advert) or --ads-file is required")
     if args.url and args.ads_file:

@@ -182,8 +182,7 @@ One key, four separately-billed products:
   the top for the acceptance rates measured.
 - **The Scraping Browser API** (`--cdp-endpoint`) — a remote browser on a
   residential exit, nothing to install; served on every attempt measured.
-  One live connection per profile, so no `--concurrency` through it; a
-  profile's credentials last about a day.
+  One live connection per profile, so no `--concurrency` through it.
 - **The Scraper API** (`scraper_api_client.py`) — no local browser at all,
   but its own exits were refused, so on this site it works only with
   `--cdp-url` (a Scraping Browser session), measured at $0.0005 a page.
@@ -227,12 +226,14 @@ captured on 2026-09-28 (`tools/capture.py`), cut and scrubbed by
 `make_fixtures.py`, which proves each one parses exactly as its original.
 CI runs the suite on Python 3.9 and 3.12, once per engine in its own
 virtualenv, builds the Docker image, and scans for committed credentials.
-The canary runs a real search daily when a residential proxy secret is set,
-and skips with a notice when it is not. **This repository has no such secret
-set, so the canary badge above is green because it skipped:** it says the
-workflow is intact, not that the site was scraped today. Each skipped run
-says so at the top of its summary page. Measure the scraper yourself with
-the commands under "Run".
+The canary runs a car search, a motorcycle search and ad mode daily
+through a residential exit: the `WEBMOTORS_PROXY` or
+`WEBMOTORS_CDP_ENDPOINT` secret, because the site refuses the runner's
+datacentre address. Without either secret the canary **fails** and names
+the missing secret, rather than reporting green for a run that never
+contacted the site. A red canary badge may therefore mean that no secret is
+set; its summary page says which. Measure the scraper yourself with the
+commands under "Run".
 
 ## Legal
 

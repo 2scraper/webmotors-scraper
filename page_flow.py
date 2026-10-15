@@ -2,7 +2,7 @@
 page_flow.py
 ------------
 The retry / solve / blocked decision, as DATA rather than as three copies of
-an if-chain (CLAUDE.md §1), and the one fetch loop all three engines share.
+an if-chain, and the one fetch loop all three engines share.
 
 webmotors.com.br answers one of this repo's requests in seven ways, and they
 want five different responses:
@@ -25,8 +25,8 @@ Three copies of that triage across three engines would drift, and the drift
 would be silent: one engine reporting exit 3 where its twin reports exit 0
 on the same response.
 
-Nothing here imports a browser, and **no JavaScript crosses this boundary**
-(§1). Each engine spells its fetch() in its own driver's dialect.
+Nothing here imports a browser, and **no JavaScript crosses this boundary**.
+Each engine spells its fetch() in its own driver's dialect.
 """
 
 import hashlib
@@ -56,8 +56,8 @@ log = logging.getLogger("page_flow")
 # How long one fetch() may take before the engine gives up on it. The
 # largest response measured was a 100-row search page, ~410 KB, which
 # arrived in about a second through a residential exit. The bound exists
-# because a browser fetch() has no timeout of its own, and CLAUDE.md §8
-# requires every remote call to have one.
+# because a browser fetch() has no timeout of its own, and every remote
+# call here has to have one.
 FETCH_TIMEOUT_MS = 30_000
 
 # How long to wait at the SAME exit after a 429 before trying again. NOT
@@ -79,7 +79,7 @@ def classify(html: Optional[str], status: Optional[int] = None,
     The argument ORDER is the contract: every engine calls
     `classify(html, status, url, waf_action)`. A sibling repo shipped
     `classify(html, url=...)` in two of three engines against a callee that
-    took `status` second, and both crashed on their first fetch (§17).
+    took `status` second, and both crashed on their first fetch.
     `smoke_test.py` binds every engine's call against this signature for
     that reason.
     """
@@ -108,7 +108,7 @@ STATE_POLICY = {
     "blocked":   {"retry": True,  "solve": False, "blocked": True,  "parse": False},
     # Rate limited: the retry happens at the same exit after a wait
     # (THROTTLE_*), and it is NOT counted as blocked. Calling a throttle a
-    # block reports exit 3 for a page that was about to come back (§24).
+    # block reports exit 3 for a page that was about to come back.
     "throttled": {"retry": True,  "solve": False, "blocked": False, "parse": False},
     # Not JSON and not a refusal. Worth one more try.
     "unknown":   {"retry": True,  "solve": False, "blocked": False, "parse": False},
@@ -132,7 +132,7 @@ def should_parse(state: str) -> bool:
 
 
 # Whether a blocked page is worth re-fetching at all. CONSULTED by the loop
-# below, so setting it False really does stop the retry (§17).
+# below, so setting it False really does stop the retry.
 RETRY_ON_BLOCKED = True
 
 # How many times to re-fetch a refused page, each from a FRESH browser, when
@@ -168,7 +168,7 @@ def concurrency_limit(cdp_endpoint: Optional[str]) -> Optional[int]:
 
     The Scraping Browser API allows ONE live connection per profile, so N
     workers sharing a `pid` collide with `profile_locked`. Several `pid`s,
-    one run each, is the way to parallelise that path (§7).
+    one run each, is the way to parallelise that path.
     """
     return 1 if cdp_endpoint else None
 
@@ -236,7 +236,7 @@ def build_query(args, error: Callable[[str], None]) -> Query:
     --url and the filter flags are two ways to say the same thing. A flag
     the user typed that disagrees with the URL would silently scrape
     something neither of them named, so the combination is refused rather
-    than merged (the family's --country rule, §10). `error` is argparse's
+    than merged (the family's --country rule). `error` is argparse's
     `p.error`, so a refusal is exit 2 with the usage line, as in every
     engine.
     """
@@ -245,6 +245,19 @@ def build_query(args, error: Callable[[str], None]) -> Query:
     typed = [flag for dest, flag in FILTER_FLAGS
              if getattr(args, dest, None) is not None]
     ads_file = getattr(args, "ads_file", None)
+    typed_url = getattr(args, "typed_url", args.url)
+    if args.url and not typed_url:
+        # The URL came from WEBMOTORS_URL, not from the command line. It is a
+        # default for a run given nothing else, so search filters, an
+        # --ads-file or a --mode the user typed win instead of being refused
+        # as a conflict with a value they never typed.
+        env_query, _ = query_from_url(args.url, sort=sort, per_page=per_page)
+        mode_differs = bool(args.mode and env_query is not None
+                            and env_query.mode != args.mode)
+        if typed or ads_file or mode_differs:
+            log.info("Ignoring WEBMOTORS_URL from the environment: the "
+                     "search was given on the command line.")
+            args.url = None
     if ads_file:
         if args.url or typed:
             error("--ads-file is a list of adverts; it cannot be combined "
@@ -319,7 +332,7 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
     """Merge the pages in PAGE order, write the output, return the exit code.
 
     One implementation for the three engines, so the merge order, the
-    dedupe and the sidecar cannot differ between them (§6).
+    dedupe and the sidecar cannot differ between them.
     """
     rows, seen = [], set()
     for oc in sorted(outcomes, key=lambda o: o.page_num):
@@ -386,7 +399,7 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
 # origin, retrying a transport failure, waiting out a throttle, rotating on a
 # refusal, and parsing what came back. The three engines differ only in HOW
 # they ask their driver, so each passes in an object with these operations
-# and no JavaScript crosses this boundary (§1):
+# and no JavaScript crosses this boundary:
 #
 #     ops.goto(url)        -> (status, waf_header). Raises TransportError.
 #     ops.document_text()  -> the landing document, JSON text if it is JSON
@@ -397,7 +410,7 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
 #     ops.proxy_failure(text) -> the driver's proxy-error name in text, or ""
 #
 # One copy of the loop is how the family rule that the three engines agree
-# on exit codes and on whether a run spends money (§6) holds by
+# on exit codes and on whether a run spends money holds by
 # construction rather than by discipline.
 
 
@@ -411,7 +424,7 @@ class PageOutcome:
 
     Collected per page and merged afterwards, in page order, rather than
     folded into shared state as the loop goes, so the output cannot depend
-    on which page happened to finish first (§8).
+    on which page happened to finish first.
     """
     page_num: int
     url: str
@@ -496,7 +509,7 @@ def _core_field_warnings(rows: List, mode: str, page_num: int) -> List[str]:
 
 
 def _dump(args, page_num: int, text: str) -> None:
-    """Write the exact response the parser was given, on success too (§9)."""
+    """Write the exact response the parser was given, on success too."""
     if not args.dump_html:
         return
     path = args.dump_html if args.pages == 1 else f"{args.dump_html}.page{page_num}"
@@ -559,7 +572,7 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
                     ops.landed = False
             if state == "throttled" and throttles < THROTTLE_RETRIES:
                 throttles += 1
-                attempt -= 1  # a throttle wait spends its own budget (§24)
+                attempt -= 1  # a throttle wait spends its own budget
                 pause = THROTTLE_WAIT_S * throttles
                 log.warning("Rate-limited on page %d (HTTP 429) — waiting "
                             "%.0fs at the same exit (%d/%d).", page_num, pause,
@@ -739,7 +752,7 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
     ops = open_ops()
     try:
         # Page 1 is always fetched alone: its total decides how many pages
-        # there are to address (§7), and its echo decides whether the site
+        # there are to address, and its echo decides whether the site
         # searched for what was asked at all.
         first = fetch_one_page(ops, args, pool, query, 1, mask)
         if first.filter_problem:
@@ -876,7 +889,7 @@ def worker_pool(pool, worker_index: int):
     """A private ProxyPool for one worker, starting at a different exit.
 
     Workers start on distinct exits and share no mutable state, so rotation
-    needs no lock (§7).
+    needs no lock.
     """
     if not pool:
         return None
@@ -896,9 +909,9 @@ def ua_override(chromium_version: str, locale: str) -> dict:
     which no real Chrome 153 reports. Measured 2026-09-28 against an echo
     service, then on the site: PerimeterX refused pyppeteer that way 2 of 2,
     while Playwright (whose override keeps the hints) was served on the same
-    exit. Half an identity is refused; a whole one is not (§24).
+    exit. Half an identity is refused; a whole one is not.
 
-    The version is the browser's OWN (§8), the platform agrees with the
+    The version is the browser's OWN, the platform agrees with the
     Windows UA string, and the brand list is the one Chromium itself sends,
     minus the `HeadlessChrome` token.
     """
@@ -931,15 +944,16 @@ def ua_override(chromium_version: str, locale: str) -> dict:
 def cdp_connect_hint(error_text: str) -> str:
     """What a failed --cdp-endpoint connection means, from its status.
 
-    Two answers that want opposite fixes. A Scraping Browser profile's
-    credentials last about a day, so a 401 is usually an endpoint copied from
-    an older .env; a 500 is usually a pid another run still holds.
+    Two answers that want opposite fixes. A 401 is the service refusing the
+    credentials in the endpoint: expired, mistyped or revoked. How long a
+    profile's credentials live is not a constant (one endpoint was measured
+    still working after ten days), so the message does not guess which. A
+    500 is usually a pid another run still holds.
     """
     if "401" in (error_text or ""):
-        return ("HTTP 401: the endpoint's credentials were refused. A Scraping "
-                "Browser profile's credentials last about a day, so an "
-                "endpoint copied from an older .env has usually expired. "
-                "Get a fresh one from your 2Captcha dashboard.")
+        return ("HTTP 401: the endpoint's credentials were refused, for "
+                "example an expired, revoked or mistyped profile login. "
+                "Copy the endpoint again from your 2Captcha dashboard.")
     return ("A Scraping Browser profile allows ONE live connection at a time, "
             "so an HTTP 500 here usually means another run still holds this "
             "`pid`. Wait for it to finish, or use a different pid.")
@@ -961,7 +975,7 @@ CDP_CONNECT_TIMEOUT_S = 10
 def cdp_should_retry(error_text: str) -> bool:
     """Whether a failed --cdp-endpoint connection is worth another attempt:
     a locked profile (500) or a connect that never answered. A 401 is not:
-    expired credentials stay expired."""
+    refused credentials stay refused."""
     text = error_text or ""
     if "401" in text:
         return False
@@ -972,7 +986,7 @@ def cdp_should_retry(error_text: str) -> bool:
 # ---------------------------------------------------------------------------
 # --retries
 # ---------------------------------------------------------------------------
-import argparse as _argparse  # noqa: E402  (kept beside its only user)
+import argparse as _argparse  # noqa: E402  (kept beside its users)
 
 
 def attempts(value) -> int:
@@ -1012,3 +1026,27 @@ def attempts(value) -> int:
             f"With 0 the load loop never runs, nothing is fetched, and the "
             f"engine reports the browser's blank page as a result.")
     return number
+
+
+def at_least(flag: str, minimum, kind=int):
+    """argparse `type=` for a count or a delay: rejects values below `minimum`.
+
+    A negative delay reached `time.sleep` (or a negative wait in the
+    browser) and crashed or was silently treated as zero, and a negative
+    retry or concurrency count was quietly read as "none" or "one". Each is
+    a typo the run should name, not absorb, so it is a usage error (exit 2)
+    naming the flag.
+    """
+    def parse(value):
+        try:
+            number = kind(value)
+        except (TypeError, ValueError):
+            raise _argparse.ArgumentTypeError(
+                f"{flag} must be {'an integer' if kind is int else 'a number'}"
+                f", not {value!r}")
+        if number < minimum:
+            raise _argparse.ArgumentTypeError(
+                f"{flag} must be at least {minimum}, not {value}")
+        return number
+    parse.__name__ = flag.lstrip("-").replace("-", "_")
+    return parse

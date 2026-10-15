@@ -70,8 +70,8 @@ body:
       render: shell
       placeholder: |
         python3 playwright_scraper.py \
-          --asset USDT --fiat EUR --side buy \
-          --pages 3 --out usdt_eur
+          --make volkswagen --model gol \
+          --pages 3 --out gol
     validations:
       required: true
 
@@ -91,7 +91,8 @@ body:
     attributes:
       label: What you expected instead
       placeholder: >-
-        60 adverts over 3 pages, as the site shows ~200 for USDT/EUR.
+        About 141 listings over 3 pages of 47, as the site shows over a
+        thousand Gol listings.
     validations:
       required: true
 

@@ -47,7 +47,7 @@ import sys
 from dataclasses import fields
 from typing import Dict, List, Optional, Tuple
 
-from output_writer import ROW_CLASS_BY_MODE, UNIQUE_BY_SKU_MODES
+from output_writer import ROW_CLASS_BY_MODE, UNIQUE_BY_SKU_MODES, _atomic
 
 # Columns that describe the RUN, or that restate the key, rather than the
 # vehicle. `page` and `position` are here because a live listing reorders
@@ -225,7 +225,9 @@ def main() -> int:
     result = diff_products(old, new)
     _print_summary(result)
     if args.out:
-        with open(args.out, "w", encoding="utf-8") as f:
+        # Atomically, like the scrapers' own output: a failed write must not
+        # leave a truncated diff where a previous one was.
+        with _atomic(args.out) as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         print(f"[+] Full diff written to {args.out}")
     if args.fail_on_change and (result["added"] or result["removed"] or result["changed"]):

@@ -1,22 +1,25 @@
-# One real run of each mode against webmotors.com.br, daily. tests.yml
-# (deliberately) never touches the site.
+# A real run of each mode against webmotors.com.br, daily: a car search, a
+# motorcycle search, and the first adverts of the car search read in ad mode.
+# tests.yml (deliberately) never touches the site.
 #
-# THIS CANARY NEEDS A SECRET, and without one it SKIPS rather than fails
-# (CLAUDE.md §11). CloudFront refused every datacentre address measured on
-# 2026-09-28 — a VPS, headful Chromium included, and the Scraper API's own
-# exits — and a GitHub-hosted runner is a datacentre address. A canary that
-# cannot pass is red every day, and a check that is always red teaches
-# everyone to ignore checks. So the live steps run only when a RESIDENTIAL
-# proxy is configured:
+# THIS CANARY NEEDS A SECRET, and without one it FAILS. CloudFront refused
+# every datacentre address measured on 2026-09-28 (a VPS, headful Chromium
+# included, and the Scraper API's own exits), and a GitHub-hosted runner is a
+# datacentre address. So a run from the bare runner cannot reach the
+# listings, and a canary that skipped green in that case reported a scraper
+# as working when nothing had been tested. Set ONE of:
 #
 #     gh secret set WEBMOTORS_PROXY --repo 2scraper/webmotors-scraper
+#         a residential exit, http://user:pass@host:port
+#     gh secret set WEBMOTORS_CDP_ENDPOINT --repo 2scraper/webmotors-scraper
+#         a 2Captcha Scraping Browser API endpoint (country-br)
 #
-# It goes through the ENVIRONMENT, not a --proxy line: env_config.py reads
-# exactly that variable, an unset secret arrives as an empty string which the
-# loader treats as unset, and the credential never reaches a command line.
-#
-# Not a Scraping Browser endpoint: a profile's credentials expire in about a
-# day, so a secret holding one would rot between runs (§19).
+# They go through the ENVIRONMENT, not a command line: env_config.py reads
+# exactly those variables, an unset secret arrives as an empty string which
+# the loader treats as unset, and the credential never reaches a command
+# line. A Scraping Browser endpoint stops working when its credentials are
+# refused; how long that takes is not a fixed figure, so a 401 here means
+# "copy the endpoint again", not a broken scraper.
 
 name: canary
 
@@ -44,40 +47,39 @@ jobs:
           - name: search
             args: "--make volkswagen --model gol --pages 3"
             floor: 120
+            ads: 3
           - name: motorcycles
             args: "--category motos --make honda --pages 3"
             floor: 120
+            ads: 0
     env:
       WEBMOTORS_PROXY: ${{ secrets.WEBMOTORS_PROXY }}
+      WEBMOTORS_CDP_ENDPOINT: ${{ secrets.WEBMOTORS_CDP_ENDPOINT }}
     steps:
-      - name: Skip without a residential proxy
-        if: env.WEBMOTORS_PROXY == ''
+      # No skip: a run that never contacted the site must not end green.
+      - name: Require a residential exit
         run: |
-          echo "::notice::No WEBMOTORS_PROXY secret. CloudFront refuses datacentre addresses (a GitHub runner is one), so a live run here could only fail. Set a residential proxy secret to enable this canary (see the header)."
-          # A green run that tested nothing must SAY so where a reader looks.
-          # The badge cannot: GitHub colours it by the run's conclusion
-          # (third-party audit, 2026-10-08).
-          echo "## ${{ matrix.name }}: SKIPPED — the site was NOT contacted" >> "$GITHUB_STEP_SUMMARY"
-          echo "No residential proxy secret is set, so no live step ran. This run proves the workflow is intact, not that the scraper works today." >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$WEBMOTORS_PROXY" ] && [ -z "$WEBMOTORS_CDP_ENDPOINT" ]; then
+            echo "::error::Neither the WEBMOTORS_PROXY nor the WEBMOTORS_CDP_ENDPOINT secret is set. CloudFront refuses datacentre addresses (a GitHub runner is one), so this canary cannot reach the site without one. See the workflow header."
+            echo "## ${{ matrix.name }}: FAILED — the site was NOT contacted" >> "$GITHUB_STEP_SUMMARY"
+            echo "Set the WEBMOTORS_PROXY or WEBMOTORS_CDP_ENDPOINT secret." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
-        if: env.WEBMOTORS_PROXY != ''
       - uses: actions/setup-python@v5
-        if: env.WEBMOTORS_PROXY != ''
         with:
           python-version: "3.12"
 
       - name: Install
-        if: env.WEBMOTORS_PROXY != ''
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-playwright.txt
           playwright install --with-deps chromium
 
-      # >= 3 pages, because with one page pagination is never exercised (§11).
+      # >= 3 pages, because with one page pagination is never exercised.
       - name: Run
         id: run
-        if: env.WEBMOTORS_PROXY != ''
         run: |
           set +e   # `run:` is `bash -e`; without this a non-zero exit aborts
                    # the step before the echo below records it.
@@ -86,7 +88,6 @@ jobs:
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Interpret
-        if: env.WEBMOTORS_PROXY != ''
         run: |
           code="${{ steps.run.outputs.exit_code }}"
           echo "exit code: $code"
@@ -101,7 +102,6 @@ jobs:
           esac
 
       - name: Assert
-        if: env.WEBMOTORS_PROXY != ''
         run: |
           python - <<'EOF'
           import json, sys
@@ -141,8 +141,56 @@ jobs:
           print("canary OK: %d rows of %s, complete" % (len(rows), meta["total_results"]))
           EOF
 
+      # Ad mode: the first adverts the search returned, each read from its
+      # own detail endpoint.
+      - name: Run ad mode
+        id: ads
+        if: matrix.ads > 0
+        run: |
+          python - <<'EOF'
+          import json
+          rows = json.load(open("canary.json"))
+          with open("canary_ads.txt", "w") as f:
+              f.write("\n".join(r["url"] for r in rows[:${{ matrix.ads }}]) + "\n")
+          EOF
+          set +e
+          python playwright_scraper.py --ads-file canary_ads.txt \
+            --out canary_ad --format both --dump-html canary_ad_dump.json
+          code=$?
+          echo "exit code: $code"
+          if [ "$code" != 0 ]; then
+            echo "::error::Ad mode exited $code (3 blocked, 5 never arrived, 6 some adverts failed). See canary_ad.meta.json."
+            exit 1
+          fi
+
+      - name: Assert ad mode
+        if: matrix.ads > 0
+        run: |
+          python - <<'EOF'
+          import json, sys
+          meta = json.load(open("canary_ad.meta.json"))
+          rows = json.load(open("canary_ad.json"))
+          want = ${{ matrix.ads }}
+          problems = []
+          if meta["status"] != "complete":
+              problems.append("status %r (%s)" % (meta["status"], meta["stop_reason"]))
+          if len(rows) != want:
+              problems.append("%d adverts, asked for %d" % (len(rows), want))
+          for r in rows:
+              if not (isinstance(r["price"], float) and r["price"] > 0):
+                  problems.append("advert %s has no price" % r["sku"])
+              if not r.get("make") or not r.get("year_model"):
+                  problems.append("advert %s lacks make/year_model" % r["sku"])
+              if r["seller_type"] == "private" and (r["seller_name"] or r["description"]):
+                  problems.append("private advert %s carries a name or text" % r["sku"])
+          if problems:
+              print("ad canary FAILED: " + "; ".join(problems))
+              sys.exit(1)
+          print("ad canary OK: %d adverts" % len(rows))
+          EOF
+
       - uses: actions/upload-artifact@v4
-        if: always() && env.WEBMOTORS_PROXY != ''
+        if: always()
         with:
           name: canary-${{ matrix.name }}
           path: |
@@ -151,4 +199,7 @@ jobs:
             canary.meta.json
             canary_dump.json*
             canary_page*_debug.html
+            canary_ad.json
+            canary_ad.meta.json
+            canary_ad_dump.json*
           if-no-files-found: ignore

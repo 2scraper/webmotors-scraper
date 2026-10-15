@@ -152,7 +152,7 @@ def check_fixture_corpus_is_real_and_scrubbed():
 
 
 # ---------------------------------------------------------------------------
-# Parsing: VALUES on real fixtures, not coverage (§10)
+# Parsing: VALUES on real fixtures, not coverage
 # ---------------------------------------------------------------------------
 
 def check_a_search_page_parses_to_the_captured_values():
@@ -237,9 +237,9 @@ def check_sponsored_tiles_are_skipped_and_do_not_shift_positions():
           P.sponsored_count(payload), 3)
     rows = P.parse_page(payload, _q("https://www.webmotors.com.br/carros/estoque"), 1)
     equal("only the listing becomes a row", [r.sku for r in rows], ["80269940"])
-    equal("...at position 1, not 4 (§24)", rows[0].position, 1)
+    equal("...at position 1, not 4", rows[0].position, 1)
     # The FILTER is what is tested, not id recovery: a tile with a real-looking
-    # id but MediaZeroKm set must still be skipped (§24's weak-check lesson).
+    # id but MediaZeroKm set must still be skipped (a check on one field alone is weak).
     tile = copy.deepcopy(json.loads(payload))
     tile["SearchResults"][0]["UniqueId"] = 12345
     tile["SearchResults"][0]["Seller"] = {"SellerType": "PJ"}
@@ -408,7 +408,7 @@ def check_page_states_on_real_captures():
 
 
 def check_markers_do_not_match_a_page_the_scraping_browser_served():
-    """§24: the Scraping Browser's auto-solve extension injects captcha
+    """The Scraping Browser's auto-solve extension injects captcha
     hunters into EVERY page. The marker set must score zero against a page
     fetched that way, WITHOUT any strip."""
     import product_parser as P
@@ -437,7 +437,7 @@ def check_state_policy():
           all(F.should_retry(s) and F.counts_as_blocked(s) for s in ("challenge", "blocked")))
     check("nothing is ever solved: this repo implements no solve for this site",
           not any(F.should_solve(s) for s in F.STATE_POLICY))
-    check("throttled: retried, NOT blocked (§24)",
+    check("throttled: retried, NOT blocked",
           F.should_retry("throttled") and not F.counts_as_blocked("throttled"))
     check("the advice for PerimeterX names what was measured",
           "HeadlessChrome" in F.refusal_advice("challenge"))
@@ -446,8 +446,14 @@ def check_state_policy():
           and "cannot" not in F.refusal_advice("challenge").lower())
     check("the advice for CloudFront names the ADDRESS",
           "ADDRESS" in F.refusal_advice("blocked", fx("cloudfront_403")))
-    check("a CDP 401 is explained as expired credentials, not a held pid",
-          "expired" in F.cdp_connect_hint("WebSocket error: 401 Unauthorized"))
+    # Reworded: the hint used to promise that credentials "last about a
+    # day", which a ten-day-old working endpoint disproved. It now says the
+    # credentials were refused without guessing why.
+    hint = F.cdp_connect_hint("WebSocket error: 401 Unauthorized")
+    check("a CDP 401 is explained as refused credentials, not a held pid",
+          "refused" in hint and "pid" not in hint)
+    check("...without claiming how long credentials last",
+          "a day" not in hint)
 
 
 def check_the_identity_override_is_complete():
@@ -474,7 +480,7 @@ def check_the_identity_override_is_complete():
 
 
 def check_policy_constants_have_a_consumer():
-    """§17: a policy constant nothing reads is the same defect as dead code."""
+    """A policy constant nothing reads is the same defect as dead code."""
     src = open(os.path.join(HERE, "page_flow.py"), encoding="utf-8").read()
     engines = "".join(open(os.path.join(HERE, m + ".py"), encoding="utf-8").read()
                       for m in ENGINES)
@@ -621,7 +627,7 @@ def check_the_shared_loop_end_to_end():
 
     rc, meta, rows, ops = _run({("search", 1): [(429, ""), (200, fx("search_gol_p1"))]},
                                pages=1, retries=1)
-    equal("a throttle wait spends its OWN budget, not --retries (§24): "
+    equal("a throttle wait spends its OWN budget, not --retries: "
           "with --retries 1 the page still arrives", rc, 0)
     equal("...at the SAME exit (no relaunch)", ops.relaunches, 0)
 
@@ -759,7 +765,7 @@ def check_an_ad_runs_identity_is_its_set_of_adverts():
 def check_every_engine_implements_the_operations_page_flow_uses():
     """The fetch loop is shared, so an engine missing ONE operation fails
     only when a live run reaches it. The set is DERIVED from page_flow's own
-    source (every `ops.<name>`), not listed by hand (§26)."""
+    source (every `ops.<name>`), not listed by hand."""
     tree = ast.parse(open(os.path.join(HERE, "page_flow.py"), encoding="utf-8").read())
     used = {n.attr for n in ast.walk(tree)
             if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
@@ -794,7 +800,7 @@ def check_row_schema():
     from output_writer import Ad, Listing, Product, ROW_CLASS_BY_MODE, UNIQUE_BY_SKU_MODES
     for cls in (Listing, Ad):
         names = [f.name for f in fields(cls)]
-        equal("%s: the family prefix is byte-identical and in order (§9)" % cls.__name__,
+        equal("%s: the family prefix is byte-identical and in order" % cls.__name__,
               names[:7], ["source", "scraped_at", "url", "sku", "title", "price", "currency"])
         check("%s: the run-describing tail is present" % cls.__name__,
               {"page", "position", "mode", "data_source"} <= set(names))
@@ -841,7 +847,7 @@ def check_exit_codes():
     equal("3 blocked / 4 empty / 5 never obtained / 6 partial",
           (O.EXIT_BLOCKED, O.EXIT_NO_PRODUCTS, O.EXIT_FETCH_FAILED, O.EXIT_PARTIAL),
           (3, 4, 5, 6))
-    check("end_of_listing is a COMPLETE stop reason (§24)",
+    check("end_of_listing is a COMPLETE stop reason",
           "end_of_listing" in O.COMPLETE_STOP_REASONS)
     check("api_rejected is NOT complete", "api_rejected" not in O.COMPLETE_STOP_REASONS)
 
@@ -909,7 +915,7 @@ def check_sidecar_shape():
 
 
 # ---------------------------------------------------------------------------
-# The engines — the checks CLAUDE.md §17 says to steal
+# The engines: checks worth copying to any sibling
 # ---------------------------------------------------------------------------
 
 def check_engines_import_their_driver_at_module_level():
@@ -926,10 +932,10 @@ def check_engines_import_their_driver_at_module_level():
 
 
 def check_shared_calls_bind_against_the_real_signature():
-    """§17's check #1. Every call from an engine (and the Scraper API client,
+    """Every call from an engine (and the Scraper API client,
     diff_runs, page_flow and the fixture tools) into a shared module is bound
     against the callee's real signature. A name that does not exist FAILS
-    (§22). A name bound in the calling file shadows a same-named module."""
+   . A name bound in the calling file shadows a same-named module."""
     import output_writer
     import page_flow
     import product_parser
@@ -1004,8 +1010,8 @@ def _argparse_flags(module_name):
     return flags
 
 
-# The family's flag contract (CLAUDE.md §9, including the five it omitted
-# for months), plus this repo's own query flags.
+# The family's flag contract (including the five it once omitted for
+# months), plus this repo's own query flags.
 CONTRACT_FLAGS = {
     "--url", "--pages", "--category", "--format", "--out", "--delay",
     "--retries", "--retry-delay", "--concurrency", "--proxy", "--proxy-file",
@@ -1019,7 +1025,7 @@ SITE_FLAGS = {"--condition", "--state", "--make", "--model", "--sort",
 
 
 def check_engine_flag_sets():
-    """§17's check #2: against the contract AND against each other, both
+    """Flag sets: against the contract AND against each other, both
     ways. The exception list IS the documentation."""
     sets = {m: _argparse_flags(m) for m in ENGINES}
     for module, flags in sets.items():
@@ -1093,7 +1099,7 @@ def _py_files():
 
 
 def check_undefined_names_in_every_module():
-    """§10: compileall proves a file PARSES, not that its names RESOLVE.
+    """compileall proves a file PARSES, not that its names RESOLVE.
     Kept COARSE (pooled bindings) so it under-reports rather than invents."""
     import builtins
     for path in _py_files():
@@ -1176,10 +1182,15 @@ def check_dockerfile_copies_everything_the_entrypoint_imports():
 def check_env_example_documents_exactly_what_the_loader_reads():
     import env_config
     text = open(os.path.join(HERE, ".env.example"), encoding="utf-8").read()
-    documented = set(re.findall(r"^([A-Z][A-Z0-9_]+)=", text, re.M))
+    # A variable may be documented as a commented-out example line.
+    documented = set(re.findall(r"^(?:# )?([A-Z][A-Z0-9_]+)=", text, re.M))
     read = set(env_config.ENV_KEYS)
     equal("the example and the loader name the same variables",
           sorted(documented), sorted(read))
+    # An active WEBMOTORS_URL in a copied .env picked a search for every run
+    # and made the README's own flag examples exit 2.
+    check("the example ships WEBMOTORS_URL commented out, not active",
+          not re.search(r"^WEBMOTORS_URL=", text, re.M))
     check("the per-site variables carry the WEBMOTORS_ prefix",
           {"WEBMOTORS_CDP_ENDPOINT", "WEBMOTORS_PROXY", "WEBMOTORS_URL"} <= read)
 
@@ -1207,7 +1218,7 @@ def check_credential_scan_is_one_implementation_invoked_from_both():
     script = os.path.join(HERE, ".github", "ci_checks.py")
     if not os.path.isdir(os.path.join(HERE, ".github")):
         # Inside the Docker image, which copies no .github at all. Triggered
-        # by the WHOLE directory being absent, never by one file in it (§22).
+        # by the WHOLE directory being absent, never by one file in it.
         skip("ci_checks", "no .github directory (the image)")
         return
     check("the credential scan exists as a script", os.path.exists(script))
@@ -1222,7 +1233,7 @@ def check_credential_scan_is_one_implementation_invoked_from_both():
 
 def check_no_workflow_imports_the_code_inline():
     """A workflow calls ci_checks.py or the CLIs; it does not carry its own
-    copy of a check that imports the code (§26)."""
+    copy of a check that imports the code."""
     wf_dir = os.path.join(HERE, ".github", "workflows")
     if not os.path.isdir(wf_dir):
         skip("workflows", "no .github directory (the image)")
@@ -1235,7 +1246,7 @@ def check_no_workflow_imports_the_code_inline():
 
 
 # Assembled from pieces, so this file can be scanned like every other rather
-# than exempted (§22: the file most likely to acquire a stray phrase is the
+# than exempted (the file most likely to acquire a stray phrase is the
 # one a wholesale exemption never reads).
 BANNED_WORDING = (
     "cloud" + " browser", "anti" + "detect browser", "2scraper " + "Anti" + "detect Browser",
@@ -1244,11 +1255,15 @@ BANNED_WORDING = (
 
 
 def check_banned_wording():
-    """§12, enforced by this test rather than by review."""
+    """Banned product wording, enforced by this test rather than by review."""
     scanned = 0
     for root, dirs, files in os.walk(HERE):
-        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", ".pytest_cache",
-                                                "live", "captures", ".claude")]
+        # A virtualenv is someone else's text (site-packages), recognised by
+        # its pyvenv.cfg rather than by a name like ".venv".
+        dirs[:] = [d for d in dirs
+                   if d not in (".git", "__pycache__", ".pytest_cache",
+                                "live", "captures", ".claude")
+                   and not os.path.exists(os.path.join(root, d, "pyvenv.cfg"))]
         for filename in files:
             if not filename.endswith((".py", ".md", ".yml", ".yaml", ".txt",
                                       ".toml", ".html", ".example", ".json")):
@@ -1263,8 +1278,45 @@ def check_banned_wording():
     check("the banned-wording scan read the repo (%d files)" % scanned, scanned > 20)
 
 
+# References to private notes this public repo cannot link to: a reader
+# can open none of them, so a rule is stated in this repo's own words instead.
+# Assembled from pieces so this file is scanned like every other.
+PRIVATE_CITATIONS = (
+    "CLAUDE" + ".md", "claude_" + "2scraper", "2scraper_" + "repo_rules",
+    "play" + "book", "template " + "\u00a7",
+)
+SECTION_SIGN_REF = re.compile("\u00a7" + r"\s*\d")
+
+
+def check_no_private_citations_in_shipped_files():
+    scanned = 0
+    for root, dirs, files in os.walk(HERE):
+        dirs[:] = [d for d in dirs
+                   if d not in (".git", "__pycache__", ".pytest_cache", "live",
+                                "captures", ".claude")
+                   and not os.path.exists(os.path.join(root, d, "pyvenv.cfg"))]
+        for filename in files:
+            if not filename.endswith((".py", ".md", ".yml", ".yaml", ".txt",
+                                      ".toml", ".cfg", ".example", ".json",
+                                      ".gitignore", ".dockerignore")) \
+                    and filename != "Dockerfile":
+                continue
+            path = os.path.join(root, filename)
+            text = open(path, encoding="utf-8", errors="replace").read()
+            scanned += 1
+            rel = os.path.relpath(path, HERE)
+            for token in PRIVATE_CITATIONS:
+                if token.lower() in text.lower():
+                    check("%s cites no private note (%r)" % (rel, token), False)
+            m = SECTION_SIGN_REF.search(text)
+            if m:
+                line = text.count("\n", 0, m.start()) + 1
+                check("%s:%d carries no bare section-number reference" % (rel, line), False)
+    check("the private-citation scan read the repo (%d files)" % scanned, scanned > 20)
+
+
 def check_concurrency_with_the_browser_stubbed():
-    """§10: a live run cannot always reach this machinery. Driven through the
+    """A live run cannot always reach this machinery. Driven through the
     SHARED worker loop with the fetch replaced."""
     import page_flow
     import queue as queue_mod
@@ -1375,7 +1427,7 @@ def check_fingerprint_kwargs_are_ones_the_driver_accepts():
 
 
 def check_engines_do_not_evaluate_a_string_in_the_browser():
-    """§18: wait_for_function evaluates a string, which a CSP without
+    """wait_for_function evaluates a string, which a CSP without
     unsafe-eval kills. page.evaluate with a real function is fine."""
     for module in ENGINES:
         tree = ast.parse(open(os.path.join(HERE, module + ".py"), encoding="utf-8").read())
@@ -1477,7 +1529,7 @@ def check_x_debug_header_is_redacted():
 
 
 def check_captcha_capability_claims_are_honest():
-    """§19: the most expensive bug this family can ship is a SENTENCE."""
+    """The most expensive bug this family can ship is a SENTENCE."""
     readme = open(os.path.join(HERE, "README.md"), encoding="utf-8").read()
     low = readme.lower()
     for phrase in ("cannot be solved", "can't be solved", "is not solvable",
@@ -1491,7 +1543,7 @@ def check_captcha_capability_claims_are_honest():
 
 
 def check_readme_numbers_are_not_stale():
-    """§17's check #4: a column count claimed in the README is a class's."""
+    """A column count claimed in the README is a class's."""
     readme = open(os.path.join(HERE, "README.md"), encoding="utf-8").read()
     from output_writer import ROW_CLASS_BY_MODE
     sizes = {len(fields(c)) for c in ROW_CLASS_BY_MODE.values()}
@@ -1576,6 +1628,232 @@ def _retries_validation_problems():
 def check_retries_is_validated_in_every_entry_point():
     problems = _retries_validation_problems()
     check("--retries is validated in every entry point, so 0 is a usage error", not problems, "; ".join(problems))
+
+
+def _one_listing(**kw):
+    from output_writer import Listing
+    base = dict(url="https://www.webmotors.com.br/comprar/x/1", sku="1",
+                title="VOLKSWAGEN GOL", price=50000.0, currency="BRL",
+                page=1, position=1, mode="search")
+    base.update(kw)
+    return Listing(**base)
+
+
+def check_output_writes_are_atomic_and_keep_modes():
+    """A failed write must leave the previous good file intact, with no
+    temporary file beside it; a new file gets `0o666 & ~umask` and an
+    existing file keeps its own mode."""
+    import output_writer as O
+    rows = [_one_listing()]
+    with tempfile.TemporaryDirectory() as tmp:
+        prefix = os.path.join(tmp, "out")
+        O.write_json(rows, prefix + ".json")
+        O.write_csv(rows, prefix + ".csv")
+        O.write_run_meta(prefix, {"status": "complete"})
+        before = {ext: open(prefix + ext, encoding="utf-8").read()
+                  for ext in (".json", ".csv", ".meta.json")}
+
+        real_dump, real_writerow = O.json.dump, O.csv.DictWriter.writerow
+
+        def half_dump(obj, f, **kw):
+            f.write('[{"sku": "half')
+            raise OSError(28, "No space left on device")
+
+        def half_row(self, row):
+            self.writer.writerow(["half"])
+            raise OSError(28, "No space left on device")
+
+        O.json.dump, O.csv.DictWriter.writerow = half_dump, half_row
+        try:
+            for ext, call in ((".json", lambda: O.write_json(rows, prefix + ".json")),
+                              (".csv", lambda: O.write_csv(rows, prefix + ".csv")),
+                              (".meta.json", lambda: O.write_run_meta(prefix, {"status": "x"}))):
+                try:
+                    call()
+                    raised = False
+                except OSError:
+                    raised = True
+                check("a failed %s write raises" % ext, raised)
+                equal("a failed %s write leaves the previous file intact" % ext,
+                      open(prefix + ext, encoding="utf-8").read(), before[ext])
+        finally:
+            O.json.dump, O.csv.DictWriter.writerow = real_dump, real_writerow
+        equal("no temporary file is left behind",
+              sorted(os.listdir(tmp)), ["out.csv", "out.json", "out.meta.json"])
+
+        for umask in (0o022, 0o002, 0o077):
+            old = os.umask(umask)
+            try:
+                path = os.path.join(tmp, "new_%o.json" % umask)
+                O.write_json(rows, path)
+                mode = os.stat(path).st_mode & 0o777
+            finally:
+                os.umask(old)
+            equal("a new file under umask %03o is %03o" % (umask, 0o666 & ~umask),
+                  oct(mode), oct(0o666 & ~umask))
+        os.chmod(prefix + ".csv", 0o640)
+        O.write_csv(rows, prefix + ".csv")
+        equal("an existing file keeps its own mode",
+              oct(os.stat(prefix + ".csv").st_mode & 0o777), oct(0o640))
+
+
+def check_csv_cells_are_formula_escaped():
+    import output_writer as O
+    rows = [_one_listing(title='=HYPERLINK("http://x","y")', city="+SP",
+                         seller_name="@me", attributes=["-cmd", "ok"],
+                         version="\tTAB", odometer_km=-5)]
+    with tempfile.TemporaryDirectory() as tmp:
+        prefix = os.path.join(tmp, "out")
+        rc = O.finish_run(rows, prefix, "both", False, blocked=False,
+                          stop_reason="completed", pages_requested=1,
+                          pages_completed=1, start_url="u", final_url="u",
+                          mode="search", extra={"total_results": 7})
+        equal("the run still exits 0", rc, 0)
+        cells = list(csv.DictReader(open(prefix + ".csv", encoding="utf-8")))[0]
+        equal("a formula title is prefixed", cells["title"], "'" + rows[0].title)
+        equal("a '+' cell is prefixed", cells["city"], "'+SP")
+        equal("an '@' cell is prefixed", cells["seller_name"], "'@me")
+        equal("a joined list is escaped AFTER joining", cells["attributes"], "'-cmd | ok")
+        equal("a tab-led cell is prefixed", cells["version"], "'\tTAB")
+        equal("a negative NUMBER is left alone", cells["odometer_km"], "-5")
+        data = json.load(open(prefix + ".json", encoding="utf-8"))[0]
+        equal("JSON keeps the site's bytes", data["title"], rows[0].title)
+        equal("JSON keeps a negative number", data["odometer_km"], -5)
+        meta = json.load(open(prefix + ".meta.json", encoding="utf-8"))
+        equal("the sidecar counts the escaped cells", meta.get("csv_cells_escaped"), 5)
+        equal("the caller's extra is still merged", meta.get("total_results"), 7)
+        O.finish_run(rows, prefix, "csv", False, blocked=False,
+                     stop_reason="completed", pages_requested=1,
+                     pages_completed=1, start_url="u", final_url="u",
+                     mode="search", extra={"csv_cells_escaped": "caller"})
+        meta = json.load(open(prefix + ".meta.json", encoding="utf-8"))
+        equal("housekeeping goes UNDER the caller's extra",
+              meta.get("csv_cells_escaped"), "caller")
+
+
+def _query_args(**kw):
+    base = dict(url=None, typed_url=None, sort=None, per_page=None,
+                category=None, condition=None, state=None, make=None,
+                model=None, ads_file=None, mode=None, pages=1)
+    base.update(kw)
+    return types.SimpleNamespace(**base)
+
+
+class _UsageError(Exception):
+    pass
+
+
+def _raise_usage(message):
+    raise _UsageError(message)
+
+
+def check_an_env_url_gives_way_to_typed_flags():
+    """WEBMOTORS_URL is a default. Search flags typed on the command line
+    replace it; a TYPED --url with flags is still refused."""
+    import page_flow
+    env_url = "https://www.webmotors.com.br/carros/estoque/toyota"
+    try:
+        q = page_flow.build_query(_query_args(url=env_url, make="volkswagen",
+                                              model="gol"), _raise_usage)
+        got = q.listing_url
+    except _UsageError as e:
+        got = "refused: %s" % e
+    check("an environment URL gives way to typed --make/--model",
+          "volkswagen/gol" in got, got)
+    try:
+        q = page_flow.build_query(_query_args(url=env_url), _raise_usage)
+        got = q.listing_url
+    except _UsageError as e:
+        got = "refused: %s" % e
+    check("an environment URL alone is still the default search",
+          "toyota" in got, got)
+    try:
+        page_flow.build_query(_query_args(url=env_url, typed_url=env_url,
+                                          make="volkswagen"), _raise_usage)
+        refused = False
+    except _UsageError:
+        refused = True
+    check("a TYPED --url plus a filter flag is still refused", refused)
+
+
+def _flag_types(module_name):
+    tree = ast.parse(open(os.path.join(HERE, module_name + ".py"), encoding="utf-8").read())
+    out = {}
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Call) and getattr(node.func, "attr", "") == "add_argument"
+                and node.args and isinstance(node.args[0], ast.Constant)):
+            kind = next((ast.unparse(k.value) for k in node.keywords if k.arg == "type"), None)
+            out[node.args[0].value] = kind
+    return out
+
+
+def check_counts_and_delays_reject_negative_values():
+    """A negative delay crashed `time.sleep` or was read as zero, and a
+    negative count was read as 'none'. Each is now a usage error naming the
+    flag, in every entry point (read off disk, so it runs without drivers)."""
+    import page_flow
+    want = {"--delay": 0, "--retry-delay": 0, "--concurrency": 1,
+            "--proxy-block-retries": 0, "--pages": 1}
+    for module in ENGINES:
+        types_ = _flag_types(module)
+        for flag, minimum in want.items():
+            check("%s %s is validated (at least %d)" % (module, flag, minimum),
+                  (types_.get(flag) or "").startswith(
+                      "page_flow.at_least('%s', %d" % (flag, minimum)),
+                  types_.get(flag))
+    api = _flag_types("scraper_api_client")
+    for flag, minimum in {"--delay": 0, "--retry-delay": 0, "--retries": 0,
+                          "--pages": 1}.items():
+        check("scraper_api_client %s is validated (at least %d)" % (flag, minimum),
+              (api.get(flag) or "").startswith("at_least('%s', %d" % (flag, minimum)),
+              api.get(flag))
+    for flag, minimum, kind, bad in (("--delay", 0, float, "-1"),
+                                     ("--concurrency", 1, int, "0"),
+                                     ("--pages", 1, int, "x")):
+        try:
+            page_flow.at_least(flag, minimum, kind)(bad)
+            message = None
+        except argparse.ArgumentTypeError as e:
+            message = str(e)
+        check("at_least rejects %s %s and names the flag" % (flag, bad),
+              message is not None and flag in message, message)
+    equal("at_least accepts the minimum", page_flow.at_least("--delay", 0, float)("0"), 0.0)
+    # The Scraper API client imports no driver, so its parser runs here.
+    import scraper_api_client
+    import contextlib
+    import io
+    saved = sys.argv
+    try:
+        for argv in (["--retries", "-1"], ["--delay", "-2"]):
+            sys.argv = ["scraper_api_client.py", "--url", GOL] + argv
+            try:
+                with contextlib.redirect_stderr(io.StringIO()) as err:
+                    scraper_api_client.parse_args()
+                code = 0
+            except SystemExit as e:
+                code = e.code
+            check("scraper_api_client %s exits 2" % " ".join(argv),
+                  code == 2 and argv[0] in err.getvalue(), err.getvalue()[-200:])
+    finally:
+        sys.argv = saved
+
+
+def check_the_canary_fails_without_a_secret():
+    """A canary that skipped green reported a scraper as tested when the site
+    was never contacted. Without a secret it must fail, naming the secret."""
+    text = open(os.path.join(HERE, ".github", "workflows", "canary.yml"),
+                encoding="utf-8").read()
+    check("the canary has no green skip branch",
+          "::notice::" not in text and "SKIPPED" not in text)
+    check("the canary fails by name without a secret",
+          "::error::" in text and "WEBMOTORS_PROXY" in text
+          and "WEBMOTORS_CDP_ENDPOINT" in text and "exit 1" in text)
+    check("both secrets are mapped into the job's environment",
+          "WEBMOTORS_PROXY: ${{ secrets.WEBMOTORS_PROXY }}" in text
+          and "WEBMOTORS_CDP_ENDPOINT: ${{ secrets.WEBMOTORS_CDP_ENDPOINT }}" in text)
+    check("live steps are not gated on a secret (no silent skip)",
+          "env.WEBMOTORS_PROXY != ''" not in text)
+
 
 
 CHECKS = [v for k, v in sorted(globals().items()) if k.startswith("check_")]
