@@ -89,8 +89,8 @@ HEX32 = re.compile(r"\b[0-9a-f]{32}\b")
 # This site publishes no 32-hex identifier at all: an advert's id is a short
 # integer and its photo file names are `WMIMAGEM` plus digits, checked in
 # every capture rather than assumed. So a bare 32-hex string anywhere in the
-# repo fails, with no exception to reason about (CLAUDE.md §24: before
-# adding an exemption, check whether the value is needed at all).
+# repo fails, with no exception to reason about (before adding an
+# exemption, check whether the value is needed at all).
 SITE_PUBLIC_IDS = ()
 
 def _without_site_ids(line):
@@ -279,7 +279,7 @@ def tracked_files():
 # into pip's vendored code and flags a 32-hex string in `_elffile.py` as
 # key-shaped. Correct about the string, wrong about the file — and it is the
 # FIRST thing a new user sees from `python3 smoke_test.py`. A guard people
-# have to argue with is one they learn to suppress (CLAUDE.md §22).
+# have to argue with is one they learn to suppress.
 #
 # Deliberately NOT a narrowing of what gets scanned: an untracked file is
 # still read, because a key pasted into a scratch file beside the scripts is

@@ -95,7 +95,7 @@ SOURCES = {
     "cloudfront_403": ("cloudfront_403.html", None, None, "text"),
     # A page fetched over --cdp-endpoint: the Scraping Browser's auto-solve
     # extension injects its hunter scripts into every page it loads, and the
-    # marker set must score zero against them (CLAUDE.md §24).
+    # marker set must score zero against them.
     "cdp_landing": ("cdp_landing.html", None, None, "text"),
 }
 
