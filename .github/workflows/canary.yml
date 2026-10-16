@@ -1,4 +1,5 @@
-# A real run of each mode against webmotors.com.br, daily: a car search, a
+# A real run of each mode against webmotors.com.br, weekly (Mondays; every run
+# bills the proxy or Scraping Browser session): a car search, a
 # motorcycle search, and the first adverts of the car search read in ad mode.
 # tests.yml (deliberately) never touches the site.
 #
@@ -25,8 +26,9 @@ name: canary
 
 on:
   schedule:
-    # 06:20 UTC. Not on the hour: every scheduled workflow fires at :00.
-    - cron: "20 6 * * *"
+    # Mondays 06:20 UTC. Weekly, not daily: every run bills a paid route.
+    # Not on the hour: every scheduled workflow fires at :00.
+    - cron: "20 6 * * 1"
   workflow_dispatch:
 
 permissions:
