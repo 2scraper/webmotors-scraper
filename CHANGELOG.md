@@ -9,6 +9,12 @@ said so at the top of its release notes.
 
 ## [Unreleased]
 
+### Changed
+
+- CI only: the canary bills a paid route (`WEBMOTORS_PROXY` or
+  `WEBMOTORS_CDP_ENDPOINT`), so it now runs weekly (Mondays 06:20 UTC) instead of
+  daily; a manual dispatch still runs it.
+
 ## [0.2.0] — 2026-10-15
 
 > **Behaviour change:** `--retries 0` is now a usage error (exit 2). It used

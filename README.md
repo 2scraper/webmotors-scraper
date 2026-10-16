@@ -226,7 +226,7 @@ captured on 2026-09-28 (`tools/capture.py`), cut and scrubbed by
 `make_fixtures.py`, which proves each one parses exactly as its original.
 CI runs the suite on Python 3.9 and 3.12, once per engine in its own
 virtualenv, builds the Docker image, and scans for committed credentials.
-The canary runs a car search, a motorcycle search and ad mode daily
+The canary runs a car search, a motorcycle search and ad mode weekly (Mondays)
 through a residential exit: the `WEBMOTORS_PROXY` or
 `WEBMOTORS_CDP_ENDPOINT` secret, because the site refuses the runner's
 datacentre address. Without either secret the canary **fails** and names
