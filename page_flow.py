@@ -34,7 +34,9 @@ import logging
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional
 
-from output_writer import dedupe_by_key, finish_run, SOURCE_DEFAULT
+from output_writer import (dedupe_by_key, finish_run, finish_without_fetch,
+                           SOURCE_DEFAULT)
+import proxy_check
 from product_parser import (MAX_PAGES, ORIGIN_URL, ApiRequest, Query, BASE,
                             DEFAULT_PER_PAGE, DEFAULT_SORT,
                             ads_from_text, api_error, apply_market_prices,
@@ -734,6 +736,24 @@ def read_currency(ops, args, query: Query,
         log.warning("Could not read the currency from %s (%s) — the `currency` "
                     "column will be null rather than a guess.", page,
                     mask(err) if err else "HTTP %s" % status)
+
+
+def stop_on_refused_proxy(args, pool) -> Optional[int]:
+    """The proxy pre-check, before any engine starts a browser.
+
+    One request through the pool's current exit to the site's robots.txt.
+    A 407 or 402 from the proxy ends the run here with exit 5 and the
+    attempt sidecar; Chromium would otherwise report that 407 as a
+    navigation timeout on every retry. Returns None to go on.
+    """
+    refused = proxy_check.gate(pool, BASE + "/")
+    if refused is None:
+        return None
+    return finish_without_fetch(
+        args.out, stop_reason=refused.stop_reason,
+        pages_requested=args.pages,
+        start_url=args.url or currency_page(args.query),
+        mode=args.query.mode, source=SOURCE_DEFAULT)
 
 
 def run_pages(open_ops, close_ops, run_concurrently, args, pool,

@@ -9,6 +9,39 @@ said so at the top of its release notes.
 
 ## [Unreleased]
 
+> **Behaviour change:** a run through a proxy now makes one pre-check
+> request before starting a browser. A proxy that answers **HTTP 407** or
+> **402** ends the run with **exit 5** and
+> `<out>.latest_attempt.meta.json` (`status: failed`, `stop_reason:
+> proxy_auth_failed` / `proxy_balance_exhausted`), instead of timing out on
+> every retry. Runs without a proxy or over `--cdp-endpoint` are unchanged.
+> Media still loads by default.
+
+### Added
+
+- `proxy_check.py` adds the proxy pre-check to all three engines, through
+  `page_flow.stop_on_refused_proxy`. It makes one CONNECT plus
+  `HEAD /robots.txt` on `www.webmotors.com.br` and uses no third-party
+  service.
+  - On a 407, the message names `WEBMOTORS_PROXY` and says the gateway
+    refused the credential (or the traffic balance is exhausted). On a 402,
+    it says the proxy traffic/balance is exhausted. Neither message prints
+    the credential.
+  - A proxy that does not answer keeps the existing behaviour.
+- `--block-media`: an opt-in on all three engines that aborts image,
+  video/audio and font requests. It is off by default on this site, because
+  the effect on PerimeterX could not be measured from an address CloudFront
+  serves.
+- `--load-media` and `WEBMOTORS_LOAD_MEDIA` (commented out in
+  `.env.example`) keep media loading.
+- Offline checks:
+  - A stub proxy that answers 407, 402 or 200, or does not answer.
+  - Each engine driven to exit 5 without a browser on a 407.
+  - The attempt sidecar.
+  - The Playwright route handler, the pyppeteer Fetch patterns and the
+    Selenium blocked-URL list.
+  - When each engine installs blocking.
+
 ### Changed
 
 - CI only: the canary bills a paid route (`WEBMOTORS_PROXY` or

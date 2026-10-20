@@ -71,6 +71,7 @@ import page_flow
 from proxy_pool import (from_args as proxy_pool_from_args, to_playwright, mask,
                         ROTATE_MODES, ProxyError)
 import env_config
+import proxy_check
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("playwright_scraper")
@@ -175,6 +176,8 @@ def _launch_local(pw, args, pool):
     context = browser.new_context(**ctx_kwargs)
     if init_script:
         context.add_init_script(init_script)
+    if proxy_check.block_media(args, pool, remote=False):
+        proxy_check.install_playwright(context)
     return browser, context, context.new_page()
 
 
@@ -386,6 +389,9 @@ def scrape(args) -> int:
         logger.warning("No --proxy and no --cdp-endpoint. CloudFront refused "
                        "every datacentre address measured; from a residential "
                        "connection of your own this can still work.")
+    refused = page_flow.stop_on_refused_proxy(args, pool)
+    if refused is not None:
+        return refused
     concurrency = page_flow.concurrency_for(args, pool)
     with sync_playwright() as pw:
         return page_flow.run_pages(
@@ -506,6 +512,7 @@ def parse_args(argv=None):
                         "client this repo drives was shown it once served.")
     p.add_argument("--min-score", type=float, default=0.7,
                    help="Kept for parity with the family. Inert here.")
+    proxy_check.add_media_flags(p)
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "

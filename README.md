@@ -173,6 +173,38 @@ address, since it cannot send a password.
 pyppeteer is effectively unmaintained. Its bundled Chromium may not start on
 a current system; point `--chromium-path` at Playwright's.
 
+### Proxy traffic savers
+
+A residential proxy is billed by traffic, so a run through `--proxy` /
+`--proxy-file` / `WEBMOTORS_PROXY` saves what it can:
+
+- **One pre-check before any browser starts**, in all three engines: a
+  CONNECT through the proxy and a `HEAD /robots.txt` on
+  `www.webmotors.com.br`. Chromium reports a proxy's HTTP 407 as a
+  navigation timeout, so a wrong or exhausted credential used to spend
+  every retry and end in exit 5 with nothing naming the cause. Now a
+  **407** (the gateway refused the credential, or the traffic balance is
+  exhausted) or a **402** (proxy traffic/balance exhausted) ends the run in
+  seconds: **exit 5**, and `<out>.latest_attempt.meta.json` with
+  `status: failed`, `stop_reason: proxy_auth_failed` (or
+  `proxy_balance_exhausted`). A previous run's output and its `.meta.json`
+  are left alone. The message names `WEBMOTORS_PROXY` and never prints the
+  credential. A proxy that does not answer at all keeps the old behaviour:
+  the browser makes its own attempt. Nothing is checked without a proxy or
+  with `--cdp-endpoint`.
+- **Media blocking is opt-in here: `--block-media`.** It aborts image,
+  video/audio and font requests (Playwright by resource type, pyppeteer
+  through CDP's Fetch domain, Selenium by file extension through CDP
+  `Network.setBlockedURLs`). The rows come from the site's JSON API, which
+  needs none of them, but the landing page runs PerimeterX, which refused
+  this scraper for smaller inconsistencies than missing resources. Whether
+  it reacts to them could not be measured: on 2026-10-20, CloudFront
+  refused the only address a free comparison could run from (a datacentre),
+  both with and without blocking. So media **loads by default**. Measure
+  `--block-media` on your own exit before relying on it.
+  `--load-media` (or `WEBMOTORS_LOAD_MEDIA=1`) states the default
+  explicitly. Neither flag does anything over `--cdp-endpoint`.
+
 ## What the 2Captcha products buy here, and when
 
 One key, four separately-billed products:
@@ -200,7 +232,7 @@ Captcha solving buys nothing on this site: see the end of the first section.
 | 2 | bad usage, including a make, model or state the site did not recognise |
 | 3 | blocked: CloudFront (the address) or PerimeterX (the client) |
 | 4 | the search matched nothing (nothing is written) |
-| 5 | the data never arrived: a timeout, a dead proxy, the API gateway refusing a path, the Scraping Browser refusing the connection |
+| 5 | the data never arrived: a timeout, a dead proxy, a proxy that refused the credential or the balance before the run began (`stop_reason: proxy_auth_failed` / `proxy_balance_exhausted`), the API gateway refusing a path, the Scraping Browser refusing the connection |
 | 6 | partial: some pages came back, a later one did not |
 
 An advert that is gone (sold, withdrawn) is not a failure: it is listed in
@@ -212,7 +244,8 @@ the sidecar's `ads_gone` and the run goes on. See
 Credentials go in `.env`, never on a command line (`ps` and your shell
 history both see argv). `python3 env_config.py` prints what was picked up
 without printing a secret. The variables are `TWOCAPTCHA_KEY`,
-`WEBMOTORS_PROXY`, `WEBMOTORS_CDP_ENDPOINT` and `WEBMOTORS_URL`; see
+`WEBMOTORS_PROXY`, `WEBMOTORS_CDP_ENDPOINT`, `WEBMOTORS_URL` and
+`WEBMOTORS_LOAD_MEDIA`; see
 [`.env.example`](.env.example).
 
 ## Tests
