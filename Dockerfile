@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-playwright.tx
 # container that nothing in the repo would have noticed.
 COPY env_config.py fingerprint_client.py output_writer.py \
      page_flow.py playwright_scraper.py product_parser.py proxy_pool.py \
-     diff_runs.py ./
+     proxy_check.py diff_runs.py ./
 
 ENTRYPOINT ["python3", "playwright_scraper.py"]
 CMD ["--help"]

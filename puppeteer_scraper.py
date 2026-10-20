@@ -61,6 +61,7 @@ import page_flow
 from proxy_pool import (from_args as proxy_pool_from_args, mask, ROTATE_MODES,
                         ProxyError, split_credentials)
 import env_config
+import proxy_check
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("puppeteer_scraper")
@@ -284,6 +285,8 @@ class _Ops:
             self._apply_fingerprint()
         if credentials:
             self._authenticate_proxy(*credentials)
+        if proxy_check.block_media(self.args, self.pool, remote=False):
+            self.bridge.run(proxy_check.install_pyppeteer(self.page))
         return self
 
     def _set_identity(self, version: str):
@@ -500,6 +503,9 @@ def scrape(args) -> int:
         logger.warning("No --proxy and no --cdp-endpoint. CloudFront refused "
                        "every datacentre address measured; from a residential "
                        "connection of your own this can still work.")
+    refused = page_flow.stop_on_refused_proxy(args, pool)
+    if refused is not None:
+        return refused
     concurrency = page_flow.concurrency_for(args, pool)
     bridge = _AsyncBridge()
     try:
@@ -623,6 +629,7 @@ def parse_args(argv=None):
                         "client this repo drives was shown it once served.")
     p.add_argument("--min-score", type=float, default=0.7,
                    help="Kept for parity with the family. Inert here.")
+    proxy_check.add_media_flags(p)
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "

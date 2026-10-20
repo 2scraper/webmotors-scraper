@@ -57,6 +57,7 @@ import page_flow
 from proxy_pool import (from_args as proxy_pool_from_args, mask, ROTATE_MODES,
                         ProxyError, split_credentials)
 import env_config
+import proxy_check
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("selenium_scraper")
@@ -186,6 +187,8 @@ class _Ops:
 
         self.driver = webdriver.Chrome(options=options)
         self._apply_timeouts()
+        if proxy_check.block_media(self.args, self.pool, remote=False):
+            proxy_check.install_selenium(self.driver)
         version = self.driver.capabilities.get("browserVersion", "")
         if version:
             try:
@@ -330,6 +333,9 @@ def scrape(args) -> int:
         logger.warning("No --proxy and no --cdp-endpoint. CloudFront refused "
                        "every datacentre address measured; from a residential "
                        "connection of your own this can still work.")
+    refused = page_flow.stop_on_refused_proxy(args, pool)
+    if refused is not None:
+        return refused
     concurrency = page_flow.concurrency_for(args, pool)
     return page_flow.run_pages(
         lambda: _Ops(args, pool).open(),
@@ -449,6 +455,7 @@ def parse_args(argv=None):
                         "client this repo drives was shown it once served.")
     p.add_argument("--min-score", type=float, default=0.7,
                    help="Kept for parity with the family. Inert here.")
+    proxy_check.add_media_flags(p)
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "
