@@ -86,8 +86,19 @@ jobs:
           set +e   # `run:` is `bash -e`; without this a non-zero exit aborts
                    # the step before the echo below records it.
           python playwright_scraper.py ${{ matrix.args }} \
+            --proxy-budget-mb 10 \
             --out canary --format both --dump-html canary_dump.json
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      # Through WEBMOTORS_PROXY the run meters what it sends and stops at
+      # --proxy-budget-mb 10. This puts the figure in the step summary and
+      # fails the job when the cap was hit. Over WEBMOTORS_CDP_ENDPOINT
+      # nothing is metered locally, and it says so.
+      - name: Proxy traffic of the search run
+        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
+        env:
+          JOB_LABEL: ${{ matrix.name }}
+        run: python3 .github/proxy_traffic.py "$JOB_LABEL" canary
 
       - name: Interpret
         run: |
@@ -157,6 +168,7 @@ jobs:
           EOF
           set +e
           python playwright_scraper.py --ads-file canary_ads.txt \
+            --proxy-budget-mb 10 \
             --out canary_ad --format both --dump-html canary_ad_dump.json
           code=$?
           echo "exit code: $code"
@@ -164,6 +176,12 @@ jobs:
             echo "::error::Ad mode exited $code (3 blocked, 5 never arrived, 6 some adverts failed). See canary_ad.meta.json."
             exit 1
           fi
+
+      - name: Proxy traffic of the ad-mode run
+        if: ${{ !cancelled() && matrix.ads > 0 && steps.ads.outcome != 'skipped' }}
+        env:
+          JOB_LABEL: ${{ matrix.name }}/ads
+        run: python3 .github/proxy_traffic.py "$JOB_LABEL" canary_ad
 
       - name: Assert ad mode
         if: matrix.ads > 0

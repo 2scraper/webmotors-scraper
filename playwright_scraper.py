@@ -72,6 +72,7 @@ from proxy_pool import (from_args as proxy_pool_from_args, to_playwright, mask,
                         ROTATE_MODES, ProxyError)
 import env_config
 import proxy_check
+import proxy_meter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("playwright_scraper")
@@ -178,6 +179,9 @@ def _launch_local(pw, args, pool):
         context.add_init_script(init_script)
     if proxy_check.block_media(args, pool, remote=False):
         proxy_check.install_playwright(context)
+    # After the media route, so the budget route runs first (Playwright
+    # runs routes in reverse order of registration).
+    proxy_meter.install_playwright(context, proxy_meter.of(args))
     return browser, context, context.new_page()
 
 
@@ -513,6 +517,7 @@ def parse_args(argv=None):
     p.add_argument("--min-score", type=float, default=0.7,
                    help="Kept for parity with the family. Inert here.")
     proxy_check.add_media_flags(p)
+    proxy_meter.add_budget_flag(p)
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "
