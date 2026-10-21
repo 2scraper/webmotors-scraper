@@ -16,8 +16,42 @@ said so at the top of its release notes.
 > proxy_auth_failed` / `proxy_balance_exhausted`), instead of timing out on
 > every retry. Runs without a proxy or over `--cdp-endpoint` are unchanged.
 > Media still loads by default.
+>
+> **Behaviour change:** a run through a local proxy now **stops at 10 MB of
+> proxy traffic** by default (`--proxy-budget-mb`, `0` = no cap). It keeps
+> its rows and exits **6** (**5** with none) with `stop_reason:
+> proxy_budget_exceeded`, and it always writes
+> `<out>.latest_attempt.meta.json`.
 
 ### Added
+
+- `proxy_meter.py`: a per-run proxy traffic meter and budget for all three
+  engines, held in the shared page loop (`page_flow`). It is active only
+  through a local proxy.
+  - Counting: Playwright sums `request.sizes()`. pyppeteer and Selenium count
+    CDP `Network.loadingFinished.encodedDataLength`, plus each request's own
+    size.
+  - Over budget: Playwright aborts new requests in a route, and pyppeteer
+    and Selenium block every URL over CDP. The loop, and with `--concurrency`
+    every worker, stops before its next request.
+  - New sidecar fields `proxy_bytes`, `proxy_budget_bytes` and
+    `proxy_budget_exceeded`, and a closing log line
+    `Proxy traffic: X.X MB of Y MB budget`.
+  - `--proxy-budget-mb`, and `WEBMOTORS_PROXY_BUDGET_MB` (commented out in
+    `.env.example`).
+- CI only: the canary's search and ad-mode runs pass `--proxy-budget-mb 10`.
+  Each one writes its proxy traffic to the step summary, and fails with
+  `::error::stopped: proxy budget 10 MB exceeded` when the cap was hit
+  (`.github/proxy_traffic.py`).
+- Offline checks:
+  - The meter against known CDP and Playwright sizes.
+  - An HTTP client through a stub proxy that counts every byte.
+  - The sidecars and exit codes over budget.
+  - The shared loop driven past the budget, sequentially and with two
+    workers.
+  - Each engine installing the meter only through a proxy.
+  - The canary steps and their summary script.
+  - An opt-in real-browser check (`PROXY_METER_BROWSER=1`).
 
 - `proxy_check.py` adds the proxy pre-check to all three engines, through
   `page_flow.stop_on_refused_proxy`. It makes one CONNECT plus

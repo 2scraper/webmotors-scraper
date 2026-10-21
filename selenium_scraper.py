@@ -58,6 +58,7 @@ from proxy_pool import (from_args as proxy_pool_from_args, mask, ROTATE_MODES,
                         ProxyError, split_credentials)
 import env_config
 import proxy_check
+import proxy_meter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("selenium_scraper")
@@ -185,7 +186,11 @@ class _Ops:
                     "requests. Use playwright_scraper.py or "
                     "puppeteer_scraper.py for an authenticated proxy.")
 
+        # The proxy meter reads chromedriver's performance log; it can only
+        # be asked for at driver creation.
+        proxy_meter.selenium_options(options, proxy_meter.of(self.args))
         self.driver = webdriver.Chrome(options=options)
+        proxy_meter.install_selenium(self.driver, proxy_meter.of(self.args))
         self._apply_timeouts()
         if proxy_check.block_media(self.args, self.pool, remote=False):
             proxy_check.install_selenium(self.driver)
@@ -232,7 +237,9 @@ class _Ops:
         try:
             self.driver.get(url)
         except WebDriverException as e:
+            proxy_meter.drain_selenium(self.driver)
             raise page_flow.TransportError(_mask_credentials(str(e))) from None
+        proxy_meter.drain_selenium(self.driver)
         # No status and no headers from a Selenium navigation: see the
         # module docstring. The classifier reads the document instead.
         return None, None
@@ -258,6 +265,8 @@ class _Ops:
                 FETCH_JS, req.url, req.method, req.body_json, timeout_ms)
         except WebDriverException as e:
             return None, "", None, _mask_credentials(str(e))
+        finally:
+            proxy_meter.drain_selenium(self.driver)
         if not isinstance(got, dict):
             return None, "", None, "fetch() returned nothing"
         if got.get("error"):
@@ -277,6 +286,8 @@ class _Ops:
     def close(self):
         try:
             if self.driver is not None:
+                # The last page's traffic is still in the performance log.
+                proxy_meter.drain_selenium(self.driver)
                 # quit(), not close(): close() leaves the driver process
                 # running, which a per-page rotation would leak once a page.
                 self.driver.quit()
@@ -456,6 +467,7 @@ def parse_args(argv=None):
     p.add_argument("--min-score", type=float, default=0.7,
                    help="Kept for parity with the family. Inert here.")
     proxy_check.add_media_flags(p)
+    proxy_meter.add_budget_flag(p)
     p.add_argument("--cdp-endpoint", default=None,
                    help="Connect to an already-running browser over CDP "
                         "instead of launching Chromium, e.g. the Scraping "

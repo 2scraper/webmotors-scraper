@@ -37,6 +37,7 @@ from typing import Callable, List, Optional
 from output_writer import (dedupe_by_key, finish_run, finish_without_fetch,
                            SOURCE_DEFAULT)
 import proxy_check
+import proxy_meter
 from product_parser import (MAX_PAGES, ORIGIN_URL, ApiRequest, Query, BASE,
                             DEFAULT_PER_PAGE, DEFAULT_SORT,
                             ads_from_text, api_error, apply_market_prices,
@@ -382,6 +383,7 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
     # pipeline (and the canary) reads it.
     extra["columns_below_floor"] = sorted(
         {c for o in outcomes for c in o.field_shortfall})
+    extra = proxy_meter.finish(args, extra)
     last_ok = max([o.page_num for o in ok_pages] or [1])
     return finish_run(
         rows, args.out, args.format, args.allow_empty,
@@ -556,6 +558,9 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
         while attempt < args.retries:
             attempt += 1
             text, last_error = "", None
+            # Before every request this loop makes: over the proxy budget,
+            # the run stops here rather than spending more.
+            proxy_meter.check(args)
             if not ops.landed:
                 state, last_error = land(ops, args)
                 if last_error:
@@ -565,6 +570,7 @@ def fetch_one_page(ops, args, pool, query: Query, page_num: int,
                 elif not ops.landed:
                     text = ops.document_text()
             if ops.landed:
+                proxy_meter.check(args)
                 status, text, waf, last_error = ops.fetch(req)
                 state = ("load_failed" if last_error
                          else classify(text, status, req.url, waf))
@@ -695,6 +701,10 @@ def _market_prices(ops, row, page_num: int, mask) -> None:
     address = parse_ad_url(row.url)
     kind = address.kind if address else ("bike" if row.vehicle == "motorcycle" else "car")
     req = average_price_request(kind, row.sku, page_num)
+    if _over_budget(ops):
+        log.warning("No market prices for advert %s: the proxy budget is "
+                    "spent, so the request was not made.", row.sku)
+        return
     status, text, _waf, err = ops.fetch(req)
     state = "load_failed" if err else classify(text, status, req.url)
     if counts_as_blocked(state):
@@ -712,6 +722,14 @@ def _market_prices(ops, row, page_num: int, mask) -> None:
                     mask(err) if err else "HTTP %s, %s" % (status, state))
 
 
+def _over_budget(ops) -> bool:
+    """True once this run's proxy budget is spent. Used by the optional
+    per-row requests, which then leave their columns null instead of
+    spending more; the page loop itself stops at its next request."""
+    meter = proxy_meter.of(getattr(ops, "args", None))
+    return bool(meter is not None and meter.exceeded)
+
+
 def read_currency(ops, args, query: Query,
                   mask: Callable[[str], str] = lambda s: s) -> None:
     """Read the currency the site states, once per run, into the query.
@@ -723,7 +741,7 @@ def read_currency(ops, args, query: Query,
     a dozen requests of their own. A failure leaves the currency null and
     says so; it never stops the run.
     """
-    if query.currency or not ops.landed:
+    if query.currency or not ops.landed or _over_budget(ops):
         return
     page = currency_page(query)
     req = ApiRequest("GET", page[len(BASE):] if page.startswith(BASE) else page, 0)
@@ -769,6 +787,11 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
     """
     outcomes: List[PageOutcome] = []
     blocked, stop_reason = False, "completed"
+    # Before the first browser opens: each engine installs the meter on the
+    # browsers it opens (every worker's too), and all of them count into
+    # this one budget.
+    meter = proxy_meter.start(args, pool,
+                              remote=bool(getattr(args, "cdp_endpoint", None)))
     ops = open_ops()
     try:
         # Page 1 is always fetched alone: its total decides how many pages
@@ -827,9 +850,15 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
                         stop_reason = "end_of_listing"
                         break
                     seen.update(r.sku for r in outcome.products)
+    except proxy_meter.ProxyBudgetExceeded as e:
+        log.error("Stopping: %s. The pages already gathered are kept.", e)
     finally:
         if ops is not None:
             close_ops(ops)
+    # Over budget is the stop reason whatever the loop concluded: the
+    # requests after the cap were refused, so nothing after it was read.
+    if meter is not None and meter.exceeded:
+        stop_reason, blocked = proxy_meter.STOP_BUDGET_EXCEEDED, False
     return finish(args, query, outcomes, stop_reason, blocked)
 
 
@@ -871,7 +900,15 @@ def worker_loop(ops, args, query: Query, work, results, results_lock,
         if not first:
             ops.wait_ms(int(args.delay * 1000))
         first = False
-        outcome = fetch_one_page(ops, args, ops.pool, query, page_num, mask)
+        try:
+            outcome = fetch_one_page(ops, args, ops.pool, query, page_num, mask)
+        except proxy_meter.ProxyBudgetExceeded as e:
+            # Every worker shares one budget and stops at its next request;
+            # the page this one held goes back to the queue, so the run
+            # reports it as unattempted rather than fetched.
+            work.put(page_num)
+            log.error("[%s] stopping: %s.", name, e)
+            break
         for row in outcome.products:
             row.currency = query.currency
         with results_lock:

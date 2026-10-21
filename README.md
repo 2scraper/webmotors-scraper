@@ -204,6 +204,44 @@ A residential proxy is billed by traffic, so a run through `--proxy` /
   `--block-media` on your own exit before relying on it.
   `--load-media` (or `WEBMOTORS_LOAD_MEDIA=1`) states the default
   explicitly. Neither flag does anything over `--cdp-endpoint`.
+- **Every run through a local proxy is metered and capped.**
+  `--proxy-budget-mb` (default **10**, `0` = no cap, also
+  `WEBMOTORS_PROXY_BUDGET_MB`). Once more than that has gone through the
+  proxy:
+  - further requests are refused;
+  - the shared page loop stops before its next request, and with
+    `--concurrency` every worker stops at its next one. Pages not yet
+    fetched are recorded as unattempted, and an advert's optional
+    market-price request is skipped with those columns left null;
+  - the run keeps the rows it has and exits **6** (or **5** with no rows),
+    with `stop_reason: proxy_budget_exceeded`. It never carries on past the
+    cap.
+
+  The sidecars record `proxy_bytes`, `proxy_budget_bytes` (`null` with no
+  cap) and `proxy_budget_exceeded`: in `<out>.meta.json`, and in
+  `<out>.latest_attempt.meta.json`, which every metered run writes. The log
+  ends with `Proxy traffic: X.X MB of Y MB budget`.
+
+  How the bytes are counted, per engine:
+  - **Playwright** sums `request.sizes()` of every finished or failed
+    request: request headers + body, response headers + body.
+  - **pyppeteer** reads CDP `Network.loadingFinished.encodedDataLength`
+    (bytes received, headers included), plus each request's line, headers
+    and body from `Network.requestWillBeSent`.
+  - **Selenium** reads the same CDP events from chromedriver's performance
+    log, after every navigation and API fetch.
+
+  The figure is an **estimate of the payload through the tunnel**. TLS, the
+  CONNECT exchange and connections the browser opens for itself are not
+  visible to any engine, and add a few percent. Measured 2026-10-21 against
+  a local stub proxy that counted every byte it carried (a 60 kB page, a
+  30 kB stylesheet and a 90 kB script):
+  - Playwright was within 0.2%.
+  - pyppeteer was within 0.6%.
+  - Selenium was within 0.7%.
+
+  A megabyte here is 10^6 bytes. Nothing is metered without a proxy or over
+  `--cdp-endpoint`.
 
 ## What the 2Captcha products buy here, and when
 
@@ -232,8 +270,8 @@ Captcha solving buys nothing on this site: see the end of the first section.
 | 2 | bad usage, including a make, model or state the site did not recognise |
 | 3 | blocked: CloudFront (the address) or PerimeterX (the client) |
 | 4 | the search matched nothing (nothing is written) |
-| 5 | the data never arrived: a timeout, a dead proxy, a proxy that refused the credential or the balance before the run began (`stop_reason: proxy_auth_failed` / `proxy_balance_exhausted`), the API gateway refusing a path, the Scraping Browser refusing the connection |
-| 6 | partial: some pages came back, a later one did not |
+| 5 | the data never arrived: a timeout, a dead proxy, a proxy that refused the credential or the balance before the run began (`stop_reason: proxy_auth_failed` / `proxy_balance_exhausted`), the proxy budget spent before any row (`proxy_budget_exceeded`), the API gateway refusing a path, the Scraping Browser refusing the connection |
+| 6 | partial: some pages came back, a later one did not, or `--proxy-budget-mb` stopped the run (`stop_reason: proxy_budget_exceeded`) |
 
 An advert that is gone (sold, withdrawn) is not a failure: it is listed in
 the sidecar's `ads_gone` and the run goes on. See
