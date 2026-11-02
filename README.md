@@ -1,4 +1,4 @@
-# webmotors-scraper
+# Webmotors Scraper — Car and Motorcycle Listings in Python
 
 [![release](https://img.shields.io/github/v/release/2scraper/webmotors-scraper)](https://github.com/2scraper/webmotors-scraper/releases)
 [![tests](https://github.com/2scraper/webmotors-scraper/actions/workflows/tests.yml/badge.svg)](https://github.com/2scraper/webmotors-scraper/actions/workflows/tests.yml)
@@ -7,6 +7,8 @@
 [![licence](https://img.shields.io/badge/licence-MIT-green)](LICENSE)
 ![engines](https://img.shields.io/badge/engines-playwright%20%7C%20selenium%20%7C%20pyppeteer-lightgrey)
 ![needs a residential exit](https://img.shields.io/badge/needs-a%20residential%20exit-orange)
+
+**Webmotors scraper** — an open-source (MIT) Python tool that reads webmotors.com.br car and motorcycle searches and individual adverts and writes prices, mileage, the FIPE comparison, seller type and city to JSON or CSV. It needs a residential exit or the Scraping Browser API: measured 2026-09-28, every datacentre client got a CloudFront 403, and on a rotating residential gateway a `-region-br` login was served 5 of 12 times and a `-region-us` login 9 of 12, which is why the engines retry a refused page from a fresh browser. Use it for a vehicle-listing dataset, price monitoring, or comparing two runs with `diff_runs.py`.
 
 Scrapes [webmotors.com.br](https://www.webmotors.com.br), Brazil's largest
 car and motorcycle marketplace, into JSON and CSV:
@@ -312,3 +314,20 @@ This reads public pages the site shows every anonymous visitor, at a pace
 you set (`--delay`). It sends no lead, message or proposal to anyone, logs
 into nothing, and writes no private seller's name or contact details. Check
 the site's terms and your local law before you use the data.
+
+## Guides
+
+- [How to run the 2scraper scrapers: setup, proxies, exit codes and access modes](https://2captcha.com/h/how-to-run-2scraper-open-source-scrapers) — installation, `.env`, `.meta.json` for the whole family.
+
+## Related scrapers
+
+Same CLI conventions, same output contract (one row per item, JSON or CSV, a `.meta.json` sidecar and shared exit codes):
+
+- [Zimmo scraper](https://github.com/2scraper/zimmo-scraper) — Zimmo.be sale and rent listings
+- [Autotrader scraper](https://github.com/2scraper/autotrader-scraper) — US car listings with VIN, fee-inclusive price, KBB fair…
+- [Avito scraper](https://github.com/2scraper/avito-scraper) — Category and search listings, item pages and seller profiles…
+- [Craigslist scraper](https://github.com/2scraper/craigslist-scraper) — Result lists and adverts from all 714 areas
+- [dubizzle scraper](https://github.com/2scraper/dubizzle-scraper) — UAE classifieds — motors, property, electronics, jobs…
+- [Facebook Marketplace scraper](https://github.com/2scraper/facebook-marketplace-scraper) — Marketplace listings by keyword, category, location…
+
+All scrapers: [github.com/2scraper](https://github.com/2scraper) · Need another site? [Open a request](https://github.com/2scraper/.github/issues/new?title=%5BScraper%20request%5D%20)
