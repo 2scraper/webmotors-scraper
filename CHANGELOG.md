@@ -78,6 +78,7 @@ said so at the top of its release notes.
 
 ### Changed
 
+- CI only: the scheduled canary now starts at 06:07 UTC (Mondays) instead of 06:20, so canaries that share one Scraping Browser profile no longer start at the same time and lock each other out.
 - CI only: the canary bills a paid route (`WEBMOTORS_PROXY` or
   `WEBMOTORS_CDP_ENDPOINT`), so it now runs weekly (Mondays 06:20 UTC) instead of
   daily; a manual dispatch still runs it.

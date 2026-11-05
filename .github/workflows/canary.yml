@@ -26,9 +26,9 @@ name: canary
 
 on:
   schedule:
-    # Mondays 06:20 UTC. Weekly, not daily: every run bills a paid route.
+    # Mondays 06:07 UTC. Weekly, not daily: every run bills a paid route.
     # Not on the hour: every scheduled workflow fires at :00.
-    - cron: "20 6 * * 1"
+    - cron: "7 6 * * 1"
   workflow_dispatch:
 
 permissions:
