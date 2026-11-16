@@ -140,7 +140,9 @@ An `o=` in the address is ignored by the site; only `--sort` orders.
 
 Page 500 of a 40-page search came back with HTTP 200, ten rows of page 1 and
 `PageCurrent: 500` echoed back. The run plans its pages from the page count
-the site states, and a page holding only rows already fetched ends it.
+the site states on page 1. A page holding only rows already fetched ends the
+run only beyond that count, or when the site stated none; inside it, such a
+page means the listing moved (below), and the run carries on.
 
 ### 5. The listing moves while you read it
 

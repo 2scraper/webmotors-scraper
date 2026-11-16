@@ -97,10 +97,12 @@ def diff_products(old: List[dict], new: List[dict],
     old_by_sku, old_unmatchable = _by_sku(old)
     new_by_sku, new_unmatchable = _by_sku(new)
 
-    added = [new_by_sku[s] for s in new_by_sku.keys() - old_by_sku.keys()]
-    removed = [old_by_sku[s] for s in old_by_sku.keys() - new_by_sku.keys()]
+    # In file order (dicts keep insertion order), never set order, which
+    # changes with PYTHONHASHSEED from one invocation to the next.
+    added = [r for s, r in new_by_sku.items() if s not in old_by_sku]
+    removed = [r for s, r in old_by_sku.items() if s not in new_by_sku]
     changed = []
-    for sku in old_by_sku.keys() & new_by_sku.keys():
+    for sku in (s for s in new_by_sku if s in old_by_sku):
         before, after = old_by_sku[sku], new_by_sku[sku]
         deltas = {f: {"old": before.get(f), "new": after.get(f)}
                   for f in tracked if before.get(f) != after.get(f)}

@@ -213,6 +213,8 @@ def stop_reason_for(outcome) -> str:
     """The run's stop_reason when `outcome` is the page that ended it."""
     if getattr(outcome, "unread", False):
         return "parser_found_nothing"
+    if getattr(outcome, "malformed", 0):
+        return "parser_lost_records"
     if getattr(outcome, "rejected", None):
         return "api_rejected"
     if getattr(outcome, "blocked_by", None):
@@ -244,7 +246,7 @@ def build_query(args, error: Callable[[str], None]) -> Query:
     engine.
     """
     sort = args.sort or DEFAULT_SORT
-    per_page = args.per_page or DEFAULT_PER_PAGE
+    per_page = args.per_page if args.per_page is not None else DEFAULT_PER_PAGE
     typed = [flag for dest, flag in FILTER_FLAGS
              if getattr(args, dest, None) is not None]
     ads_file = getattr(args, "ads_file", None)
@@ -298,7 +300,7 @@ def build_query(args, error: Callable[[str], None]) -> Query:
               % (args.mode, "an advert list" if query.mode == "ad"
                  else "a search page"))
     if query.mode == "ad":
-        if args.sort or args.per_page:
+        if args.sort or args.per_page is not None:
             error("--sort and --per-page apply to a search, not to adverts.")
         # One advert is one "page" of this run (Query's docstring).
         if args.pages not in (1, len(query.ads)):
@@ -456,8 +458,12 @@ class PageOutcome:
 
     @property
     def ok(self) -> bool:
+        # A page that lost SOME of its records is not ok either: the site
+        # said the rows exist and the parser dropped them. Its readable rows
+        # are kept; the run is partial (exit 6), never `complete`.
         return (not self.load_failed and self.blocked_by is None
-                and self.rejected is None and not self.unread)
+                and self.rejected is None and not self.unread
+                and not self.malformed)
 
 
 # The columns the site filled on EVERY record of the 3,000 captured
@@ -801,7 +807,9 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
         if first.filter_problem:
             log.error("%s", first.filter_problem)
             return 2
-        if first.ok:
+        if first.ok or first.products:
+            # Rows kept from a page that lost some records still need the
+            # currency; the run stops after this page either way.
             read_currency(ops, args, query, mask)
             for row in first.products:
                 row.currency = query.currency
@@ -846,7 +854,7 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
                         break
                     if query.mode == "ad":
                         continue
-                    if listing_ended(outcome, seen):
+                    if listing_ended(outcome, seen, first.pages_available):
                         stop_reason = "end_of_listing"
                         break
                     seen.update(r.sku for r in outcome.products)
@@ -862,18 +870,30 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
     return finish(args, query, outcomes, stop_reason, blocked)
 
 
-def listing_ended(outcome: PageOutcome, seen) -> bool:
+def listing_ended(outcome: PageOutcome, seen,
+                  pages_available: Optional[int] = None) -> bool:
     """Whether a search page says the live listing ended before the plan.
 
     Two shapes, both properties of the DATA rather than of markup:
     an empty page, and a page holding only rows already fetched — which is
     how this site answers a page past its end (it serves page 1 again).
+
+    The second is read as the end only BEYOND the site's own page count
+    (or when page 1 gave none). Inside it, a page of repeats is the live
+    listing shifting under the run (a listing inserted ahead of it pushes
+    rows a page down), and ending there reported `complete` after page 2
+    of 1,844. The merge's dedupe drops the repeats; the run goes on.
     """
     if not outcome.products:
         log.info("Page %d came back empty — the listing ended before the plan "
                  "did.", outcome.page_num)
         return True
     if all(r.sku in seen for r in outcome.products):
+        if pages_available is not None and outcome.page_num <= pages_available:
+            log.warning("Page %d of %d holds only listings already fetched — "
+                        "the live listing shifted between fetches; carrying "
+                        "on.", outcome.page_num, pages_available)
+            return False
         log.warning("Page %d holds only listings already fetched — the site "
                     "answers a page past its end with page 1 again, so the "
                     "listing ended before the plan did.", outcome.page_num)
@@ -909,6 +929,18 @@ def worker_loop(ops, args, query: Query, work, results, results_lock,
             work.put(page_num)
             log.error("[%s] stopping: %s.", name, e)
             break
+        except Exception:
+            # The page is already off the queue, so unless it is recorded
+            # here it is in neither the results nor the unattempted list and
+            # the run reports `complete` without it. Record it as failed,
+            # then let the engine's worker wrapper log the death; the pages
+            # still queued are reported unattempted.
+            failed = PageOutcome(page_num=page_num,
+                                 url=request_for(query, page_num).url,
+                                 load_failed=True, state="load_failed")
+            with results_lock:
+                results.append(failed)
+            raise
         for row in outcome.products:
             row.currency = query.currency
         with results_lock:

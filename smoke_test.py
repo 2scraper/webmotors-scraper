@@ -648,7 +648,11 @@ def check_a_multi_page_run_merges_in_page_order_and_ends_on_data():
     equal("page+position is unique across the run",
           len({(r["page"], r["position"]) for r in rows}), len(rows))
 
-    answers = {("search", 1): [(200, fx("search_gol_p1"))],
+    # Without a page count from page 1 the run cannot tell where the end is,
+    # so a replay of page 1 is the only sign of it.
+    no_count = copy.deepcopy(FIXTURES["search_gol_p1"])
+    del no_count["Pagination"]
+    answers = {("search", 1): [(200, json.dumps(no_count))],
                ("search", 2): [(200, fx("search_gol_far_past_end"))]}
     rc, meta, rows, ops = _run(answers, pages=3)
     equal("a page answered with page 1's rows again (the site past its end) "
@@ -656,6 +660,20 @@ def check_a_multi_page_run_merges_in_page_order_and_ends_on_data():
     equal("...page 3 is never asked for",
           [f for f in ops.fetches if f[0] == "search"], [("search", 1), ("search", 2)])
     equal("...and no row is written twice", len(rows), 5)
+
+    # Inside the site's own page count (40 here), a page of repeats is the
+    # live listing shifting. Ending there reported `complete` after page 2
+    # of 1,844 (audit 2026-11-16).
+    answers = {("search", 1): [(200, fx("search_gol_p1"))],
+               ("search", 2): [(200, fx("search_gol_p1"))],
+               ("search", 3): [(200, _search_page(3))]}
+    rc, meta, rows, ops = _run(answers, pages=3)
+    equal("a page of repeats on page 2 of 40 does not end the run",
+          [f for f in ops.fetches if f[0] == "search"],
+          [("search", n) for n in (1, 2, 3)])
+    equal("...it completes with page 3's rows and no duplicate",
+          (rc, meta["stop_reason"], len(rows), len({r["sku"] for r in rows})),
+          (0, "completed", 10, 10))
 
 
 def check_ad_mode_end_to_end():
@@ -715,8 +733,20 @@ def check_a_moved_shape_is_never_an_empty_listing():
                                pages=1)
     equal("ONE unreadable record among five: four rows written", len(rows or []), 4)
     equal("...and the one counted in the sidecar", meta["malformed_records"], 1)
-    equal("...the run itself is complete: nothing was left unfetched",
-          (rc, meta["status"]), (0, "complete"))
+    # The site said five rows exist and the file holds four: that is a
+    # parser failure, never `complete` / exit 0 (audit 2026-11-16).
+    equal("...and the run is PARTIAL, exit 6: a row the site listed was lost",
+          (rc, meta["status"], meta["stop_reason"], meta["pages_failed"]),
+          (6, "partial", "parser_lost_records", [1]))
+    rc, meta, rows, ops = _run({("search", 1): [(200, fx("search_gol_p1"))],
+                                ("search", 2): [(200, _with_renamed("search_gol_p2", "UniqueId", 2))]},
+                               pages=3)
+    equal("two of five lost on page 2: rows kept, exit 6, page 2 named, page 3 not fetched",
+          (rc, len(rows or []), meta["pages_failed"],
+           [f for f in ops.fetches if f[0] == "search"]),
+          (6, 8, [2], [("search", 1), ("search", 2)]))
+    equal("...with the currency still read for the kept rows",
+          {r["currency"] for r in rows}, {"BRL"})
 
     rc, meta, rows, ops = _run({("search", 1): [(200, _with_renamed("search_gol_p1", "Seller"))]},
                                pages=1)
@@ -1071,6 +1101,8 @@ def check_the_cli_refuses_what_the_site_would_answer_wrongly():
         check("an unknown --sort is refused by argparse", refused(["--sort", "win-rate"]))
         check("--per-page 1000 is refused (the cap is on results, not pages)",
               refused(["--per-page", "1000"]))
+        check("--per-page 0 is refused, not read as unset and replaced by 47",
+              refused(["--make", "volkswagen", "--per-page", "0"]))
         check("--condition new on motorcycles is refused",
               refused(["--category", "motos", "--condition", "new"]))
         check("--mode ad without adverts is refused", refused(["--mode", "ad"]))
@@ -1401,7 +1433,25 @@ def check_a_dead_worker_neither_hangs_nor_loses_its_siblings():
         page_flow.fetch_one_page, engine._Ops, engine.sync_playwright = real
     check("the dead worker's siblings still delivered their pages",
           len(results) >= 3, "%d results" % len(results))
-    check("page 3 is not reported as a success", 3 not in [o.page_num for o in results])
+    by_page = {o.page_num: o for o in results}
+    # The page the worker died on is off the queue: unless it is recorded
+    # as FAILED it is in neither list and the run calls itself complete
+    # without it (audit 2026-11-16).
+    check("page 3 is recorded, as a failure",
+          3 in by_page and not by_page[3].ok, repr(sorted(by_page)))
+    equal("every page is either a result or unattempted",
+          sorted(set(by_page) | set(unattempted)), list(range(2, 8)))
+    # ...and the run the engine builds from that is partial.
+    import output_writer
+    import product_parser as P
+    with tempfile.TemporaryDirectory() as tmp:
+        failed = sorted(o.page_num for o in results if not o.ok)
+        rc = output_writer.finish_run(
+            P.parse_page(fx("search_gol_p1"), _q())[:1], os.path.join(tmp, "o"), "json", False, blocked=False,
+            stop_reason=page_flow.stop_reason_for(by_page[3]), pages_requested=7,
+            pages_completed=len(results) - len(failed), pages_failed=failed,
+            start_url="u", final_url="u")
+    equal("...so the run exits 6, not 0", rc, 6)
 
 
 def check_worker_pools_start_on_different_exits():
@@ -3178,6 +3228,53 @@ def check_proxy_meter_in_a_real_browser():
 
 def check_canary_reports_proxy_traffic():
     test_canary_reports_proxy_traffic()
+
+
+def check_allow_empty_never_lets_a_failed_run_replace_good_output():
+    """--allow-empty is for a GENUINE empty result. A blocked run with it
+    replaced five good rows and their sidecar with an empty file (audit
+    2026-11-16)."""
+    from output_writer import finish_run
+    with tempfile.TemporaryDirectory() as tmp:
+        prefix = os.path.join(tmp, "out")
+        good_rows = '[{"sku": "yesterday"}]'
+        good_meta = '{"status": "complete"}'
+        for reason, blocked in (("blocked_cloudfront", True),
+                                ("page_load_timeout", False)):
+            open(prefix + ".json", "w").write(good_rows)
+            open(prefix + ".meta.json", "w").write(good_meta)
+            rc = finish_run([], prefix, "json", True, blocked=blocked,
+                            stop_reason=reason, pages_requested=1,
+                            pages_completed=0, pages_failed=[1],
+                            start_url="u", final_url="u")
+            equal("%s with --allow-empty: exit %s, good rows kept" % (reason, rc),
+                  open(prefix + ".json").read(), good_rows)
+            equal("...and their sidecar kept", open(prefix + ".meta.json").read(),
+                  good_meta)
+        rc = finish_run([], prefix, "json", True, blocked=False,
+                        stop_reason="completed", pages_requested=1,
+                        pages_completed=1, pages_failed=[],
+                        start_url="u", final_url="u")
+        equal("a genuine empty result with --allow-empty still replaces it",
+              (rc, json.load(open(prefix + ".json")),
+               json.load(open(prefix + ".meta.json"))["status"]), (4, [], "failed"))
+
+
+def check_diff_runs_lists_rows_in_file_order():
+    """Added/removed/changed came from set arithmetic, so their order moved
+    with PYTHONHASHSEED from one invocation to the next."""
+    import diff_runs as D
+    old = [{"sku": "k%02d" % i, "price": 1.0, "mode": "search"} for i in range(20)]
+    new = [{"sku": "k%02d" % i, "price": 2.0, "mode": "search"}
+           for i in (19, 3, 11, 7)] + \
+          [{"sku": "n%02d" % i, "mode": "search"} for i in (9, 2, 14, 5, 0, 12)]
+    result = D.diff_products(old, new)
+    equal("added in the new file's order", [r["sku"] for r in result["added"]],
+          ["n09", "n02", "n14", "n05", "n00", "n12"])
+    equal("changed in the new file's order", [c["sku"] for c in result["changed"]],
+          ["k19", "k03", "k11", "k07"])
+    equal("removed in the old file's order", [r["sku"] for r in result["removed"]],
+          ["k%02d" % i for i in range(20) if i not in (19, 3, 11, 7)])
 
 
 CHECKS = [v for k, v in sorted(globals().items()) if k.startswith("check_")]

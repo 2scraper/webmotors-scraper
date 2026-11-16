@@ -17,6 +17,12 @@ FROM python:3.12-slim
 WORKDIR /app
 
 COPY requirements.txt requirements-playwright.txt ./
+# Playwright 1.65's bundled node needs libatomic.so.1, and the slim image
+# lacks it. `playwright install --with-deps` runs ON that node, so it cannot
+# add the library itself: without this layer the build exits 127.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libatomic1 \
+    && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt -r requirements-playwright.txt \
     # Playwright's own apt-get for Chromium's shared-library dependencies —
     # not pip packages, so this has to run as a separate, explicit step.
