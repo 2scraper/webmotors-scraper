@@ -22,6 +22,15 @@ said so at the top of its release notes.
 > its rows and exits **6** (**5** with none) with `stop_reason:
 > proxy_budget_exceeded`, and it always writes
 > `<out>.latest_attempt.meta.json`.
+>
+> **Behaviour change:** a search page that lost **some** of its listing
+> records to the parser (`malformed_records` above 0) now makes the run
+> **partial, exit 6** (`stop_reason: parser_lost_records`), with the page in
+> `pages_failed` and the readable rows kept. It was `complete`, exit 0.
+>
+> **Behaviour change:** `--allow-empty` applies only to a run that completed
+> unblocked. A blocked or failed run with no rows no longer replaces earlier
+> output or its `<out>.meta.json`.
 
 ### Added
 
@@ -85,6 +94,26 @@ said so at the top of its release notes.
 
 ### Fixed
 
+- With `--concurrency` above 1, a page whose worker died while fetching it
+  is now recorded in `pages_failed`, and the run is partial (exit 6). The
+  page had already left the queue, so it was in neither the results nor the
+  unattempted pages, and the run reported `complete`, exit 0, without it.
+- A search page holding only listings already fetched ends the run only
+  beyond the page count the site stated on page 1 (or when it stated none).
+  Inside that count it is the live listing shifting between fetches, and the
+  run carries on; it had stopped as `complete` after page 2 of a 1,844-page
+  search.
+- `--per-page 0` is refused (exit 2) instead of being read as unset and
+  replaced by 47; ad mode refuses it like any other `--per-page`.
+- `diff_runs.py` lists added, removed and changed rows in file order. They
+  came from set arithmetic, so their order changed from one invocation to
+  the next.
+- CI only: the offline job runs on `ubuntu-24.04`, because `ubuntu-latest`
+  (26.04) has no Python 3.9 for `setup-python`. The Docker image installs
+  `libatomic1`, which Playwright 1.65's bundled node needs; the build exited
+  127 without it. A canary that the proxy refused before any request now
+  says so and names the `WEBMOTORS_PROXY` secret, instead of "the data never
+  arrived".
 - The pyppeteer and Selenium proxy meter counts only `http://` / `https://` requests and responses that came over the network. Chrome's own loads (the `chrome://` new-tab page, `data:`, `blob:`), cache hits (`requestServedFromCache`, `fromDiskCache`, `fromPrefetchCache`, `fromServiceWorker`) and Chrome's error page count nothing. A sibling repo's Selenium run had counted about 2.8 MB of new-tab scripts while its proxy carried about 6 KB. The pyppeteer block sent once the budget is spent now reaches the page's own event loop even when the budget runs out on another thread.
 
 ## [0.2.0] — 2026-10-15

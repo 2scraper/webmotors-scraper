@@ -615,6 +615,11 @@ def finish_run(rows: Sequence[Any], out_prefix: str, fmt: str,
     complete = stop_reason in COMPLETE_STOP_REASONS and not pages_failed
     row_cls = ROW_CLASS_BY_MODE.get(mode, Listing)
     stats: dict = {}
+    # --allow-empty says "an EMPTY result may replace my output", and only a
+    # run that completed unblocked has one. A blocked or failed run with
+    # zero rows knows nothing about the catalogue; letting the flag through
+    # there replaced good output, and its sidecar, with an empty file.
+    allow_empty = allow_empty and complete and not blocked
     rc = save(rows, out_prefix, fmt, allow_empty=allow_empty, row_cls=row_cls,
               stats=stats)
     wrote_output = bool(rows) or allow_empty

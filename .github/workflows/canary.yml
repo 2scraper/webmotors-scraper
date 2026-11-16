@@ -109,7 +109,15 @@ jobs:
             2) echo "::error::The run was refused as bad usage. If the log says the site did not recognise the make or model, the site renamed it."; exit 1 ;;
             3) echo "::error::Blocked. If the log names cloudfront, the proxy's exits were refused for their ADDRESS; if perimeterx, the CLIENT was, which is the engines' identity handling failing."; exit 1 ;;
             4) echo "::error::Zero rows from a search that is never empty. The endpoint's shape has moved; see canary_dump.json."; exit 1 ;;
-            5) echo "::error::The data never arrived (transport failure, or the API gateway refused the path)."; exit 1 ;;
+            5)
+              reason=$(python3 -c 'import json; print(json.load(open("canary.latest_attempt.meta.json")).get("stop_reason", ""))' 2>/dev/null)
+              case "$reason" in
+                proxy_auth_failed|proxy_balance_exhausted)
+                  echo "::error::The proxy refused the run before any request ($reason): check the WEBMOTORS_PROXY secret and the proxy account's traffic balance. Nothing about the site was measured." ;;
+                *)
+                  echo "::error::The data never arrived (transport failure, or the API gateway refused the path)." ;;
+              esac
+              exit 1 ;;
             6) echo "::error::Partial run: some pages failed. See canary.meta.json."; exit 1 ;;
             *) echo "::error::Unexpected exit $code."; exit 1 ;;
           esac

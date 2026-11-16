@@ -53,7 +53,8 @@ request usually comes back as exit 5 or 3. Use `playwright_scraper.py` or
 
 The search genuinely matched nothing, for example a price range no listing
 falls in. Nothing is written, so an earlier good file is left alone;
-`--allow-empty` writes the empty file.
+`--allow-empty` writes the empty file. It does so only for this genuine
+empty result: a blocked or failed run never replaces earlier output.
 
 ## Exit 5 — the data never arrived
 
@@ -71,9 +72,16 @@ falls in. Nothing is written, so an earlier good file is left alone;
 The site sent a page of listings and none could be read: the payload's shape
 has moved (a renamed id field, typically). This is **not** an empty search.
 The page is saved as `<out>_page<N>_debug.html`; open a "Site changed" issue
-with it. A sidecar whose `malformed_records` is above 0, or whose
-`columns_below_floor` is not empty, is the same thing caught earlier: some
-records or columns stopped arriving while the rest still parse.
+with it. A sidecar whose `columns_below_floor` is not empty is the same
+thing caught earlier: some columns stopped arriving while the rest still
+parse.
+
+## `stop_reason: parser_lost_records` (exit 6)
+
+The site sent a page of listings and some of them could not be read
+(`malformed_records` above 0). The readable rows are kept, the page is in
+`pages_failed`, and the run stops there: the payload's shape is moving.
+Open a "Site changed" issue with `--dump-html` output.
 
 ## Exit 6 — partial
 
