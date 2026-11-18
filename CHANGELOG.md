@@ -114,6 +114,11 @@ said so at the top of its release notes.
   127 without it. A canary that the proxy refused before any request now
   says so and names the `WEBMOTORS_PROXY` secret, instead of "the data never
   arrived".
+- README: `--mode ad` no longer claims a car advert's engine size, horsepower
+  and traction. The advert endpoint (`/api/detail/car/...`) does not return
+  `EngineSize`, `HorsePower` or `Traction`, so those columns are null in ad
+  mode, while a search run fills them for the same adverts (measured
+  2026-11-18 on 5 car adverts; a motorcycle advert keeps `engine_cc`).
 - The pyppeteer and Selenium proxy meter counts only `http://` / `https://` requests and responses that came over the network. Chrome's own loads (the `chrome://` new-tab page, `data:`, `blob:`), cache hits (`requestServedFromCache`, `fromDiskCache`, `fromPrefetchCache`, `fromServiceWorker`) and Chrome's error page count nothing. A sibling repo's Selenium run had counted about 2.8 MB of new-tab scripts while its proxy carried about 6 KB. The pyppeteer block sent once the budget is spent now reaches the page's own event loop even when the budget runs out on another thread.
 
 ## [0.2.0] — 2026-10-15
