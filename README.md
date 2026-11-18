@@ -16,7 +16,7 @@ car and motorcycle marketplace, into JSON and CSV:
 | Mode | One row per | What you get |
 |---|---|---|
 | `--mode search` (default) | listing on a search page | price, make / model / version, year built and model year, mileage, transmission, body, colour, doors, engine, horsepower, armoured, the seller's ticked facts ("IPVA pago", "Único dono"), the price against the FIPE table in percent, the "Bom negócio" badge, photo, seller type and kind, city and state |
-| `--mode ad` | advert | all of the above plus fuel, plate's final digit, optionals, a dealer's description, when the advert was created, the FIPE code and value, and the site's own market-price range (lowest / average / highest) for that version and year |
+| `--mode ad` | advert | all of the above **except a car's engine size, horsepower and traction**: the advert endpoint does not return them, so `engine_litres`, `horsepower_cv` and `traction` are null (5 of 5 car adverts, 2026-11-18; a motorcycle advert keeps `engine_cc`). Take them from a search run. Plus fuel, plate's final digit, optionals, a dealer's description, when the advert was created, the FIPE code and value, and the site's own market-price range (lowest / average / highest) for that version and year |
 
 Cars and motorcycles, any search the site builds: a state or a city, a make
 and model, a price or year range — pass the site's own address with `--url`
