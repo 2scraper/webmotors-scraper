@@ -34,8 +34,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional
 
-from output_writer import (dedupe_by_key, finish_run, finish_without_fetch,
-                           SOURCE_DEFAULT)
+from output_writer import (COMPLETE_STOP_REASONS, dedupe_by_key, finish_run,
+                           finish_without_fetch, SOURCE_DEFAULT)
 import proxy_check
 import proxy_meter
 from product_parser import (MAX_PAGES, ORIGIN_URL, ApiRequest, Query, BASE,
@@ -333,11 +333,13 @@ def query_summary(query: Query) -> dict:
 
 
 def finish(args, query: Query, outcomes: List, stop_reason: str,
-           blocked: bool) -> int:
+           blocked: bool, unattempted: Optional[List[int]] = None) -> int:
     """Merge the pages in PAGE order, write the output, return the exit code.
 
     One implementation for the three engines, so the merge order, the
     dedupe and the sidecar cannot differ between them.
+
+    `unattempted` names the planned pages the run never requested.
     """
     rows, seen = [], set()
     for oc in sorted(outcomes, key=lambda o: o.page_num):
@@ -353,7 +355,13 @@ def finish(args, query: Query, outcomes: List, stop_reason: str,
     available = getattr(first, "pages_available", None)
     ok_pages = [o for o in outcomes if o.ok]
     failed_pages = sorted(o.page_num for o in outcomes if not o.ok)
-    extra = {"query": query_summary(query), "currency": query.currency}
+    extra = {"query": query_summary(query), "currency": query.currency,
+             # Planned pages that were never requested, by number, beside
+             # `pages_failed`. Without it a run whose workers all died read
+             # `pages_completed: 1` of `pages_requested: 7` and named only the
+             # pages that FAILED: pages 4-7 were in neither list (QA,
+             # 2026-11-18, item 6.1).
+             "pages_unattempted": sorted(unattempted or [])}
     if query.mode == "search":
         reachable = available * query.per_page if available is not None else None
         extra.update({
@@ -793,6 +801,7 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
     """
     outcomes: List[PageOutcome] = []
     blocked, stop_reason = False, "completed"
+    planned = [1]
     # Before the first browser opens: each engine installs the meter on the
     # browsers it opens (every worker's too), and all of them count into
     # this one budget.
@@ -824,6 +833,7 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
                          "all of them.", args.pages, first.pages_available)
             more_to_fetch = bool(first.products) or query.mode == "ad"
             rest = list(range(2, plan + 1)) if more_to_fetch else []
+            planned += rest
             if rest and concurrency > 1:
                 close_ops(ops)
                 ops = None
@@ -867,7 +877,12 @@ def run_pages(open_ops, close_ops, run_concurrently, args, pool,
     # requests after the cap were refused, so nothing after it was read.
     if meter is not None and meter.exceeded:
         stop_reason, blocked = proxy_meter.STOP_BUDGET_EXCEEDED, False
-    return finish(args, query, outcomes, stop_reason, blocked)
+    # A run that ended for a COMPLETE reason skipped nothing it needed: past
+    # the end of the listing there is nothing to request.
+    attempted = {o.page_num for o in outcomes}
+    unattempted = ([] if stop_reason in COMPLETE_STOP_REASONS
+                   else [p for p in planned if p not in attempted])
+    return finish(args, query, outcomes, stop_reason, blocked, unattempted)
 
 
 def listing_ended(outcome: PageOutcome, seen,

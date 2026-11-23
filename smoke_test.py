@@ -1454,6 +1454,44 @@ def check_a_dead_worker_neither_hangs_nor_loses_its_siblings():
     equal("...so the run exits 6, not 0", rc, 6)
 
 
+def check_the_sidecar_names_the_pages_a_run_never_requested():
+    """QA 2026-11-18, item 6.1: with every worker dead, pages 4-7 of 7 were
+    in neither `pages_failed` nor anywhere else in the sidecar."""
+    import page_flow
+    import product_parser as P
+
+    def died_after_page_3(page_nums):
+        ok = page_flow.PageOutcome(page_num=2, url="u", state="content")
+        ok.products = P.parse_page(_search_page(2), _q())
+        dead = page_flow.PageOutcome(page_num=3, url="u", load_failed=True)
+        return [ok, dead], [n for n in page_nums if n > 3], False
+
+    with tempfile.TemporaryDirectory() as tmp:
+        args = types.SimpleNamespace(
+            pages=7, retries=2, retry_delay=0, delay=0, proxy_block_retries=2,
+            out=os.path.join(tmp, "out"), format="json", allow_empty=False,
+            dump_html=None, url=None, cdp_endpoint=None, concurrency=3)
+        ops = _FakeOps({("search", 1): [(200, fx("search_gol_p1"))]})
+        rc = page_flow.run_pages(lambda: ops, lambda o: None, died_after_page_3,
+                                 args, None, _q(), 3)
+        meta = json.load(open(args.out + ".meta.json"))
+    equal("workers dead after page 3 of 7: exit 6", rc, 6)
+    equal("...page 3 in pages_failed", meta["pages_failed"], [3])
+    equal("...pages 4-7 named in pages_unattempted",
+          meta["pages_unattempted"], [4, 5, 6, 7])
+
+    rc, meta, rows, ops = _run({("search", 1): [(200, fx("search_gol_p1"))],
+                                ("search", 2): [(fx_status("gateway_403"),
+                                                 fx("gateway_403"))]}, pages=4)
+    equal("sequential, page 2 of 4 rejected: exit 6", rc, 6)
+    equal("...pages 3-4 named in pages_unattempted",
+          meta and meta["pages_unattempted"], [3, 4])
+
+    rc, meta, rows, ops = _run({("search", 1): [(200, fx("search_gol_p1"))]}, pages=1)
+    equal("a complete run leaves pages_unattempted empty",
+          meta and meta["pages_unattempted"], [])
+
+
 def check_worker_pools_start_on_different_exits():
     import page_flow
     from proxy_pool import ProxyPool
