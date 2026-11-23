@@ -34,6 +34,12 @@ said so at the top of its release notes.
 
 ### Added
 
+- `<out>.meta.json` gains `pages_unattempted`: the planned pages the run never
+  requested, by number, beside `pages_failed`. A run whose workers all died
+  after page 3 of 7 recorded `pages_failed: [3]` and nothing about pages 4-7;
+  it now records `pages_unattempted: [4, 5, 6, 7]`. A sequential run that
+  stops on a failed page names the pages after it the same way. Empty on a
+  complete run, including one that ended because the listing did.
 - `proxy_meter.py`: a per-run proxy traffic meter and budget for all three
   engines, held in the shared page loop (`page_flow`). It is active only
   through a local proxy.
